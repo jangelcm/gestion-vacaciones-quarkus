@@ -1,0 +1,125 @@
+{
+  "info": {
+    "name": "Politicas Service",
+    "description": "Coleccion para probar endpoints del servicio de politicas de vacaciones",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Saldo",
+      "item": [
+        {
+          "name": "GET saldo 1001 (suficiente)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/politicas/saldo/1001"
+          }
+        },
+        {
+          "name": "GET saldo 1002 (insuficiente)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/politicas/saldo/1002"
+          }
+        },
+        {
+          "name": "GET saldo 1003 (regla especial)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/politicas/saldo/1003"
+          }
+        },
+        {
+          "name": "GET saldo 9999 (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/politicas/saldo/9999"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validacion",
+      "item": [
+        {
+          "name": "POST validar - aprobada (1001)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": 1001,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-21\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 12\n}"
+            },
+            "url": "{{baseUrl}}/politicas/validar"
+          }
+        },
+        {
+          "name": "POST validar - rechazada saldo (1002)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": 1002,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-21\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 12\n}"
+            },
+            "url": "{{baseUrl}}/politicas/validar"
+          }
+        },
+        {
+          "name": "POST validar - aprobada regla especial (1003)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": 1003,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-25\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 60\n}"
+            },
+            "url": "{{baseUrl}}/politicas/validar"
+          }
+        },
+        {
+          "name": "POST validar - rechazada sin regla (1003)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": 1003,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-25\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 12\n}"
+            },
+            "url": "{{baseUrl}}/politicas/validar"
+          }
+        }
+      ]
+    }
+  ]
+}

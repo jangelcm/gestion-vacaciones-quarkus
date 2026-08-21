@@ -22,6 +22,8 @@
     <modules>
         <!-- Servicio para la gestión de solicitudes vacacionales-->
         <module>ms-solicitud</module>
+        <!-- Servicio de políticas y saldos de vacaciones -->
+        <module>ms-politicas</module>
         <!-- Módulos compartidos (Eventos Kafka, DTOs comunes)-->
         <module>common-dto</module>
         <!-- Agregar más módulos conforme los vayan creando -->
