@@ -2,7 +2,7 @@
 @politicaId = 1
 
 ### Crear politica
-POST {{baseUrl}}/politicas
+POST {{baseUrl}}/api/v1/politicas
 Content-Type: application/json
 
 {
@@ -16,10 +16,10 @@ Content-Type: application/json
 }
 
 ### Consultar politica por id
-GET {{baseUrl}}/politicas/{{politicaId}}
+GET {{baseUrl}}/api/v1/politicas/{{politicaId}}
 
 ### Actualizar politica
-PUT {{baseUrl}}/politicas/{{politicaId}}
+PUT {{baseUrl}}/api/v1/politicas/{{politicaId}}
 Content-Type: application/json
 
 {
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 
 ### Listar todas las politicas
-GET {{baseUrl}}/politicas
+GET {{baseUrl}}/api/v1/politicas
 
 ### Eliminar politica
-DELETE {{baseUrl}}/politicas/{{politicaId}}
+DELETE {{baseUrl}}/api/v1/politicas/{{politicaId}}

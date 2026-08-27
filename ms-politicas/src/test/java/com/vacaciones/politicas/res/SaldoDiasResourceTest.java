@@ -38,7 +38,7 @@ class SaldoDiasResourceTest {
 
         given()
         .when()
-                .get("/politicas/saldo/1001")
+                .get("/api/v1/politicas/saldo/1001")
         .then()
                 .statusCode(200)
                 .body("id", equalTo(1))
@@ -56,7 +56,7 @@ class SaldoDiasResourceTest {
 
         given()
         .when()
-                .get("/politicas/saldo/9999")
+                .get("/api/v1/politicas/saldo/9999")
         .then()
                 .statusCode(404)
                 .body("mensaje", equalTo("Saldo no encontrado para el colaborador"))
@@ -69,7 +69,7 @@ class SaldoDiasResourceTest {
 
         given()
         .when()
-                .post("/politicas/1/colaboradores/1001")
+                .post("/api/v1/politicas/1/colaboradores/1001")
         .then()
                 .statusCode(201);
     }
@@ -83,7 +83,7 @@ class SaldoDiasResourceTest {
 
         given()
         .when()
-                .post("/politicas/1/colaboradores/1001")
+                .post("/api/v1/politicas/1/colaboradores/1001")
         .then()
                 .statusCode(409)
                 .body("mensaje", equalTo("El colaborador ya tiene una politica asignada"))
@@ -115,7 +115,7 @@ class SaldoDiasResourceTest {
 
         given()
         .when()
-                .get("/politicas/1/colaboradores")
+                .get("/api/v1/politicas/1/colaboradores")
         .then()
                 .statusCode(200)
                 .body("$", hasSize(2))

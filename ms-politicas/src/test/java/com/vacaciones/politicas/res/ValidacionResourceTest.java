@@ -36,7 +36,7 @@ class ValidacionResourceTest {
                         }
                         """)
         .when()
-                .post("/politicas/validar")
+                .post("/api/v1/politicas/validar")
         .then()
                 .statusCode(200)
                 .body("aprobado", equalTo(true))
@@ -61,7 +61,7 @@ class ValidacionResourceTest {
                         }
                         """)
         .when()
-                .post("/politicas/validar")
+                .post("/api/v1/politicas/validar")
         .then()
                 .statusCode(200)
                 .body("aprobado", equalTo(false))
@@ -86,7 +86,7 @@ class ValidacionResourceTest {
                         }
                         """)
         .when()
-                .post("/politicas/validar")
+                .post("/api/v1/politicas/validar")
         .then()
                 .statusCode(200)
                 .body("aprobado", equalTo(false))

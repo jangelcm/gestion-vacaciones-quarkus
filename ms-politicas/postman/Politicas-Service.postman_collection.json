@@ -19,7 +19,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/politicas/saldo/1001"
+            "url": "{{baseUrl}}/api/v1/politicas/saldo/1001"
           }
         },
         {
@@ -27,7 +27,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/politicas/saldo/1002"
+            "url": "{{baseUrl}}/api/v1/politicas/saldo/1002"
           }
         },
         {
@@ -35,7 +35,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/politicas/saldo/1003"
+            "url": "{{baseUrl}}/api/v1/politicas/saldo/1003"
           }
         },
         {
@@ -43,7 +43,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/politicas/saldo/9999"
+            "url": "{{baseUrl}}/api/v1/politicas/saldo/9999"
           }
         }
       ]
@@ -65,7 +65,7 @@
               "mode": "raw",
               "raw": "{\n  \"colaboradorId\": 1001,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-21\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 12\n}"
             },
-            "url": "{{baseUrl}}/politicas/validar"
+            "url": "{{baseUrl}}/api/v1/politicas/validar"
           }
         },
         {
@@ -82,7 +82,7 @@
               "mode": "raw",
               "raw": "{\n  \"colaboradorId\": 1002,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-21\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 12\n}"
             },
-            "url": "{{baseUrl}}/politicas/validar"
+            "url": "{{baseUrl}}/api/v1/politicas/validar"
           }
         },
         {
@@ -99,7 +99,7 @@
               "mode": "raw",
               "raw": "{\n  \"colaboradorId\": 1003,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-25\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 60\n}"
             },
-            "url": "{{baseUrl}}/politicas/validar"
+            "url": "{{baseUrl}}/api/v1/politicas/validar"
           }
         },
         {
@@ -116,7 +116,7 @@
               "mode": "raw",
               "raw": "{\n  \"colaboradorId\": 1003,\n  \"fechaInicio\": \"2026-08-17\",\n  \"fechaFin\": \"2026-08-25\",\n  \"tipoVacacion\": \"ANUAL\",\n  \"antiguedadMeses\": 12\n}"
             },
-            "url": "{{baseUrl}}/politicas/validar"
+            "url": "{{baseUrl}}/api/v1/politicas/validar"
           }
         }
       ]

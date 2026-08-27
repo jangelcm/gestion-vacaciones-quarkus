@@ -26,7 +26,7 @@ class ExceptionMapperTest {
     void setUp() {
         exceptionMapper = new ExceptionMapper();
         exceptionMapper.setUriInfo(uriInfo);
-        URI uri = UriBuilder.fromPath("/politicas/validar").build();
+        URI uri = UriBuilder.fromPath("/api/v1/politicas/validar").build();
         when(uriInfo.getRequestUri()).thenReturn(uri);
     }
 
@@ -80,7 +80,7 @@ class ExceptionMapperTest {
         ErrorResponse errorResponse = (ErrorResponse) entity;
         assertNotNull(errorResponse.hora());
         assertEquals(expectedMessage, errorResponse.mensaje());
-        assertEquals("/politicas/validar", errorResponse.url());
+        assertEquals("/api/v1/politicas/validar", errorResponse.url());
         assertEquals(String.valueOf(expectedStatus), errorResponse.codeStatus());
     }
 }

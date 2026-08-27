@@ -3,22 +3,22 @@
 @colaboradorId = 1007
 
 ### Asignar politica al colaborador
-POST {{baseUrl}}/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
+POST {{baseUrl}}/api/v1/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
 
 ### Asignar politica a colaborador ya asignado (409)
-POST {{baseUrl}}/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
+POST {{baseUrl}}/api/v1/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
 
 ### Listar colaboradores asignados a una politica
-GET {{baseUrl}}/politicas/{{politicaId}}/colaboradores
+GET {{baseUrl}}/api/v1/politicas/{{politicaId}}/colaboradores
 
 ### Consultar saldo con dias suficientes
-GET {{baseUrl}}/politicas/saldo/1001
+GET {{baseUrl}}/api/v1/politicas/saldo/1001
 
 ### Consultar saldo con dias insuficientes
-GET {{baseUrl}}/politicas/saldo/1002
+GET {{baseUrl}}/api/v1/politicas/saldo/1002
 
 ### Consultar saldo con regla especial asociada
-GET {{baseUrl}}/politicas/saldo/1003
+GET {{baseUrl}}/api/v1/politicas/saldo/1003
 
 ### Consultar saldo inexistente
-GET {{baseUrl}}/politicas/saldo/9999
+GET {{baseUrl}}/api/v1/politicas/saldo/9999

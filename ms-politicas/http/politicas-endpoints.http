@@ -6,7 +6,7 @@
 GET {{baseUrl}}/q/health
 
 ### Crear politica de prueba
-POST {{baseUrl}}/politicas
+POST {{baseUrl}}/api/v1/politicas
 Content-Type: application/json
 
 {
@@ -20,10 +20,13 @@ Content-Type: application/json
 }
 
 ### Consultar politica por id
-GET {{baseUrl}}/politicas/{{politicaId}}
+GET {{baseUrl}}/api/v1/politicas/{{politicaId}}
+
+###
+GET {{baseUrl}}/api/v1/politicas
 
 ### Actualizar politica por id
-PUT {{baseUrl}}/politicas/{{politicaId}}
+PUT {{baseUrl}}/api/v1/politicas/{{politicaId}}
 Content-Type: application/json
 
 {
@@ -37,31 +40,31 @@ Content-Type: application/json
 }
 
 ### Listar todas las politicas
-GET {{baseUrl}}/politicas
+GET {{baseUrl}}/api/v1/politicas
 
 ### Asignar politica al colaborador
-POST {{baseUrl}}/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
+POST {{baseUrl}}/api/v1/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
 
 ### Asignar politica a colaborador ya asignado (409)
-POST {{baseUrl}}/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
+POST {{baseUrl}}/api/v1/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
 
 ### Listar colaboradores asignados a una politica
-GET {{baseUrl}}/politicas/{{politicaId}}/colaboradores
+GET {{baseUrl}}/api/v1/politicas/{{politicaId}}/colaboradores
 
 ### Consultar saldo - colaborador con saldo suficiente (1001)
-GET {{baseUrl}}/politicas/saldo/1001
+GET {{baseUrl}}/api/v1/politicas/saldo/1001
 
 ### Consultar saldo - colaborador con saldo insuficiente (1002)
-GET {{baseUrl}}/politicas/saldo/1002
+GET {{baseUrl}}/api/v1/politicas/saldo/1002
 
 ### Consultar saldo - colaborador con regla especial (1003)
-GET {{baseUrl}}/politicas/saldo/1003
+GET {{baseUrl}}/api/v1/politicas/saldo/1003
 
 ### Consultar saldo - colaborador inexistente (404)
-GET {{baseUrl}}/politicas/saldo/9999
+GET {{baseUrl}}/api/v1/politicas/saldo/9999
 
 ### Validar solicitud - APROBADA (1001, 5 dias habiles, saldo 10)
-POST {{baseUrl}}/politicas/validar
+POST {{baseUrl}}/api/v1/politicas/validar
 Content-Type: application/json
 
 {
@@ -73,7 +76,7 @@ Content-Type: application/json
 }
 
 ### Validar solicitud - RECHAZADA por saldo insuficiente (1002)
-POST {{baseUrl}}/politicas/validar
+POST {{baseUrl}}/api/v1/politicas/validar
 Content-Type: application/json
 
 {
@@ -86,7 +89,7 @@ Content-Type: application/json
 
 ### Validar solicitud - APROBADA con regla especial ANTIGUEDAD>=60 (1003)
 # 17-25 ago 2026 = 7 dias habiles; saldo 5 + 3 adicionales = 8
-POST {{baseUrl}}/politicas/validar
+POST {{baseUrl}}/api/v1/politicas/validar
 Content-Type: application/json
 
 {
@@ -98,7 +101,7 @@ Content-Type: application/json
 }
 
 ### Validar solicitud - RECHAZADA sin cumplir regla especial (1003 con poca antiguedad)
-POST {{baseUrl}}/politicas/validar
+POST {{baseUrl}}/api/v1/politicas/validar
 Content-Type: application/json
 
 {
@@ -110,4 +113,4 @@ Content-Type: application/json
 }
 
 ### Eliminar politica por id
-DELETE {{baseUrl}}/politicas/{{politicaId}}
+DELETE {{baseUrl}}/api/v1/politicas/{{politicaId}}

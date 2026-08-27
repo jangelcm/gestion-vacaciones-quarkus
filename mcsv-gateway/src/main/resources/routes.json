@@ -66,6 +66,17 @@
     "stripPrefix": false
   },
   {
+    "path": "/api/v1/politicas",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 8081
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
     "path": "/auth",
     "targets": [
       {

@@ -40,7 +40,7 @@ class PoliticaResourceTest {
                         }
                         """)
         .when()
-                .post("/politicas")
+                .post("/api/v1/politicas")
         .then()
                 .statusCode(201)
                 .body("id", equalTo(1))
@@ -55,7 +55,7 @@ class PoliticaResourceTest {
 
         given()
         .when()
-                .get("/politicas/1")
+                .get("/api/v1/politicas/1")
         .then()
                 .statusCode(200)
                 .body("id", equalTo(1))
@@ -82,7 +82,7 @@ class PoliticaResourceTest {
                         }
                         """)
         .when()
-                .put("/politicas/1")
+                .put("/api/v1/politicas/1")
         .then()
                 .statusCode(200)
                 .body("id", equalTo(1))
@@ -100,7 +100,7 @@ class PoliticaResourceTest {
 
         given()
         .when()
-                .get("/politicas")
+                .get("/api/v1/politicas")
         .then()
                 .statusCode(200)
                 .body("$", hasSize(2))
@@ -115,7 +115,7 @@ class PoliticaResourceTest {
 
         given()
         .when()
-                .delete("/politicas/1")
+                .delete("/api/v1/politicas/1")
         .then()
                 .statusCode(200)
                 .body("id", equalTo(1))
