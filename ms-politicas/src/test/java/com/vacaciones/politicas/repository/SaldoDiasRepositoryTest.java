@@ -3,6 +3,7 @@ package com.vacaciones.politicas.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
@@ -10,6 +11,7 @@ import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -89,5 +91,451 @@ class SaldoDiasRepositoryTest {
         SaldoDiasEntity missing = saldoDiasRepository.findByColaboradorId(9999L);
 
         assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
+    }
+}       assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
+    }
+}       assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
+    }
+}       assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
+    }
+}       assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
+    }
+}       assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
+    }
+}       assertNull(missing);
+    }
+
+    @Test
+    @TestTransaction
+    void shouldFindAllSaldoDiasByPoliticaIdAndReturnEmptyListWhenNoAssignmentsExist() {
+        PoliticaEntity politicaAnual = PoliticaEntity.builder()
+                .nombre("Vacaciones anuales")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(30)
+                .activa(Boolean.TRUE)
+                .build();
+
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        politicaRepository.persist(politicaAnual);
+        politicaRepository.persist(politicaPremium);
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3001L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("15.0"))
+                .diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(3002L)
+                .politica(politicaAnual)
+                .diasDisponibles(new BigDecimal("10.0"))
+                .diasUsados(new BigDecimal("5.0"))
+                .diasAcumulados(new BigDecimal("1.0"))
+                .build());
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(4001L)
+                .politica(politicaPremium)
+                .diasDisponibles(new BigDecimal("20.0"))
+                .diasUsados(new BigDecimal("2.0"))
+                .diasAcumulados(new BigDecimal("3.0"))
+                .build());
+
+        List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());
+
+        assertEquals(2, saldosPoliticaAnual.size());
+        assertTrue(saldosPoliticaAnual.stream()
+                .allMatch(saldo -> saldo.getPolitica().getId().equals(politicaAnual.getId())));
+
+        List<SaldoDiasEntity> saldosPoliticaInexistente = saldoDiasRepository.findByPoliticaId(9999L);
+
+        assertNotNull(saldosPoliticaInexistente);
+        assertTrue(saldosPoliticaInexistente.isEmpty());
     }
 }

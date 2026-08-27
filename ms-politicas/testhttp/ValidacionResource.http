@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:8080
+
+### Validar solicitud aprobada
+POST {{baseUrl}}/politicas/validar
+Content-Type: application/json
+
+{
+  "colaboradorId": 1001,
+  "fechaInicio": "2026-08-17",
+  "fechaFin": "2026-08-21",
+  "tipoVacacion": "ANUAL",
+  "antiguedadMeses": 12
+}
+
+### Validar solicitud rechazada por saldo insuficiente
+POST {{baseUrl}}/politicas/validar
+Content-Type: application/json
+
+{
+  "colaboradorId": 1002,
+  "fechaInicio": "2026-08-17",
+  "fechaFin": "2026-08-21",
+  "tipoVacacion": "ANUAL",
+  "antiguedadMeses": 12
+}
+
+### Validar solicitud aprobada por regla especial
+POST {{baseUrl}}/politicas/validar
+Content-Type: application/json
+
+{
+  "colaboradorId": 1003,
+  "fechaInicio": "2026-08-17",
+  "fechaFin": "2026-08-25",
+  "tipoVacacion": "ANUAL",
+  "antiguedadMeses": 60
+}
+
+### Validar solicitud rechazada por antiguedad insuficiente
+POST {{baseUrl}}/politicas/validar
+Content-Type: application/json
+
+{
+  "colaboradorId": 1003,
+  "fechaInicio": "2026-08-17",
+  "fechaFin": "2026-08-25",
+  "tipoVacacion": "ANUAL",
+  "antiguedadMeses": 12
+}

@@ -1,17 +1,20 @@
 package com.vacaciones.politicas.service;
 
-import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
-
 import com.vacaciones.politicas.dto.response.SaldoDiasResponseDto;
 import com.vacaciones.politicas.entity.MovimientoSaldoEntity;
+import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
+import com.vacaciones.politicas.exception.BadRequestException;
 import com.vacaciones.politicas.exception.ResourceNotFoundException;
+import com.vacaciones.politicas.exception.RuntimeCustomException;
 import com.vacaciones.politicas.repository.MovimientoSaldoRepository;
+import com.vacaciones.politicas.repository.PoliticaRepository;
 import com.vacaciones.politicas.repository.SaldoDiasRepository;
-
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.core.Response;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
 public class SaldoDiasService {
@@ -20,12 +23,49 @@ public class SaldoDiasService {
 
     private final SaldoDiasRepository saldoDiasRepository;
     private final MovimientoSaldoRepository movimientoSaldoRepository;
+    private final PoliticaRepository politicaRepository;
 
     public SaldoDiasService(
             SaldoDiasRepository saldoDiasRepository,
-            MovimientoSaldoRepository movimientoSaldoRepository) {
+            MovimientoSaldoRepository movimientoSaldoRepository,
+            PoliticaRepository politicaRepository) {
         this.saldoDiasRepository = saldoDiasRepository;
         this.movimientoSaldoRepository = movimientoSaldoRepository;
+        this.politicaRepository = politicaRepository;
+    }
+
+    @Transactional
+    public void asignarPolitica(Long colaboradorId, Long politicaId) {
+        SaldoDiasEntity existing = saldoDiasRepository.findByColaboradorId(colaboradorId);
+        if (existing != null) {
+            throw new RuntimeCustomException(
+                    "El colaborador ya tiene una politica asignada",
+                    Response.Status.CONFLICT);
+        }
+
+        PoliticaEntity politica = politicaRepository.findById(politicaId);
+        if (politica == null) {
+            throw new ResourceNotFoundException("Politica no encontrada");
+        }
+
+        if (!Boolean.TRUE.equals(politica.getActiva())) {
+            throw new BadRequestException("La politica no esta activa");
+        }
+
+        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+                .colaboradorId(colaboradorId)
+                .politica(politica)
+                .diasDisponibles(BigDecimal.valueOf(politica.getDiasBaseAnio()).setScale(1))
+                .diasUsados(BigDecimal.ZERO.setScale(1))
+                .diasAcumulados(BigDecimal.ZERO.setScale(1))
+                .version(0)
+                .build());
+    }
+
+    public java.util.List<SaldoDiasResponseDto> getByPoliticaId(Long politicaId) {
+        return saldoDiasRepository.findByPoliticaId(politicaId).stream()
+                .map(this::toResponseDto)
+                .toList();
     }
 
     public SaldoDiasResponseDto getByColaboradorId(Long colaboradorId) {
@@ -35,15 +75,7 @@ public class SaldoDiasService {
             throw new ResourceNotFoundException("Saldo no encontrado para el colaborador");
         }
 
-        return new SaldoDiasResponseDto(
-                saldoDias.getId(),
-                saldoDias.getColaboradorId(),
-                saldoDias.getPolitica() != null ? saldoDias.getPolitica().getId() : null,
-                String.valueOf(saldoDias.getDiasDisponibles()),
-                String.valueOf(saldoDias.getDiasUsados()),
-                String.valueOf(saldoDias.getDiasAcumulados()),
-                saldoDias.getCreatedAt() != null ? saldoDias.getCreatedAt().format(FORMATTER) : null,
-                saldoDias.getUpdatedAt() != null ? saldoDias.getUpdatedAt().format(FORMATTER) : null);
+        return toResponseDto(saldoDias);
     }
 
     @Transactional
@@ -122,5 +154,17 @@ public class SaldoDiasService {
                 .eventoOrigen(eventoOrigen)
                 .eventoId(eventoId)
                 .build();
+    }
+
+    private SaldoDiasResponseDto toResponseDto(SaldoDiasEntity saldoDias) {
+        return new SaldoDiasResponseDto(
+                saldoDias.getId(),
+                saldoDias.getColaboradorId(),
+                saldoDias.getPolitica() != null ? saldoDias.getPolitica().getId() : null,
+                String.valueOf(saldoDias.getDiasDisponibles()),
+                String.valueOf(saldoDias.getDiasUsados()),
+                String.valueOf(saldoDias.getDiasAcumulados()),
+                saldoDias.getCreatedAt() != null ? saldoDias.getCreatedAt().format(FORMATTER) : null,
+                saldoDias.getUpdatedAt() != null ? saldoDias.getUpdatedAt().format(FORMATTER) : null);
     }
 }

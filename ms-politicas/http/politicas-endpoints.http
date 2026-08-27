@@ -1,7 +1,52 @@
 @baseUrl = http://localhost:8080
+@politicaId = 3
+@colaboradorId = 1001
 
 ### Salud
 GET {{baseUrl}}/q/health
+
+### Crear politica de prueba
+POST {{baseUrl}}/politicas
+Content-Type: application/json
+
+{
+  "nombre": "Politica temporal QA",
+  "tipoVacacion": "ANUAL",
+  "diasBaseAnio": 15,
+  "antiguedadMinimaMeses": 12,
+  "acumulable": true,
+  "maxDiasAcumulables": 30,
+  "activa": true
+}
+
+### Consultar politica por id
+GET {{baseUrl}}/politicas/{{politicaId}}
+
+### Actualizar politica por id
+PUT {{baseUrl}}/politicas/{{politicaId}}
+Content-Type: application/json
+
+{
+  "nombre": "Politica temporal QA actualizada",
+  "tipoVacacion": "ANUAL",
+  "diasBaseAnio": 20,
+  "antiguedadMinimaMeses": 12,
+  "acumulable": true,
+  "maxDiasAcumulables": 35,
+  "activa": false
+}
+
+### Listar todas las politicas
+GET {{baseUrl}}/politicas
+
+### Asignar politica al colaborador
+POST {{baseUrl}}/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
+
+### Asignar politica a colaborador ya asignado (409)
+POST {{baseUrl}}/politicas/{{politicaId}}/colaboradores/{{colaboradorId}}
+
+### Listar colaboradores asignados a una politica
+GET {{baseUrl}}/politicas/{{politicaId}}/colaboradores
 
 ### Consultar saldo - colaborador con saldo suficiente (1001)
 GET {{baseUrl}}/politicas/saldo/1001
@@ -63,3 +108,6 @@ Content-Type: application/json
   "tipoVacacion": "ANUAL",
   "antiguedadMeses": 12
 }
+
+### Eliminar politica por id
+DELETE {{baseUrl}}/politicas/{{politicaId}}
