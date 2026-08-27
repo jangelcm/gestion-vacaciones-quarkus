@@ -1,0 +1,79 @@
+[
+  {
+    "path": "/mcsv-auth/auth/login",
+    "targets": [
+      {
+        "host": "127.0.0.1",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/mcsv-auth/users",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": true
+  },
+  {
+    "path": "/mcsv-auth/auth",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": true
+  },
+  {
+    "path": "/orders",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 9002
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/solicitudes",
+    "targets": [
+      {
+        "host": "ms-solicitud",
+        "port": 8080
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/aprobaciones",
+    "targets": [
+      {
+        "host": "ms-aprobaciones",
+        "port": 8080
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
+    "path": "/auth",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  }
+]

@@ -1,0 +1,116 @@
+.container {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* ── Card ── */
+.detail-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(109, 40, 217, 0.08);
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+  color: #fff;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.25rem;
+}
+
+.card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+/* ── Body rows ── */
+.card-body {
+  padding: 0.5rem 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 2rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1e1e2e;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  padding: 0.28rem 0.85rem;
+  border-radius: 99px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badge-pendiente { background: #fef9c3; color: #854d0e; }
+.badge-aprobada  { background: #dcfce7; color: #166534; }
+.badge-rechazada { background: #fee2e2; color: #991b1b; }
+
+/* header badge override (on gradient bg) */
+.card-header .badge-pendiente { background: rgba(255,220,50,0.25); color: #fef08a; }
+.card-header .badge-aprobada  { background: rgba(74,222,128,0.25); color: #86efac; }
+.card-header .badge-rechazada { background: rgba(248,113,113,0.25); color: #fca5a5; }
+
+/* ── Footer ── */
+.card-footer {
+  padding: 1.25rem 2rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-back {
+  background: none;
+  border: 1.5px solid #6d28d9;
+  color: #6d28d9;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-back:hover { background: #ede9fe; }
+
+/* ── State messages ── */
+.state-msg {
+  text-align: center;
+  padding: 3rem;
+  color: #9ca3af;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(109, 40, 217, 0.08);
+}
+
+.error-msg { color: #991b1b; }

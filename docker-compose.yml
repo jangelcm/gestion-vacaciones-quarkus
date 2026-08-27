@@ -1,18 +1,31 @@
-version: '3.8'
-
 services:
   # Base de Datos Relacional (Comandos - Write Model)
   postgres:
     image: postgres:15-alpine
     container_name: postgres-vacaciones
     environment:
-      POSTGRES_USER: vacaciones_user
-      POSTGRES_PASSWORD: vacaciones_pass
-      POSTGRES_MULTIPLE_DATABASES: db_solicitudes,db_aprobaciones,db_politicas
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:-vacaciones_user}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:-vacaciones_pass}
+      POSTGRES_MULTIPLE_DATABASES: ${POSTGRES_MULTIPLE_DATABASES:-db_solicitudes,db_aprobaciones,db_auth,db_politicas}
+      MS_SOLICITUD_DB_USER: ${MS_SOLICITUD_DB_USER:-solicitudes_user}
+      MS_SOLICITUD_DB_PASS: ${MS_SOLICITUD_DB_PASS:-solicitudes_pass}
+      MS_SOLICITUD_DB_NAME: ${MS_SOLICITUD_DB_NAME:-db_solicitudes}
+      MS_APROBACIONES_DB_USER: ${MS_APROBACIONES_DB_USER:-aprobaciones_user}
+      MS_APROBACIONES_DB_PASS: ${MS_APROBACIONES_DB_PASS:-aprobaciones_pass}
+      MS_APROBACIONES_DB_NAME: ${MS_APROBACIONES_DB_NAME:-db_aprobaciones}
+      MS_AUTH_DB_USER: ${MS_AUTH_DB_USER:-admin}
+      MS_AUTH_DB_PASS: ${MS_AUTH_DB_PASS:-admin}
+      MS_AUTH_DB_NAME: ${MS_AUTH_DB_NAME:-db_auth}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER:-vacaciones_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - vacaciones-net
 
@@ -21,8 +34,8 @@ services:
     image: mongo:6.0
     container_name: mongodb-vacaciones
     environment:
-      MONGO_INITDB_ROOT_USERNAME: mongo_user
-      MONGO_INITDB_ROOT_PASSWORD: mongo_pass
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-mongo_user}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-mongo_pass}
     ports:
       - "27017:27017"
     volumes:
@@ -55,6 +68,11 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "bash", "-c", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
     networks:
       - vacaciones-net
 
@@ -63,12 +81,98 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui-vacaciones
     ports:
-      - "8080:8080"
+      - "8088:8080"
     depends_on:
       - kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: local-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - vacaciones-net
+
+  ms-solicitud:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ms-solicitud
+    container_name: ms-solicitud
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${MS_SOLICITUD_DB_NAME:-db_solicitudes}
+      DB_USER: ${MS_SOLICITUD_DB_USER:-solicitudes_user}
+      DB_PASS: ${MS_SOLICITUD_DB_PASS:-solicitudes_pass}
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+    ports:
+      - "8082:8080"
+    networks:
+      - vacaciones-net
+
+  ms-aprobaciones:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ms-aprobaciones
+    container_name: ms-aprobaciones
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${MS_APROBACIONES_DB_NAME:-db_aprobaciones}
+      DB_USER: ${MS_APROBACIONES_DB_USER:-aprobaciones_user}
+      DB_PASS: ${MS_APROBACIONES_DB_PASS:-aprobaciones_pass}
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+    ports:
+      - "8083:8080"
+    networks:
+      - vacaciones-net
+
+  mcsv-auth:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mcsv-auth
+    container_name: mcsv-auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/${MS_AUTH_DB_NAME:-db_auth}
+      QUARKUS_DATASOURCE_USERNAME: ${MS_AUTH_DB_USER:-admin}
+      QUARKUS_DATASOURCE_PASSWORD: ${MS_AUTH_DB_PASS:-admin}
+    ports:
+      - "9001:9001"
+    networks:
+      - vacaciones-net
+
+  mcsv-gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mcsv-gateway
+    container_name: mcsv-gateway
+    depends_on:
+      - ms-solicitud
+      - ms-aprobaciones
+    ports:
+      - "8080:8080"
+    networks:
+      - vacaciones-net
+
+  jovaca:
+    image: node:20-alpine
+    container_name: jovaca
+    working_dir: /app
+    command: sh -c "npm ci && npm run start -- --host 0.0.0.0 --port 4200"
+    volumes:
+      - ./jovaca:/app
+    ports:
+      - "4200:4200"
+    depends_on:
+      - mcsv-gateway
     networks:
       - vacaciones-net
 

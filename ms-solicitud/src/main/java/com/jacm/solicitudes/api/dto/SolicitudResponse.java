@@ -1,7 +1,5 @@
 package com.jacm.solicitudes.api.dto;
 
-import com.aayushatharva.brotli4j.common.annotations.Local;
-
 import java.time.LocalDate;
 
 public record SolicitudResponse(

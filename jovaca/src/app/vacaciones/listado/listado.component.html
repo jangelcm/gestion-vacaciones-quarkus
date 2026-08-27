@@ -1,0 +1,59 @@
+<div class="container">
+    <div class="header">
+        <h2>Mis Solicitudes de Vacaciones</h2>
+        <a routerLink="/solicitudes/nueva" class="btn btn-primary">+ Nueva Solicitud</a>
+    </div>
+
+    <div class="search-bar">
+        <input type="number" [(ngModel)]="inputId" placeholder="Ingrese su ID de colaborador" class="input-field"
+            (keyup.enter)="cargar()" />
+        <button (click)="cargar()" class="btn btn-secondary">Buscar</button>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando solicitudes...
+    </div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (!loading() && buscado() && solicitudes().length === 0 && !error()) {
+    <div class="state-msg empty-msg">No se encontraron solicitudes para este colaborador.</div>
+    }
+
+    @if (solicitudes().length > 0) {
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Colaborador ID</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Fecha Solicitud</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (s of solicitudes(); track s.id) {
+                <tr>
+                    <td class="id-col">#{{ s.id }}</td>
+                    <td>{{ s.colaboradorId }}</td>
+                    <td>{{ s.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ s.fechaFin | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ s.fechaSolicitud | date: 'dd/MM/yyyy' }}</td>
+                    <td><span [class]="'badge ' + badgeClass(s.estado)">{{ s.estado }}</span></td>
+                    <td>
+                        <button (click)="verDetalle(s.id)" class="btn btn-sm">Ver detalle</button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>

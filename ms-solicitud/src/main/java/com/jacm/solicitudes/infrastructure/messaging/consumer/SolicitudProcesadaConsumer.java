@@ -1,36 +1,62 @@
 package com.jacm.solicitudes.infrastructure.messaging.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jacm.solicitudes.domain.model.EstadoSolicitud;
-import com.jacm.solicitudes.domain.service.SolicitudService;
+import com.jacm.solicitudes.domain.ports.in.SolicitudUseCase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.logging.Logger;
 
+/**
+ * DTO del evento publicado por ms-aprobaciones al aprobar o rechazar una solicitud.
+ */
+record AprobacionEventoDTO(Long solicitudId, String aprobadorId, String estado, String comentario) {}
 
-// Record auxiliar para recibir la respuesta del MCSV Aprobaciones
-record SolicitudProcesadaDTO(Long solicitudId, String estadoFinal) {}
-
+/**
+ * Consumidor de eventos de aprobación/rechazo producidos por ms-aprobaciones.
+ * Actualiza el estado local de la solicitud en la base de datos de ms-solicitudes.
+ */
 @ApplicationScoped
 public class SolicitudProcesadaConsumer {
 
     private static final Logger LOG = Logger.getLogger(SolicitudProcesadaConsumer.class);
 
     @Inject
-    SolicitudService service;
+    SolicitudUseCase solicitudUseCase;
 
-    @Incoming("solicitud-procesada")
-    private void consumirSolicitudProcesada(SolicitudProcesadaDTO evento) {
-        LOG.infof("Evento 'solicitud-procesada' recibido. ID Solicitud: %d, Estado: %s",
-                evento.solicitudId(), evento.estadoFinal());
+    @Inject
+    ObjectMapper objectMapper;
 
-        try {
-            EstadoSolicitud nuevoEstado = EstadoSolicitud.valueOf(evento.estadoFinal());
-            service.actualizarEstado(evento.solicitudId(), nuevoEstado);
-            LOG.info("Estado de solicitud actualizado en DB local exitosamente.");
-        } catch (IllegalArgumentException e) {
-            LOG.errorf("Estado recibido no válido: %s", evento.estadoFinal());
-        }
+    /**
+     * Consume el evento 'solicitud.aprobada' producido por ms-aprobaciones.
+     * Canal: solicitud-aprobada → topic: solicitud.aprobada
+     */
+    @Incoming("solicitud-aprobada")
+    public void onSolicitudAprobada(String mensaje) {
+        LOG.infof("Evento 'solicitud.aprobada' recibido: %s", mensaje);
+        procesarEvento(mensaje, EstadoSolicitud.APROBADA);
     }
 
+    /**
+     * Consume el evento 'solicitud.rechazada' producido por ms-aprobaciones.
+     * Canal: solicitud-rechazada → topic: solicitud.rechazada
+     */
+    @Incoming("solicitud-rechazada")
+    public void onSolicitudRechazada(String mensaje) {
+        LOG.infof("Evento 'solicitud.rechazada' recibido: %s", mensaje);
+        procesarEvento(mensaje, EstadoSolicitud.RECHAZADA);
+    }
+
+    private void procesarEvento(String mensaje, EstadoSolicitud nuevoEstado) {
+        try {
+            var evento = objectMapper.readValue(mensaje, AprobacionEventoDTO.class);
+            solicitudUseCase.actualizarEstado(evento.solicitudId(), nuevoEstado);
+            LOG.infof("Estado de solicitud %d actualizado a %s", evento.solicitudId(), nuevoEstado);
+        } catch (JsonProcessingException e) {
+            LOG.errorf("Error deserializando evento de aprobación: %s", e.getMessage());
+        }
+    }
 }
+

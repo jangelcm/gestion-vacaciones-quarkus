@@ -1,0 +1,17 @@
+<nav class="navbar">
+  <a routerLink="/solicitudes" class="nav-brand">
+    Portal de Vacaciones jocav
+  </a>
+  <div class="nav-links">
+    <a routerLink="/solicitudes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      Mis Solicitudes
+    </a>
+    <a routerLink="/solicitudes/nueva" routerLinkActive="active">
+      Nueva Solicitud
+    </a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <router-outlet />
+</main>

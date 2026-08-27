@@ -1,0 +1,34 @@
+### Registro de usuario
+POST http://localhost:9001/auth/register
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "test1"
+}
+
+### Login de usuario
+POST http://localhost:9001/auth/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "test"
+}
+
+# NOTA:
+# Al hacer login, la respuesta debe contener el access_token (JWT) y el refresh_token.
+# Copia el valor de "refresh_token" y "access_token" de la respuesta para usarlos en las siguientes peticiones.
+
+### Refresh token
+POST http://localhost:9001/auth/refresh
+Content-Type: application/json
+
+{
+  "username": "test",
+  "refresh_token": "212e31e7-9f5d-4f41-92b5-967843b22dbe"
+}
+
+### Validar token
+GET http://localhost:8081/mcsv-login/auth/validate
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2F1dGgtc2VydmljZS5rdWFycXVzLmNvbSIsInN1YiI6ImNyb2phcyIsInVwbiI6ImNyb2phcyIsImdyb3VwcyI6W10sImlhdCI6MTc3OTY3NDA3MywiZXhwIjoxNzc5Njc3NjczLCJqdGkiOiI5MzlmMWYwYy0yODFlLTQ4MzQtODk0ZC0xOTBiODU4YTEyYTkifQ.ZoaPRxO5LbXikrv932I1856XKHu5JWdKAYlpyqaY4tesjix8UZ4xCAZZGOJ1rkJ25uB1DlKtD04ZEojiOrhRCunUaULHjpBV9g2hT2wqAh-VLFCoyLEAaCQcyFWvByM9EVoHl4koazG2yOf_9tLsjwISTjhEbnWO7WChVHefU5wXUVjrvEerowwcZH9RcthAtFXmzTGAjRUTHPtf_3--lUifeMV2XlouJWObJCZV75AQb0PNpEHGzJRqaZ_4C6BuUeQRo9jZEHTFTdL5xtr1PU95UP1L-h8rp5UmzmpsaVlhqFhELn-Eu4TcUZiE6mMC5x2-p-Jh_CPMDHZ1KjMh1A

@@ -1,0 +1,69 @@
+<div class="container">
+  <div class="form-card">
+    <h2>Nueva Solicitud de Vacaciones</h2>
+
+    @if (exito()) {
+      <div class="alert alert-success">✓ Solicitud enviada correctamente. Redirigiendo...</div>
+    }
+
+    @if (error()) {
+      <div class="alert alert-error">{{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+      <div class="form-group">
+        <label for="colaboradorId">ID de Colaborador</label>
+        <input
+          id="colaboradorId"
+          type="number"
+          formControlName="colaboradorId"
+          placeholder="Ej. 1001"
+          [class.invalid]="f['colaboradorId'].touched && f['colaboradorId'].invalid"
+        />
+        @if (f['colaboradorId'].touched && f['colaboradorId'].hasError('required')) {
+          <p class="error-hint">El ID de colaborador es obligatorio.</p>
+        }
+        @if (f['colaboradorId'].touched && f['colaboradorId'].hasError('min')) {
+          <p class="error-hint">El ID debe ser un número mayor a 0.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="fechaInicio">Fecha de Inicio</label>
+        <input
+          id="fechaInicio"
+          type="date"
+          formControlName="fechaInicio"
+          (change)="onFechaInicioChange()"
+          [class.invalid]="f['fechaInicio'].touched && f['fechaInicio'].invalid"
+        />
+        @if (f['fechaInicio'].touched && f['fechaInicio'].hasError('required')) {
+          <p class="error-hint">La fecha de inicio es obligatoria.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="fechaFin">Fecha de Fin</label>
+        <input
+          id="fechaFin"
+          type="date"
+          formControlName="fechaFin"
+          [class.invalid]="f['fechaFin'].touched && f['fechaFin'].invalid"
+        />
+        @if (f['fechaFin'].touched && f['fechaFin'].hasError('required')) {
+          <p class="error-hint">La fecha de fin es obligatoria.</p>
+        }
+        @if (f['fechaFin'].touched && f['fechaFin'].hasError('fechaFinInvalida')) {
+          <p class="error-hint">La fecha de fin debe ser posterior a la fecha de inicio.</p>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+          {{ loading() ? 'Enviando...' : 'Enviar Solicitud' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+*
+!.dockerignore
+!target/
+!target/*-runner
+!target/*-runner.jar
+!target/lib/
+!target/lib/**
+!target/classes/
+!target/classes/routes.json
+!target/classes/publicKey.pem
+!target/quarkus-app/
+!target/quarkus-app/**

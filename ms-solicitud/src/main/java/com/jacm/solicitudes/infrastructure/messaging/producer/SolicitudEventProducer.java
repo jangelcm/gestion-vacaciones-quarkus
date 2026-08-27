@@ -1,22 +1,30 @@
 package com.jacm.solicitudes.infrastructure.messaging.producer;
 
 import com.jacm.solicitudes.api.dto.Solicitud;
+import com.jacm.solicitudes.domain.ports.out.SolicitudEventPublisherPort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.jboss.logging.Logger;
 
-import static io.quarkus.arc.ComponentsProvider.LOG;
-
+/**
+ * Adaptador Kafka: implementa el puerto de salida {@link SolicitudEventPublisherPort}.
+ * Publica eventos al topic 'solicitud.creada'.
+ */
 @ApplicationScoped
-public class SolicitudEventProducer {
+public class SolicitudEventProducer implements SolicitudEventPublisherPort {
+
+    private static final Logger LOG = Logger.getLogger(SolicitudEventProducer.class);
 
     @Inject
-    @Channel("solicitud-creada") // Mapeado en application.properties
+    @Channel("solicitud-creada")
     Emitter<Solicitud> solicitudEmitter;
 
-    public void enviarSolicitudCreada(Solicitud solicitud) {
-        LOG.infof("Publicando evento 'solicitud-creada' para ID: %d", solicitud.getId());
+    @Override
+    public void publicarSolicitudCreada(Solicitud solicitud) {
+        LOG.infof("Publicando evento 'solicitud.creada' para ID: %d", solicitud.getId());
         solicitudEmitter.send(solicitud);
     }
 }
+

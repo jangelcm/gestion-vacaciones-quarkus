@@ -1,0 +1,42 @@
+@jwt_token = eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2F1dGgtc2VydmljZS5rdWFycXVzLmNvbSIsInN1YiI6InRlc3QxIiwidXBuIjoidGVzdDEiLCJncm91cHMiOltdLCJpYXQiOjE3ODcyMzY3MjMsImV4cCI6MTc4NzI0MDMyMywianRpIjoiOGNmZWY4OTEtMWFhOS00MTRjLWJlNzAtNzZhNmFmYTFiOWI0In0.i89kBBAVFhgdNi3F1jfHtq0O0fXYT_CCsZY7_r22iBxnzt-KofCoKCXDnmFKQZjMNVljj6HW0_BtBDIBbLNevVsKutR9rJyJmm8uZs-We_6nSEkd0kiDG-OLHCMyyZfdl70ieCApDybbe8_gP6HUFuKxoCvX5WdSpCVM9E2CDR5SPYlUiFAV0nXOol7zD1M3TdWXOrkkCy5fscdBYLrbLI9ZM27mnP_9V8yOza8FkYaNfXt9iBaH6G0v1vZlyUZwPqSFYmclyLk9y47rup_hfYkzub_O86E1yG-L5xa-9b3Z097boC7thgkPAzI62NBI_Oagc5HzoaaDsMZZ8s9FkA
+
+
+### Petición al gateway (proxy hacia backend en 9001)
+POST http://127.0.0.1:8081/mcsv-auth/auth/login
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "test1"
+}
+
+### Petición directa al backend (para comparar)
+POST http://localhost:9001/auth/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "test"
+}
+
+### Comprobaciones rápidas
+GET http://localhost:8080
+
+
+
+### Users - Paginación con filtro por username
+POST http://localhost:8080/mcsv-auth/users/pagination
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "pageNumber": 0,
+  "rowsPerPage": 10,
+  "filters": [
+    
+  ],
+  "sort": [
+    
+  ]
+
+}

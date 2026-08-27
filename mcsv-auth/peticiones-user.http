@@ -1,0 +1,29 @@
+#declarar variable token
+@jwt_token = yJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2F1dGgtc2VydmljZS5rdWFycXVzLmNvbSIsInN1YiI6InRlc3QiLCJ1cG4iOiJ0ZXN0IiwiZ3JvdXBzIjpbXSwiaWF0IjoxNzg2ODk4MjgyLCJleHAiOjE3ODY5MDE4ODIsImp0aSI6IjJjMWJmYzM2LTQzNmQtNDQxNC04YTE3LTM3Y2Y0OGZiMzVmZiJ9.NB2QK66zo3S4-dbMcYXcqiigXa4ylauCi9g9lvce1B6aF05wkVQlxRHEgIrRj3BBX28_MUOs59g8U4A0mWfe5TiXm3nGcOFku3usSf1J1gCE4U2BnDkFPyRD9T9wy7BOxP-r7pjMvb6oy0CUEDiYbJpJtCsTnWa8V0SUG9waN_zuKtUcwGyIVHCXEX92Uy4gqcltZ713YiyFgRAkdHnuG9AeRW8S4nKlmIp6X3tOkPD63-16zBBwnJP5pNpWmq-t-xpCnwO_p5TlnWjhXeys-37bz5FOWR-1ZLHL9NOWz7V1zjPEzI10ke-F8VR-y2lv474rYGjgRQzmftavx4Klqw
+
+### Users - Paginación (UserResource)
+POST http://localhost:9001/users/pagination
+Content-Type: application/json
+
+{
+  "pageNumber": 0,
+  "rowsPerPage": 10,
+  "filters": [],
+  "sort": []
+}
+
+### Users - Paginación con filtro por username
+POST http://localhost:8080/mcsv-auth/users/pagination
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "pageNumber": 0,
+  "rowsPerPage": 10,
+  "filters": [
+    
+  ],
+  "sort": [
+    
+  ]
+}
