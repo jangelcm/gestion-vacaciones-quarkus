@@ -1,37 +1,50 @@
 package com.vacaciones.politicas.service;
 
 import com.vacaciones.politicas.dto.response.SaldoDiasResponseDto;
-import com.vacaciones.politicas.entity.MovimientoSaldoEntity;
 import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
 import com.vacaciones.politicas.exception.BadRequestException;
 import com.vacaciones.politicas.exception.ResourceNotFoundException;
 import com.vacaciones.politicas.exception.RuntimeCustomException;
-import com.vacaciones.politicas.repository.MovimientoSaldoRepository;
+import com.vacaciones.politicas.messaging.event.DiasDisponiblesActualizadosEvent;
+import com.vacaciones.politicas.messaging.event.SolicitudAprobadaEvent;
+import com.vacaciones.politicas.messaging.event.SolicitudCanceladaEvent;
 import com.vacaciones.politicas.repository.PoliticaRepository;
 import com.vacaciones.politicas.repository.SaldoDiasRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.ws.rs.core.Response;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Supplier;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 @ApplicationScoped
 public class SaldoDiasService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
+    static final String MOTIVO_DESCUENTO_SOLICITUD_APROBADA = "DESCUENTO_SOLICITUD_APROBADA";
+    static final String MOTIVO_DEVOLUCION_SOLICITUD_CANCELADA = "DEVOLUCION_SOLICITUD_CANCELADA";
+    static final String MOTIVO_ASIGNACION_POLITICA = "ASIGNACION_POLITICA";
+
     private final SaldoDiasRepository saldoDiasRepository;
-    private final MovimientoSaldoRepository movimientoSaldoRepository;
     private final PoliticaRepository politicaRepository;
+    private final SaldoDiasWriteOperations saldoDiasWriteOperations;
+    private final Emitter<DiasDisponiblesActualizadosEvent> diasDisponiblesEmitter;
 
     public SaldoDiasService(
             SaldoDiasRepository saldoDiasRepository,
-            MovimientoSaldoRepository movimientoSaldoRepository,
-            PoliticaRepository politicaRepository) {
+            PoliticaRepository politicaRepository,
+            SaldoDiasWriteOperations saldoDiasWriteOperations,
+            @Channel("dias-disponibles-actualizados-out") Emitter<DiasDisponiblesActualizadosEvent> diasDisponiblesEmitter) {
         this.saldoDiasRepository = saldoDiasRepository;
-        this.movimientoSaldoRepository = movimientoSaldoRepository;
         this.politicaRepository = politicaRepository;
+        this.saldoDiasWriteOperations = saldoDiasWriteOperations;
+        this.diasDisponiblesEmitter = diasDisponiblesEmitter;
     }
 
     @Transactional
@@ -52,14 +65,17 @@ public class SaldoDiasService {
             throw new BadRequestException("La politica no esta activa");
         }
 
-        saldoDiasRepository.persist(SaldoDiasEntity.builder()
+        SaldoDiasEntity nuevoSaldo = SaldoDiasEntity.builder()
                 .colaboradorId(colaboradorId)
                 .politica(politica)
                 .diasDisponibles(BigDecimal.valueOf(politica.getDiasBaseAnio()).setScale(1))
                 .diasUsados(BigDecimal.ZERO.setScale(1))
                 .diasAcumulados(BigDecimal.ZERO.setScale(1))
                 .version(0)
-                .build());
+                .build();
+        saldoDiasRepository.persist(nuevoSaldo);
+        saldoDiasRepository.getEntityManager().flush();
+        publicarDiasActualizados(nuevoSaldo, MOTIVO_ASIGNACION_POLITICA);
     }
 
     public java.util.List<SaldoDiasResponseDto> getByPoliticaId(Long politicaId) {
@@ -78,82 +94,69 @@ public class SaldoDiasService {
         return toResponseDto(saldoDias);
     }
 
-    @Transactional
+    public void procesarSolicitudAprobada(SolicitudAprobadaEvent evento) {
+        descontarDias(
+                evento.colaboradorId(),
+                evento.solicitudId(),
+                evento.diasAprobados(),
+                SaldoDiasWriteOperations.ORIGEN_SOLICITUD_APROBADA,
+                evento.eventoId());
+    }
+
+    public void procesarSolicitudCancelada(SolicitudCanceladaEvent evento) {
+        devolverDias(
+                evento.colaboradorId(),
+                evento.solicitudId(),
+                evento.diasADevolver(),
+                SaldoDiasWriteOperations.ORIGEN_SOLICITUD_CANCELADA,
+                evento.eventoId());
+    }
+
     public void descontarDias(
             Long colaboradorId,
             Long solicitudId,
             BigDecimal dias,
             String eventoOrigen,
             String eventoId) {
-        if (movimientoSaldoRepository.existsByEventoId(eventoId)) {
-            return;
+        SaldoDiasEntity saldo = ejecutarConReintento(() -> saldoDiasWriteOperations.ejecutarDescuento(
+                colaboradorId, solicitudId, dias, eventoOrigen, eventoId));
+        if (saldo != null) {
+            publicarDiasActualizados(saldo, MOTIVO_DESCUENTO_SOLICITUD_APROBADA);
         }
-
-        SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(colaboradorId);
-        saldoDias.setDiasDisponibles(saldoDias.getDiasDisponibles().subtract(dias));
-        saldoDias.setDiasUsados(saldoDias.getDiasUsados().add(dias));
-
-        persistSaldoOrThrowOnConcurrentUpdate(saldoDias);
-        movimientoSaldoRepository.persist(buildMovimiento(
-                saldoDias,
-                solicitudId,
-                "APROBACION",
-                dias,
-                eventoOrigen,
-                eventoId));
     }
 
-    @Transactional
     public void devolverDias(
             Long colaboradorId,
             Long solicitudId,
             BigDecimal dias,
             String eventoOrigen,
             String eventoId) {
-        if (movimientoSaldoRepository.existsByEventoId(eventoId)) {
-            return;
+        SaldoDiasEntity saldo = ejecutarConReintento(() -> saldoDiasWriteOperations.ejecutarDevolucion(
+                colaboradorId, solicitudId, dias, eventoOrigen, eventoId));
+        if (saldo != null) {
+            publicarDiasActualizados(saldo, MOTIVO_DEVOLUCION_SOLICITUD_CANCELADA);
         }
-
-        SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(colaboradorId);
-        saldoDias.setDiasDisponibles(saldoDias.getDiasDisponibles().add(dias));
-        saldoDias.setDiasUsados(saldoDias.getDiasUsados().subtract(dias));
-
-        persistSaldoOrThrowOnConcurrentUpdate(saldoDias);
-        movimientoSaldoRepository.persist(buildMovimiento(
-                saldoDias,
-                solicitudId,
-                "CANCELACION",
-                dias,
-                eventoOrigen,
-                eventoId));
     }
 
-    private void persistSaldoOrThrowOnConcurrentUpdate(SaldoDiasEntity saldoDias) {
-        Integer currentVersion = saldoDias.getVersion();
-
-        if (currentVersion != null && currentVersion > 0) {
-            saldoDiasRepository.persist(saldoDias);
-            return;
+    private SaldoDiasEntity ejecutarConReintento(Supplier<SaldoDiasEntity> operacion) {
+        try {
+            return operacion.get();
+        } catch (OptimisticLockException primeraExcepcion) {
+            try {
+                return operacion.get();
+            } catch (OptimisticLockException segundaExcepcion) {
+                throw segundaExcepcion;
+            }
         }
-
-        saldoDias.setVersion(1);
     }
 
-    private MovimientoSaldoEntity buildMovimiento(
-            SaldoDiasEntity saldoDias,
-            Long solicitudId,
-            String tipoMovimiento,
-            BigDecimal dias,
-            String eventoOrigen,
-            String eventoId) {
-        return MovimientoSaldoEntity.builder()
-                .saldo(saldoDias)
-                .solicitudId(solicitudId)
-                .tipoMovimiento(tipoMovimiento)
-                .dias(dias)
-                .eventoOrigen(eventoOrigen)
-                .eventoId(eventoId)
-                .build();
+    private void publicarDiasActualizados(SaldoDiasEntity saldo, String motivo) {
+        diasDisponiblesEmitter.send(new DiasDisponiblesActualizadosEvent(
+                saldo.getColaboradorId(),
+                saldo.getDiasDisponibles(),
+                saldo.getDiasUsados(),
+                motivo,
+                LocalDateTime.now()));
     }
 
     private SaldoDiasResponseDto toResponseDto(SaldoDiasEntity saldoDias) {

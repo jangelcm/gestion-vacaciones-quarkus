@@ -16,6 +16,9 @@ services:
       MS_AUTH_DB_USER: ${MS_AUTH_DB_USER:-admin}
       MS_AUTH_DB_PASS: ${MS_AUTH_DB_PASS:-admin}
       MS_AUTH_DB_NAME: ${MS_AUTH_DB_NAME:-db_auth}
+      MS_POLITICAS_DB_USER: ${MS_POLITICAS_DB_USER:-politicas_user}
+      MS_POLITICAS_DB_PASS: ${MS_POLITICAS_DB_PASS:-politicas_pass}
+      MS_POLITICAS_DB_NAME: ${MS_POLITICAS_DB_NAME:-db_politicas}
     ports:
       - "5432:5432"
     volumes:
@@ -132,6 +135,27 @@ services:
     networks:
       - vacaciones-net
 
+  ms-politicas:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ms-politicas
+    container_name: ms-politicas
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${MS_POLITICAS_DB_NAME:-db_politicas}
+      DB_USER: ${MS_POLITICAS_DB_USER:-politicas_user}
+      DB_PASS: ${MS_POLITICAS_DB_PASS:-politicas_pass}
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+    ports:
+      - "8081:8081"
+    networks:
+      - vacaciones-net
+
   mcsv-auth:
     build:
       context: .
@@ -157,6 +181,7 @@ services:
     depends_on:
       - ms-solicitud
       - ms-aprobaciones
+      - ms-politicas
     ports:
       - "8080:8080"
     networks:

@@ -1,11 +1,14 @@
 package com.vacaciones.politicas.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,11 +16,15 @@ import com.vacaciones.politicas.dto.request.PoliticaRequestDto;
 import com.vacaciones.politicas.dto.response.PoliticaResponseDto;
 import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.exception.ResourceNotFoundException;
+import com.vacaciones.politicas.messaging.event.PoliticaActualizadaEvent;
 import com.vacaciones.politicas.repository.PoliticaRepository;
+import jakarta.persistence.EntityManager;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +34,12 @@ class PoliticaServiceTest {
 
     @Mock
     PoliticaRepository politicaRepository;
+
+    @Mock
+    EntityManager entityManager;
+
+    @Mock
+    Emitter<PoliticaActualizadaEvent> politicaActualizadaEmitter;
 
     @InjectMocks
     PoliticaService politicaService;
@@ -44,6 +57,7 @@ class PoliticaServiceTest {
             entity.setUpdatedAt(updatedAt);
             return null;
         }).when(politicaRepository).persist(any(PoliticaEntity.class));
+        when(politicaRepository.getEntityManager()).thenReturn(entityManager);
 
         PoliticaResponseDto response = politicaService.save(request);
 
@@ -53,6 +67,47 @@ class PoliticaServiceTest {
         assertEquals("ANUAL", response.tipoVacacion());
         assertEquals("15-08-2026 10:00:00", response.createdAt());
         verify(politicaRepository).persist(any(PoliticaEntity.class));
+    }
+
+    @Test
+    void shouldNotEmitEventWhenPersistFailsOnSave() {
+        PoliticaRequestDto request = buildRequestDto();
+
+        doThrow(new RuntimeException("fallo de persistencia"))
+                .when(politicaRepository).persist(any(PoliticaEntity.class));
+
+        assertThrows(RuntimeException.class, () -> politicaService.save(request));
+
+        verify(politicaActualizadaEmitter, never()).send(any(PoliticaActualizadaEvent.class));
+    }
+
+    @Test
+    void shouldEmitPoliticaActualizadaEventWhenSaveSucceeds() {
+        LocalDateTime antes = LocalDateTime.now();
+        PoliticaRequestDto request = buildRequestDto();
+
+        doAnswer(invocation -> {
+            PoliticaEntity entity = invocation.getArgument(0);
+            entity.setId(1L);
+            return null;
+        }).when(politicaRepository).persist(any(PoliticaEntity.class));
+        when(politicaRepository.getEntityManager()).thenReturn(entityManager);
+
+        politicaService.save(request);
+        LocalDateTime despues = LocalDateTime.now();
+
+        ArgumentCaptor<PoliticaActualizadaEvent> captor = ArgumentCaptor.forClass(PoliticaActualizadaEvent.class);
+        verify(politicaActualizadaEmitter).send((PoliticaActualizadaEvent) captor.capture());
+
+        PoliticaActualizadaEvent evento = captor.getValue();
+        assertEquals(1L, evento.politicaId());
+        assertEquals("Vacaciones anuales", evento.nombre());
+        assertEquals("ANUAL", evento.tipoVacacion());
+        assertEquals(15, evento.diasBaseAnio());
+        assertEquals(Boolean.TRUE, evento.activa());
+        assertNotNull(evento.fechaEvento());
+        assertFalse(evento.fechaEvento().isBefore(antes));
+        assertFalse(evento.fechaEvento().isAfter(despues));
     }
 
     @Test
@@ -70,6 +125,7 @@ class PoliticaServiceTest {
                 Boolean.TRUE);
 
         when(politicaRepository.findById(1L)).thenReturn(existing);
+        when(politicaRepository.getEntityManager()).thenReturn(entityManager);
 
         PoliticaResponseDto response = politicaService.update(1L, request);
 
@@ -80,6 +136,43 @@ class PoliticaServiceTest {
         assertEquals(12, response.antiguedadMinimaMeses());
         assertEquals(40, response.maxDiasAcumulables());
         verify(politicaRepository).findById(1L);
+    }
+
+    @Test
+    void shouldEmitPoliticaActualizadaEventWithUpdatedDataWhenUpdateSucceeds() {
+        PoliticaEntity existing = buildEntity(1L, "Vacaciones base", "ANUAL", 15, 0, true, 30, true);
+        PoliticaRequestDto request = new PoliticaRequestDto(
+                "Vacaciones premium",
+                "ANUAL",
+                20,
+                12,
+                Boolean.TRUE,
+                40,
+                Boolean.FALSE);
+
+        when(politicaRepository.findById(1L)).thenReturn(existing);
+        when(politicaRepository.getEntityManager()).thenReturn(entityManager);
+
+        politicaService.update(1L, request);
+
+        ArgumentCaptor<PoliticaActualizadaEvent> captor = ArgumentCaptor.forClass(PoliticaActualizadaEvent.class);
+        verify(politicaActualizadaEmitter).send((PoliticaActualizadaEvent) captor.capture());
+
+        PoliticaActualizadaEvent evento = captor.getValue();
+        assertEquals(1L, evento.politicaId());
+        assertEquals("Vacaciones premium", evento.nombre());
+        assertEquals(20, evento.diasBaseAnio());
+        assertEquals(Boolean.FALSE, evento.activa());
+    }
+
+    @Test
+    void shouldNotEmitEventWhenUpdateFailsBecausePoliticaDoesNotExist() {
+        PoliticaRequestDto request = buildRequestDto();
+        when(politicaRepository.findById(99L)).thenReturn(null);
+
+        assertThrows(ResourceNotFoundException.class, () -> politicaService.update(99L, request));
+
+        verify(politicaActualizadaEmitter, never()).send(any(PoliticaActualizadaEvent.class));
     }
 
     @Test

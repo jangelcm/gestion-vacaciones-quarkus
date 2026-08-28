@@ -1,0 +1,3 @@
+# Scripts ejecutados dentro de contenedores Linux: siempre LF,
+# independiente de core.autocrlf en checkouts de Windows.
+*.sh text eol=lf

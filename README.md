@@ -6,6 +6,7 @@ Este proyecto implementa arquitectura de microservicios con Quarkus, API Gateway
 
 - `ms-solicitud`: gestión de solicitudes.
 - `ms-aprobaciones`: gestión de aprobaciones.
+- `ms-politicas`: gestión de políticas de vacaciones y saldos de días.
 - `mcsv-gateway`: API Gateway y enrutamiento.
 - `mcsv-auth`: microservicio de autenticación (preparado para etapa posterior).
 - `jovaca`: frontend Angular.
@@ -62,6 +63,7 @@ mvn quarkus:dev
 Repite el mismo flujo para:
 
 - `ms-aprobaciones`
+- `ms-politicas`
 - `mcsv-gateway`
 - `mcsv-auth` (opcional por ahora)
 
@@ -74,6 +76,7 @@ Endpoints directos útiles:
 
 - ms-solicitud: http://localhost:8082
 - ms-aprobaciones: http://localhost:8083
+- ms-politicas: http://localhost:8081
 - Kafka UI: http://localhost:8088
 - Frontend Angular (jovaca): http://localhost:4200
 
@@ -92,3 +95,9 @@ Base de aprobaciones:
 - Base: `db_aprobaciones`
 - Usuario: `aprobaciones_user`
 - Contraseña: `aprobaciones_pass`
+
+Base de políticas:
+
+- Base: `db_politicas`
+- Usuario: `politicas_user`
+- Contraseña: `politicas_pass`

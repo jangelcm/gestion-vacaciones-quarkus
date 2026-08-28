@@ -5,25 +5,25 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.vacaciones.politicas.entity.MovimientoSaldoEntity;
 import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
 import com.vacaciones.politicas.exception.BadRequestException;
 import com.vacaciones.politicas.exception.ResourceNotFoundException;
 import com.vacaciones.politicas.exception.RuntimeCustomException;
-import com.vacaciones.politicas.repository.MovimientoSaldoRepository;
+import com.vacaciones.politicas.messaging.event.DiasDisponiblesActualizadosEvent;
 import com.vacaciones.politicas.repository.PoliticaRepository;
 import com.vacaciones.politicas.repository.SaldoDiasRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -38,10 +38,16 @@ class SaldoDiasServiceTest {
     SaldoDiasRepository saldoDiasRepository;
 
     @Mock
-    MovimientoSaldoRepository movimientoSaldoRepository;
+    PoliticaRepository politicaRepository;
 
     @Mock
-    PoliticaRepository politicaRepository;
+    SaldoDiasWriteOperations saldoDiasWriteOperations;
+
+    @Mock
+    EntityManager entityManager;
+
+    @Mock
+    Emitter<DiasDisponiblesActualizadosEvent> emitter;
 
     @InjectMocks
     SaldoDiasService saldoDiasService;
@@ -61,7 +67,7 @@ class SaldoDiasServiceTest {
 
         when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
         when(politicaRepository.findById(10L)).thenReturn(politica);
-        doNothing().when(saldoDiasRepository).persist(any(SaldoDiasEntity.class));
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
         saldoDiasService.asignarPolitica(1001L, 10L);
 
@@ -78,17 +84,55 @@ class SaldoDiasServiceTest {
     }
 
     @Test
+    void shouldPublishDiasDisponiblesActualizadosWithAsignacionMotivoWhenAsignarPoliticaSucceeds() {
+        PoliticaEntity politica = PoliticaEntity.builder()
+                .id(10L)
+                .nombre("Vacaciones anuales")
+                .diasBaseAnio(15)
+                .activa(Boolean.TRUE)
+                .build();
+
+        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
+        when(politicaRepository.findById(10L)).thenReturn(politica);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        saldoDiasService.asignarPolitica(1001L, 10L);
+
+        ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
+                ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
+        verify(emitter).send((DiasDisponiblesActualizadosEvent) captor.capture());
+
+        DiasDisponiblesActualizadosEvent evento = captor.getValue();
+        assertEquals(1001L, evento.colaboradorId());
+        assertEquals(new BigDecimal("15.0"), evento.diasDisponibles());
+        assertEquals(new BigDecimal("0.0"), evento.diasUsados());
+        assertEquals("ASIGNACION_POLITICA", evento.motivoActualizacion());
+        assertNotNull(evento.fechaEvento());
+    }
+
+    @Test
+    void shouldNotPublishWhenAsignarPoliticaFailsBecausePoliticaDoesNotExist() {
+        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
+        when(politicaRepository.findById(99L)).thenReturn(null);
+
+        assertThrows(ResourceNotFoundException.class, () -> saldoDiasService.asignarPolitica(1001L, 99L));
+
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
     void shouldRejectAsignarPoliticaWhenColaboradorAlreadyHasAssignedPolicy() {
         when(saldoDiasRepository.findByColaboradorId(1001L))
                 .thenReturn(buildSaldoDias("10.0", "2.0", "1.0"));
 
         RuntimeCustomException thrown = assertThrows(
-            RuntimeCustomException.class,
-            () -> saldoDiasService.asignarPolitica(1001L, 10L));
+                RuntimeCustomException.class,
+                () -> saldoDiasService.asignarPolitica(1001L, 10L));
 
         assertEquals(Response.Status.CONFLICT, thrown.getStatus());
         verify(politicaRepository, never()).findById(any());
         verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
     @Test
@@ -120,85 +164,145 @@ class SaldoDiasServiceTest {
         assertThrows(BadRequestException.class, () -> saldoDiasService.asignarPolitica(1001L, 11L));
 
         verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
     @Test
-    void shouldDescontarDiasAndCreateMovimientoWhenEventoIdIsNew() {
-        SaldoDiasEntity saldoDias = buildSaldoDias("10.0", "2.0", "1.0");
+    void shouldDelegateDescontarDiasToWriteOperations() {
+        saldoDiasService.descontarDias(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-aprobada-1");
 
-        when(movimientoSaldoRepository.existsByEventoId("evt-aprobada-1")).thenReturn(false);
-        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(saldoDias);
-        doNothing().when(movimientoSaldoRepository).persist(any(MovimientoSaldoEntity.class));
-
-        saldoDiasService.descontarDias(1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-aprobada-1");
-
-        assertEquals(new BigDecimal("7.0"), saldoDias.getDiasDisponibles());
-        assertEquals(new BigDecimal("5.0"), saldoDias.getDiasUsados());
-
-        ArgumentCaptor<MovimientoSaldoEntity> movimientoCaptor = ArgumentCaptor.forClass(MovimientoSaldoEntity.class);
-        verify(movimientoSaldoRepository).persist(movimientoCaptor.capture());
-        assertEquals("evt-aprobada-1", movimientoCaptor.getValue().getEventoId());
-        assertEquals(saldoDias.getId(), movimientoCaptor.getValue().getSaldo().getId());
-        assertEquals("APROBACION", movimientoCaptor.getValue().getTipoMovimiento());
+        verify(saldoDiasWriteOperations).ejecutarDescuento(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-aprobada-1");
     }
 
     @Test
-    void shouldDoNothingWhenEventoIdAlreadyExists() {
-        SaldoDiasEntity saldoDias = buildSaldoDias("10.0", "2.0", "1.0");
+    void shouldPublishDiasDisponiblesActualizadosWithDescuentoMotivoWhenDescuentoSucceeds() {
+        SaldoDiasEntity saldo = buildSaldoDias("7.0", "5.0", "1.0");
+        when(saldoDiasWriteOperations.ejecutarDescuento(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-aprobada-1"))
+                .thenReturn(saldo);
 
-        when(movimientoSaldoRepository.existsByEventoId("evt-duplicado-1")).thenReturn(true);
+        saldoDiasService.descontarDias(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-aprobada-1");
 
-        saldoDiasService.descontarDias(1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-duplicado-1");
+        ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
+                ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
+        verify(emitter).send((DiasDisponiblesActualizadosEvent) captor.capture());
 
-        assertEquals(new BigDecimal("10.0"), saldoDias.getDiasDisponibles());
-        assertEquals(new BigDecimal("2.0"), saldoDias.getDiasUsados());
-        verify(saldoDiasRepository, never()).findByColaboradorId(any());
-        verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
-        verify(movimientoSaldoRepository, never()).persist(any(MovimientoSaldoEntity.class));
+        DiasDisponiblesActualizadosEvent evento = captor.getValue();
+        assertEquals(1001L, evento.colaboradorId());
+        assertEquals(new BigDecimal("7.0"), evento.diasDisponibles());
+        assertEquals(new BigDecimal("5.0"), evento.diasUsados());
+        assertEquals("DESCUENTO_SOLICITUD_APROBADA", evento.motivoActualizacion());
+        assertNotNull(evento.fechaEvento());
     }
 
     @Test
-    void shouldDevolverDiasAndCreateMovimientoWhenEventoIdIsNew() {
-        SaldoDiasEntity saldoDias = buildSaldoDias("7.0", "5.0", "1.0");
+    void shouldNotPublishWhenDescuentoIsIdempotentNoOp() {
+        when(saldoDiasWriteOperations.ejecutarDescuento(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-duplicado"))
+                .thenReturn(null);
 
-        when(movimientoSaldoRepository.existsByEventoId("evt-cancelada-1")).thenReturn(false);
-        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(saldoDias);
-        doNothing().when(movimientoSaldoRepository).persist(any(MovimientoSaldoEntity.class));
+        saldoDiasService.descontarDias(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.aprobada", "evt-duplicado");
 
-        saldoDiasService.devolverDias(1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-cancelada-1");
-
-        assertEquals(new BigDecimal("10.0"), saldoDias.getDiasDisponibles());
-        assertEquals(new BigDecimal("2.0"), saldoDias.getDiasUsados());
-
-        ArgumentCaptor<MovimientoSaldoEntity> movimientoCaptor = ArgumentCaptor.forClass(MovimientoSaldoEntity.class);
-        verify(movimientoSaldoRepository).persist(movimientoCaptor.capture());
-        assertEquals("evt-cancelada-1", movimientoCaptor.getValue().getEventoId());
-        assertEquals("CANCELACION", movimientoCaptor.getValue().getTipoMovimiento());
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
     @Test
-    void shouldThrowOptimisticLockExceptionWhenConcurrentUpdateOccurs() {
-        SaldoDiasEntity saldoDias = buildSaldoDias("10.0", "2.0", "1.0");
+    void shouldNotPublishWhenDescuentoFails() {
+        when(saldoDiasWriteOperations.ejecutarDescuento(any(), any(), any(), any(), any()))
+                .thenThrow(new ResourceNotFoundException("Saldo no encontrado"));
 
-        when(movimientoSaldoRepository.existsByEventoId("evt-concurrente-1")).thenReturn(false);
-        when(movimientoSaldoRepository.existsByEventoId("evt-concurrente-2")).thenReturn(false);
-        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(saldoDias);
-        doNothing().when(movimientoSaldoRepository).persist(any(MovimientoSaldoEntity.class));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> saldoDiasService.descontarDias(
+                        9999L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-sin-saldo"));
+
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
+    void shouldRetryOnceWhenOptimisticLockExceptionOccursOnDescuento() {
+        SaldoDiasEntity saldo = buildSaldoDias("8.0", "4.0", "1.0");
         doThrow(new OptimisticLockException("conflicto de version"))
-                .when(saldoDiasRepository).persist(eq(saldoDias));
+                .doReturn(saldo)
+                .when(saldoDiasWriteOperations)
+                .ejecutarDescuento(1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-concurrente-1");
 
-        saldoDiasService.descontarDias(1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-concurrente-1");
+        saldoDiasService.descontarDias(
+                1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-concurrente-1");
+
+        verify(saldoDiasWriteOperations, times(2)).ejecutarDescuento(
+                1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-concurrente-1");
+        verify(emitter).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
+    void shouldPropagateOptimisticLockExceptionAfterRetryOnDescuento() {
+        doThrow(new OptimisticLockException("conflicto de version"))
+                .when(saldoDiasWriteOperations)
+                .ejecutarDescuento(1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-lock-fail");
 
         assertThrows(
                 OptimisticLockException.class,
                 () -> saldoDiasService.descontarDias(
-                        1001L,
-                        9002L,
-                        new BigDecimal("1.0"),
-                        "solicitud.aprobada",
-                        "evt-concurrente-2"));
+                        1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-lock-fail"));
 
-        verify(movimientoSaldoRepository, times(1)).persist(any(MovimientoSaldoEntity.class));
+        verify(saldoDiasWriteOperations, times(2)).ejecutarDescuento(
+                1001L, 9001L, new BigDecimal("2.0"), "solicitud.aprobada", "evt-lock-fail");
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
+    void shouldDelegateDevolverDiasToWriteOperations() {
+        saldoDiasService.devolverDias(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-cancelada-1");
+
+        verify(saldoDiasWriteOperations).ejecutarDevolucion(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-cancelada-1");
+    }
+
+    @Test
+    void shouldPublishDiasDisponiblesActualizadosWithDevolucionMotivoWhenDevolucionSucceeds() {
+        SaldoDiasEntity saldo = buildSaldoDias("10.0", "2.0", "1.0");
+        when(saldoDiasWriteOperations.ejecutarDevolucion(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-cancelada-1"))
+                .thenReturn(saldo);
+
+        saldoDiasService.devolverDias(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-cancelada-1");
+
+        ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
+                ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
+        verify(emitter).send((DiasDisponiblesActualizadosEvent) captor.capture());
+        assertEquals("DEVOLUCION_SOLICITUD_CANCELADA", captor.getValue().motivoActualizacion());
+    }
+
+    @Test
+    void shouldNotPublishWhenDevolucionIsIdempotentNoOp() {
+        when(saldoDiasWriteOperations.ejecutarDevolucion(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-duplicado"))
+                .thenReturn(null);
+
+        saldoDiasService.devolverDias(
+                1001L, 9001L, new BigDecimal("3.0"), "solicitud.cancelada", "evt-duplicado");
+
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
+    void shouldNotPublishWhenDevolucionFails() {
+        when(saldoDiasWriteOperations.ejecutarDevolucion(any(), any(), any(), any(), any()))
+                .thenThrow(new ResourceNotFoundException("Saldo no encontrado"));
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> saldoDiasService.devolverDias(
+                        9999L, 9001L, new BigDecimal("2.0"), "solicitud.cancelada", "evt-sin-saldo"));
+
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
     private SaldoDiasEntity buildSaldoDias(String diasDisponibles, String diasUsados, String diasAcumulados) {

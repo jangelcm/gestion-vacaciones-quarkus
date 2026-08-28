@@ -69,7 +69,7 @@
     "path": "/api/v1/politicas",
     "targets": [
       {
-        "host": "localhost",
+        "host": "ms-politicas",
         "port": 8081
       }
     ],
