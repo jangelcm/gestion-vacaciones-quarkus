@@ -32,6 +32,8 @@
         <module>mcsv-auth</module>
         <!-- API Gateway -->
         <module>mcsv-gateway</module>
+        <!-- Notificaciones (email, websocket, recordatorios) -->
+        <module>ms-notificaciones</module>
         <!-- Agregar más módulos conforme los vayan creando -->
         <!-- <module>ms-consultas</module> -->
     </modules>
