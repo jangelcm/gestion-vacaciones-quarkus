@@ -169,6 +169,11 @@ services:
     environment:
       QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGO_INITDB_ROOT_USERNAME:-mongo_user}:${MONGO_INITDB_ROOT_PASSWORD:-mongo_pass}@mongodb:27017/notificaciones_db?authSource=admin
       KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@vacaciones.local}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
     ports:
       - "8084:8084"
     networks:

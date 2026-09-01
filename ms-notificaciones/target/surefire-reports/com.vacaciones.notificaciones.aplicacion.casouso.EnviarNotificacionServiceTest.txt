@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.vacaciones.notificaciones.aplicacion.casouso.EnviarNotificacionServiceTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.231 s -- in com.vacaciones.notificaciones.aplicacion.casouso.EnviarNotificacionServiceTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.259 s -- in com.vacaciones.notificaciones.aplicacion.casouso.EnviarNotificacionServiceTest

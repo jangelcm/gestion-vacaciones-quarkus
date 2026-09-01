@@ -19,11 +19,11 @@ public class NotificacionSocket {
 
     @OnOpen
     public void onOpen(@PathParam("colaboradorId") String colaboradorId) {
-        registro.registrar(Long.valueOf(colaboradorId), conexion);
+        registro.registrar(Long.valueOf(colaboradorId), conexion.id());
     }
 
     @OnClose
     public void onClose(@PathParam("colaboradorId") String colaboradorId) {
-        registro.remover(Long.valueOf(colaboradorId), conexion);
+        registro.remover(Long.valueOf(colaboradorId), conexion.id());
     }
 }

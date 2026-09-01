@@ -1,0 +1,19 @@
+# Variables de entorno / secretos locales
+.env
+.env.local
+
+# Maven
+**/target/
+
+# Node / Angular
+**/node_modules/
+**/dist/
+**/.angular/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
