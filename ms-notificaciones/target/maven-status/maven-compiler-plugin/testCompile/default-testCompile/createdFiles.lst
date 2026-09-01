@@ -1,0 +1,14 @@
+com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\SolicitudCreadaConsumerTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\out\persistence\MongoNotificacionRepositoryAdapterTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\SolicitudAprobadaConsumerTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\out\mail\QuarkusMailerAdapterTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\out\websocket\WebSocketNotificadorAdapterTest.class
+com\vacaciones\notificaciones\aplicacion\casouso\EnviarNotificacionServiceTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\in\rest\NotificacionResourceTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\SolicitudCanceladaConsumerTest.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\SolicitudRechazadaConsumerTest.class
+com\vacaciones\notificaciones\dominio\model\NotificacionTest.class
+com\vacaciones\notificaciones\aplicacion\casouso\ConsultarHistorialServiceTest.class
+com\vacaciones\notificaciones\infraestructura\exception\ExceptionMapperTest.class
+com\vacaciones\notificaciones\testsupport\EnviarNotificacionUseCaseMock.class
+com\vacaciones\notificaciones\dominio\model\DestinatarioTest.class
