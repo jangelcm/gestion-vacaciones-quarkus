@@ -156,6 +156,24 @@ services:
     networks:
       - vacaciones-net
 
+  ms-notificaciones:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ms-notificaciones
+    container_name: ms-notificaciones
+    depends_on:
+      mongodb:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGO_INITDB_ROOT_USERNAME:-mongo_user}:${MONGO_INITDB_ROOT_PASSWORD:-mongo_pass}@mongodb:27017/notificaciones_db?authSource=admin
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+    ports:
+      - "8084:8084"
+    networks:
+      - vacaciones-net
+
   mcsv-auth:
     build:
       context: .
@@ -182,6 +200,7 @@ services:
       - ms-solicitud
       - ms-aprobaciones
       - ms-politicas
+      - ms-notificaciones
     ports:
       - "8080:8080"
     networks:

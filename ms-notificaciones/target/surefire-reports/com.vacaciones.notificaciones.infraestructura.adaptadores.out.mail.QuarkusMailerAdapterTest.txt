@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.vacaciones.notificaciones.infraestructura.adaptadores.out.mail.QuarkusMailerAdapterTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 s -- in com.vacaciones.notificaciones.infraestructura.adaptadores.out.mail.QuarkusMailerAdapterTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in com.vacaciones.notificaciones.infraestructura.adaptadores.out.mail.QuarkusMailerAdapterTest

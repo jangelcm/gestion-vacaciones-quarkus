@@ -52,7 +52,7 @@ class SolicitudCreadaConsumerTest {
 
         Notificacion notificacion = captor.getValue();
         assertEquals("evt-1", notificacion.getEventoId());
-        assertEquals(TipoNotificacion.EMAIL, notificacion.getTipo());
+        assertEquals(TipoNotificacion.RECORDATORIO, notificacion.getTipo());
         assertEquals(
                 new Destinatario(1001L, "aprobador@empresa.com", "Luis Gomez"),
                 notificacion.getDestinatario());

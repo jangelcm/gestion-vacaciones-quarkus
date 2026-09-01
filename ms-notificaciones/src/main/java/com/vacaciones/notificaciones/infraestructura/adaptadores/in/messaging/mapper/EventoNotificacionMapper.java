@@ -45,7 +45,7 @@ public class EventoNotificacionMapper {
 
         return new Notificacion(
                 evento.eventoId(),
-                TipoNotificacion.EMAIL,
+                TipoNotificacion.RECORDATORIO,
                 destinatario,
                 asunto,
                 cuerpo,
