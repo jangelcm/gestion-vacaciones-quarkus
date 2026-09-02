@@ -1,0 +1,67 @@
+@baseUrl = http://localhost:8080
+@directUrl = http://localhost:8084
+@colaboradorId = 1001
+
+### Salud
+GET {{baseUrl}}/q/health
+
+### Enviar notificacion de prueba - EMAIL
+POST {{baseUrl}}/notificaciones/test
+Content-Type: application/json
+
+{
+  "colaboradorId": 1001,
+  "email": "colaborador@empresa.com",
+  "nombre": "Ana Perez",
+  "tipo": "EMAIL",
+  "asunto": "Prueba manual EMAIL",
+  "cuerpo": "Cuerpo de prueba enviado a mano"
+}
+
+### Enviar notificacion de prueba - WEBSOCKET
+POST {{baseUrl}}/notificaciones/test
+Content-Type: application/json
+
+{
+  "colaboradorId": 1001,
+  "email": "colaborador@empresa.com",
+  "nombre": "Ana Perez",
+  "tipo": "WEBSOCKET",
+  "asunto": "Prueba manual WEBSOCKET",
+  "cuerpo": "Deberia llegar en tiempo real si hay una sesion abierta"
+}
+
+### Enviar notificacion de prueba - RECORDATORIO (email + websocket)
+POST {{baseUrl}}/notificaciones/test
+Content-Type: application/json
+
+{
+  "colaboradorId": 1001,
+  "email": "colaborador@empresa.com",
+  "nombre": "Ana Perez",
+  "tipo": "RECORDATORIO",
+  "asunto": "Prueba manual RECORDATORIO",
+  "cuerpo": "Deberia disparar ambos canales"
+}
+
+### Datos invalidos - tipo desconocido (espera 400)
+POST {{baseUrl}}/notificaciones/test
+Content-Type: application/json
+
+{
+  "colaboradorId": 1001,
+  "email": "colaborador@empresa.com",
+  "nombre": "Ana Perez",
+  "tipo": "SMS",
+  "asunto": "no deberia funcionar",
+  "cuerpo": "tipo invalido"
+}
+
+### Historial por colaborador
+GET {{baseUrl}}/notificaciones/historial/{{colaboradorId}}
+
+### Historial - colaborador sin notificaciones
+GET {{baseUrl}}/notificaciones/historial/9999999
+
+### --- Directo al microservicio (sin pasar por el gateway) ---
+GET {{directUrl}}/notificaciones/historial/{{colaboradorId}}

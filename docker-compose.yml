@@ -157,22 +157,24 @@ services:
     networks:
       - vacaciones-net
 
-  ms-consultas:
+  ms-notificaciones:
     build:
       context: .
-      dockerfile: docker/Dockerfile.ms-consultas
-    container_name: ms-consultas
+      dockerfile: docker/Dockerfile.ms-notificaciones
+    container_name: ms-notificaciones
     depends_on:
       mongodb:
         condition: service_started
       kafka:
         condition: service_healthy
     environment:
-      MONGO_HOST: mongodb
-      MONGO_DB: consultas_db
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-mongo_user}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-mongo_pass}
+      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGO_INITDB_ROOT_USERNAME:-mongo_user}:${MONGO_INITDB_ROOT_PASSWORD:-mongo_pass}@mongodb:27017/notificaciones_db?authSource=admin
       KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@vacaciones.local}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
     ports:
       - "8084:8084"
     networks:
@@ -204,7 +206,7 @@ services:
       - ms-solicitud
       - ms-aprobaciones
       - ms-politicas
-      - ms-consultas
+      - ms-notificaciones
     ports:
       - "8080:8080"
     networks:

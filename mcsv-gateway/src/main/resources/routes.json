@@ -77,10 +77,10 @@
     "stripPrefix": false
   },
   {
-    "path": "/api/v1/consultas",
+    "path": "/notificaciones",
     "targets": [
       {
-        "host": "ms-consultas",
+        "host": "ms-notificaciones",
         "port": 8084
       }
     ],

@@ -16,7 +16,7 @@ import java.util.List;
 public class ValidacionService {
 
     private static final String SALDO_INSUFICIENTE = "Saldo insuficiente para la solicitud";
-    private static final String SALDO_NO_ENCONTRADO = "No existe saldo de vacaciones para el colaborador";
+    private static final String SALDO_NO_ENCONTRADO = "No se encontro saldo de dias para el colaborador";
 
     private final SaldoDiasRepository saldoDiasRepository;
     private final ReglaEspecialRepository reglaEspecialRepository;
@@ -59,7 +59,7 @@ public class ValidacionService {
     }
 
     private long calcularDiasAdicionales(SaldoDiasEntity saldoDias, Integer antiguedadMeses) {
-        if (saldoDias == null || saldoDias.getPolitica() == null) {
+        if (saldoDias.getPolitica() == null) {
             return 0;
         }
 
