@@ -1,0 +1,22 @@
+# Exclude heavy and problematic frontend dependencies from root build context
+jovaca/node_modules
+jovaca/.angular
+
+# Generic node artifacts
+**/node_modules
+**/.npm
+
+# VCS and IDE
+.git
+.gitignore
+.idea
+.vscode
+
+# Build outputs
+**/target
+**/dist
+**/build
+
+# OS / editor artifacts
+**/.DS_Store
+**/Thumbs.db

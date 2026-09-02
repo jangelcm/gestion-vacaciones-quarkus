@@ -35,7 +35,7 @@
         <!-- Notificaciones (email, websocket, recordatorios) -->
         <module>ms-notificaciones</module>
         <!-- Agregar más módulos conforme los vayan creando -->
-        <!-- <module>ms-consultas</module> -->
+        <module>ms-consultas</module>
     </modules>
 
     <dependencyManagement>
