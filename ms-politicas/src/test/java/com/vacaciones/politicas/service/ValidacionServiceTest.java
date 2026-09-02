@@ -86,6 +86,24 @@ class ValidacionServiceTest {
     }
 
     @Test
+    void shouldRejectWithoutThrowingWhenColaboradorHasNoSaldo() {
+        ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
+                9999L,
+                LocalDate.of(2026, 8, 17),
+                LocalDate.of(2026, 8, 21),
+                "ANUAL",
+                12);
+
+        when(saldoDiasRepository.findByColaboradorId(9999L)).thenReturn(null);
+
+        ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
+
+        assertFalse(response.aprobado());
+        assertEquals(5, response.diasSolicitados());
+        assertEquals("No se encontro saldo de dias para el colaborador", response.motivoRechazo());
+    }
+
+    @Test
     void shouldApplySpecialRuleWhenSeniorityConditionMatches() {
         PoliticaEntity politica = buildPolitica();
         SaldoDiasEntity saldo = buildSaldoDias(1003L, politica, "5.0");
