@@ -10,6 +10,16 @@
         <module name="mcsv-gateway" />
         <module name="common-dto" />
         <module name="ms-solicitud" />
+        <module name="ms-consultas" />
+      </profile>
+      <profile name="Annotation profile for ms-politicas" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+        </processorPath>
+        <module name="ms-politicas" />
       </profile>
       <profile name="Annotation profile for Gestión de vacaciones - José Chavez | Alexander Moreno" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -28,6 +38,8 @@
       <module name="mcsv-auth" options="-parameters" />
       <module name="mcsv-gateway" options="-parameters" />
       <module name="ms-aprobaciones" options="-parameters" />
+      <module name="ms-consultas" options="-parameters" />
+      <module name="ms-politicas" options="-parameters" />
       <module name="ms-solicitud" options="-parameters" />
     </option>
   </component>

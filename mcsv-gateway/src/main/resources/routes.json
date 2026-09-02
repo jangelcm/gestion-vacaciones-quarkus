@@ -77,6 +77,17 @@
     "stripPrefix": false
   },
   {
+    "path": "/api/v1/consultas",
+    "targets": [
+      {
+        "host": "ms-consultas",
+        "port": 8084
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
     "path": "/auth",
     "targets": [
       {
