@@ -97,5 +97,27 @@
     ],
     "requiresJwt": false,
     "stripPrefix": false
+  },
+  {
+    "path": "/rols",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/users",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
   }
 ]

@@ -46,5 +46,13 @@ public class SolicitudResource {
                 .map(SolicitudResponse::fromDomain)
                 .collect(Collectors.toList());
     }
+
+    @GET
+    public List<SolicitudResponse> listarTodas() {
+        return solicitudUseCase.listarTodas()
+                .stream()
+                .map(SolicitudResponse::fromDomain)
+                .collect(Collectors.toList());
+    }
 }
 

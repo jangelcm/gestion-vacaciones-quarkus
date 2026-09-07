@@ -1,6 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SolicitudesService } from '../../services/solicitudes.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Solicitud } from '../../models/solicitud.model';
 
 @Component({
@@ -10,22 +8,10 @@ import { Solicitud } from '../../models/solicitud.model';
   templateUrl: './detalle.component.html',
   styleUrl: './detalle.component.css'
 })
-export class DetalleComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private svc = inject(SolicitudesService);
-  private router = inject(Router);
-
-  solicitud = signal<Solicitud | null>(null);
-  loading = signal(true);
-  error = signal<string | null>(null);
-
-  ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.svc.detalle(id).subscribe({
-      next: (data) => { this.solicitud.set(data); this.loading.set(false); },
-      error: () => { this.error.set('No se pudo cargar el detalle de la solicitud'); this.loading.set(false); }
-    });
-  }
+export class DetalleComponent {
+  @Input({ required: true }) solicitud!: Solicitud;
+  @Input() nombreColaborador: string | null = null;
+  @Output() cerrar = new EventEmitter<void>();
 
   badgeClass(estado: string): string {
     const map: Record<string, string> = {
@@ -34,9 +20,5 @@ export class DetalleComponent implements OnInit {
       RECHAZADA: 'badge-rechazada'
     };
     return map[estado] ?? '';
-  }
-
-  volver(): void {
-    this.router.navigate(['/solicitudes']);
   }
 }

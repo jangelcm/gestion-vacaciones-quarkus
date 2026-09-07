@@ -7,7 +7,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -35,16 +34,18 @@ public class AuthResource {
 
     @POST
     @Path("/register")
-    @Transactional
     public Response register(RegisterRequest req) {
         String username = req.username;
         String password = req.password;
-        //String roles = req.roles != null ? req.roles : "USER";
         if (userRepository.findByUsername(username) != null) {
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
-        User user = authService.register(username, password, "");
-        return Response.ok().entity(user).build();
+        try {
+            User user = authService.register(username, password, req.rol);
+            return Response.ok().entity(user).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
     }
 
     @POST

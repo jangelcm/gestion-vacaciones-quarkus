@@ -18,5 +18,7 @@ public interface SolicitudUseCase {
 
     List<Solicitud> listarPorColaborador(Long colaboradorId);
 
+    List<Solicitud> listarTodas();
+
     void actualizarEstado(Long id, EstadoSolicitud nuevoEstado);
 }

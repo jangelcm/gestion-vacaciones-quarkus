@@ -45,6 +45,14 @@ public class SolicitudRepositoryAdapter implements SolicitudRepositoryPort {
     }
 
     @Override
+    public List<Solicitud> listarTodas() {
+        return panacheRepository.listAll()
+                .stream()
+                .map(SolicitudEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void actualizarEstado(Long id, EstadoSolicitud nuevoEstado) {
         panacheRepository.findByIdOptional(id)
                 .ifPresent(entity -> entity.setEstado(nuevoEstado));

@@ -1,48 +1,26 @@
-<div class="container">
-  @if (loading()) {
-    <div class="state-msg">Cargando detalle...</div>
-  }
+<div class="status-row">
+  <span [class]="'badge ' + badgeClass(solicitud.estado)">{{ solicitud.estado }}</span>
+</div>
 
-  @if (error()) {
-    <div class="state-msg error-msg">{{ error() }}</div>
-  }
+<div class="card-body">
+  <div class="info-row">
+    <span class="info-label">ID Solicitud</span>
+    <span class="info-value">{{ solicitud.id }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Colaborador</span>
+    <span class="info-value">{{ nombreColaborador ?? ('#' + solicitud.colaboradorId) }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Fecha de Inicio</span>
+    <span class="info-value">{{ solicitud.fechaInicio }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Fecha de Fin</span>
+    <span class="info-value">{{ solicitud.fechaFin }}</span>
+  </div>
+</div>
 
-  @if (solicitud(); as s) {
-    <div class="detail-card">
-      <div class="card-header">
-        <div>
-          <p class="card-subtitle">Solicitud de Vacaciones</p>
-          <h2 class="card-title">Detalle #{{ s.id }}</h2>
-        </div>
-        <span [class]="'badge ' + badgeClass(s.estado)">{{ s.estado }}</span>
-      </div>
-
-      <div class="card-body">
-        <div class="info-row">
-          <span class="info-label">ID Solicitud</span>
-          <span class="info-value">{{ s.id }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Colaborador ID</span>
-          <span class="info-value">{{ s.colaboradorId }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Fecha de Inicio</span>
-          <span class="info-value">{{ s.fechaInicio }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Fecha de Fin</span>
-          <span class="info-value">{{ s.fechaFin }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Estado</span>
-          <span [class]="'badge ' + badgeClass(s.estado)">{{ s.estado }}</span>
-        </div>
-      </div>
-
-      <div class="card-footer">
-        <button class="btn btn-back" (click)="volver()">← Volver al listado</button>
-      </div>
-    </div>
-  }
+<div class="card-footer">
+  <button class="btn btn-back" (click)="cerrar.emit()">Cerrar</button>
 </div>

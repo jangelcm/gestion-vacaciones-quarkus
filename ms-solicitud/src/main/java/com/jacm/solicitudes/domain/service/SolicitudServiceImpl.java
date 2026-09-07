@@ -63,6 +63,11 @@ public class SolicitudServiceImpl implements SolicitudService {
     }
 
     @Override
+    public List<Solicitud> listarTodas() {
+        return solicitudRepositoryPort.listarTodas();
+    }
+
+    @Override
     public void actualizarEstado(Long id, EstadoSolicitud nuevoEstado) {
         solicitudRepositoryPort.actualizarEstado(id, nuevoEstado);
     }

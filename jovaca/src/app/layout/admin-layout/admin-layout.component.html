@@ -1,0 +1,46 @@
+<div class="shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand">Portal de Vacaciones</div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">Vacaciones</div>
+            <a routerLink="/solicitudes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+                class="nav-item">
+                Mis Solicitudes
+            </a>
+
+            @if (auth.hasRole('Administrador')) {
+            <div class="nav-section-title">Administración</div>
+            <a routerLink="/aprobaciones" routerLinkActive="active" class="nav-item">
+                Aprobaciones
+            </a>
+            <a routerLink="/usuarios" routerLinkActive="active" class="nav-item">
+                Usuarios
+            </a>
+
+            <div class="nav-section-title">Próximamente</div>
+            <span class="nav-item nav-item-disabled">Políticas y Saldos</span>
+            <span class="nav-item nav-item-disabled">Calendario</span>
+            <span class="nav-item nav-item-disabled">Notificaciones</span>
+            <span class="nav-item nav-item-disabled">Reportes</span>
+            }
+        </nav>
+    </aside>
+
+    <div class="content-area">
+        <header class="topbar">
+            <div></div>
+            <div class="topbar-user">
+                <div class="user-info">
+                    <span class="user-name">{{ auth.currentUser()?.username }}</span>
+                    <span class="user-roles">{{ auth.currentUser()?.roles?.join(', ') }}</span>
+                </div>
+                <button class="btn-logout" (click)="cerrarSesion()">Cerrar sesión</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <router-outlet />
+        </main>
+    </div>
+</div>

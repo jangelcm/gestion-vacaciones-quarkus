@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.acme.messaging.event.UsuarioRegistradoEvent;
+import org.acme.models.Rols;
 import org.acme.models.RolsUser;
 import org.acme.models.User;
 import org.acme.repository.RolUserRepository;
@@ -30,6 +31,7 @@ import jakarta.transaction.Transactional;
 
 public class AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final String ROL_POR_DEFECTO = "Colaborador";
     @ConfigProperty(name = "jwt.issuer")
     String jwtIssuer;
 
@@ -50,13 +52,32 @@ public class AuthService {
     Emitter<UsuarioRegistradoEvent> usuarioRegistradoEmitter;
 
     @Transactional
-    public User register(String username, String password, String roles) {
+    public User register(String username, String password, String rol) {
         User user = new User();
         user.username = username;
         user.passwordHash = hashPassword(password);
         userRepository.persist(user);
+
+        asignarRol(user, rol);
+
         usuarioRegistradoEmitter.send(new UsuarioRegistradoEvent(user.id, user.username, user.email));
         return user;
+    }
+
+    private void asignarRol(User user, String rolSolicitado) {
+        String descripcion = (rolSolicitado == null || rolSolicitado.isBlank())
+                ? ROL_POR_DEFECTO
+                : rolSolicitado.trim();
+
+        Rols rol = rolsRepository.findByDescripcion(descripcion);
+        if (rol == null) {
+            throw new IllegalArgumentException("Rol no valido: " + descripcion);
+        }
+
+        RolsUser rolsUser = new RolsUser();
+        rolsUser.user = user;
+        rolsUser.rol = rol;
+        rolUserRepository.persist(rolsUser);
     }
 
     public User validateCredentials(String username, String password) {
@@ -91,6 +112,7 @@ public class AuthService {
                 .subject(user.username)
                 .upn(user.username)
                 .groups(rolesSet)
+                .claim("userId", user.id)
                 .expiresIn(Duration.ofHours(1))
                 .sign();
     }

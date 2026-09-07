@@ -1,0 +1,11 @@
+<div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal-card" [style.max-width]="anchoMax" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ titulo }}</h3>
+            <button type="button" class="modal-close" (click)="cerrar.emit()" aria-label="Cerrar">×</button>
+        </div>
+        <div class="modal-body">
+            <ng-content />
+        </div>
+    </div>
+</div>

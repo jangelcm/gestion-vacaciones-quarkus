@@ -22,4 +22,8 @@ public class RolsRepository implements PanacheRepositoryBase<Rols, Long> {
                 .setParameter("idUser", idUser)
                 .getResultList();
     }
+
+    public Rols findByDescripcion(String descripcion) {
+        return find("descripcion", descripcion).firstResult();
+    }
 }

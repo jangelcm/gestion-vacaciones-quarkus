@@ -1,0 +1,57 @@
+<div class="container">
+    <div class="header">
+        <h2>Usuarios</h2>
+        <button type="button" class="btn btn-primary" (click)="abrirModal()">+ Nuevo Usuario</button>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando usuarios...
+    </div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (!loading() && !error() && usuarios().length === 0) {
+    <div class="state-msg empty-msg">No hay usuarios registrados todavía.</div>
+    }
+
+    @if (usuarios().length > 0) {
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (u of usuarios(); track u.id) {
+                <tr>
+                    <td class="id-col">#{{ u.id }}</td>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.email || '—' }}</td>
+                    <td>{{ u.telefono || '—' }}</td>
+                    <td>
+                        <span class="badge" [class.badge-activo]="u.isActive" [class.badge-inactivo]="!u.isActive">
+                            {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>
+
+@if (modalAbierto()) {
+<app-modal titulo="Nuevo Usuario" (cerrar)="cerrarModal()">
+    <app-crear-usuario (usuarioCreado)="onUsuarioCreado()" (cancelar)="cerrarModal()" />
+</app-modal>
+}

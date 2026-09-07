@@ -1,20 +1,38 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'solicitudes', pathMatch: 'full' },
   {
-    path: 'solicitudes',
+    path: 'login',
     loadComponent: () =>
-      import('./vacaciones/listado/listado.component').then(m => m.ListadoComponent)
+      import('./auth/login/login.component').then(m => m.LoginComponent)
   },
   {
-    path: 'solicitudes/nueva',
+    path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
-      import('./vacaciones/formulario/formulario.component').then(m => m.FormularioComponent)
+      import('./layout/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      { path: '', redirectTo: 'solicitudes', pathMatch: 'full' },
+      {
+        path: 'solicitudes',
+        loadComponent: () =>
+          import('./vacaciones/listado/listado.component').then(m => m.ListadoComponent)
+      },
+      {
+        path: 'usuarios',
+        canActivate: [roleGuard('Administrador')],
+        loadComponent: () =>
+          import('./admin/usuarios/listado/usuarios-listado.component').then(m => m.UsuariosListadoComponent)
+      },
+      {
+        path: 'aprobaciones',
+        canActivate: [roleGuard('Administrador')],
+        loadComponent: () =>
+          import('./admin/aprobaciones/listado/aprobaciones-listado.component').then(m => m.AprobacionesListadoComponent)
+      }
+    ]
   },
-  {
-    path: 'solicitudes/:id',
-    loadComponent: () =>
-      import('./vacaciones/detalle/detalle.component').then(m => m.DetalleComponent)
-  }
+  { path: '**', redirectTo: '' }
 ];

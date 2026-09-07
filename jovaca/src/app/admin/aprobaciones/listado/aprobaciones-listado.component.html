@@ -1,0 +1,76 @@
+<div class="container">
+    <div class="header">
+        <h2>Solicitudes Pendientes de Aprobación</h2>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando solicitudes pendientes...
+    </div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (!loading() && !error() && pendientes().length === 0) {
+    <div class="state-msg empty-msg">No hay solicitudes pendientes de aprobación.</div>
+    }
+
+    @if (pendientes().length > 0) {
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Solicitud</th>
+                    <th>Colaborador</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (v of pendientes(); track v.aprobacion.id) {
+                <tr>
+                    <td class="id-col">#{{ v.solicitud.id }}</td>
+                    <td>{{ nombreColaborador(v.solicitud.colaboradorId) }}</td>
+                    <td>{{ v.solicitud.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ v.solicitud.fechaFin | date: 'dd/MM/yyyy' }}</td>
+                    <td class="actions-col">
+                        <button class="btn btn-approve" (click)="abrirAprobar(v)">Aprobar</button>
+                        <button class="btn btn-reject" (click)="abrirRechazar(v)">Rechazar</button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>
+
+@if (modalAccion(); as accion) {
+<app-modal [titulo]="accion === 'aprobar' ? 'Aprobar Solicitud' : 'Rechazar Solicitud'" (cerrar)="cerrarModal()">
+    <p class="modal-info">
+        Solicitud #{{ solicitudSeleccionada()?.solicitud?.id }} — Colaborador
+        {{ nombreColaboradorSeleccionado() }}
+    </p>
+
+    <label class="field-label" for="comentario">
+        {{ accion === 'aprobar' ? 'Comentario (opcional)' : 'Motivo del rechazo' }}
+    </label>
+    <textarea id="comentario" [(ngModel)]="comentario" class="input-field" rows="3"
+        [placeholder]="accion === 'aprobar' ? 'Comentario opcional...' : 'Explique el motivo del rechazo'"></textarea>
+
+    @if (accionError()) {
+    <div class="alert alert-error">{{ accionError() }}</div>
+    }
+
+    <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" [class]="accion === 'aprobar' ? 'btn btn-approve' : 'btn btn-reject'"
+            [disabled]="procesando()" (click)="confirmar()">
+            {{ procesando() ? 'Procesando...' : (accion === 'aprobar' ? 'Confirmar aprobación' : 'Confirmar rechazo') }}
+        </button>
+    </div>
+</app-modal>
+}

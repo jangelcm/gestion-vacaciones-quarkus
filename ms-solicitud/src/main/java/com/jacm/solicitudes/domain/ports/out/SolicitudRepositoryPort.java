@@ -19,5 +19,7 @@ public interface SolicitudRepositoryPort {
 
     List<Solicitud> listarPorColaboradorId(String colaboradorId);
 
+    List<Solicitud> listarTodas();
+
     void actualizarEstado(Long id, EstadoSolicitud nuevoEstado);
 }
