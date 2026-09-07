@@ -23,6 +23,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +71,7 @@ class SaldoDiasServiceTest {
         when(politicaRepository.findById(10L)).thenReturn(politica);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        saldoDiasService.asignarPolitica(1001L, 10L);
+        saldoDiasService.asignarPolitica(1001L, 10L, 0);
 
         ArgumentCaptor<SaldoDiasEntity> saldoCaptor = ArgumentCaptor.forClass(SaldoDiasEntity.class);
         verify(saldoDiasRepository).persist(saldoCaptor.capture());
@@ -96,7 +98,7 @@ class SaldoDiasServiceTest {
         when(politicaRepository.findById(10L)).thenReturn(politica);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        saldoDiasService.asignarPolitica(1001L, 10L);
+        saldoDiasService.asignarPolitica(1001L, 10L, null);
 
         ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
                 ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
@@ -115,7 +117,7 @@ class SaldoDiasServiceTest {
         when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
         when(politicaRepository.findById(99L)).thenReturn(null);
 
-        assertThrows(ResourceNotFoundException.class, () -> saldoDiasService.asignarPolitica(1001L, 99L));
+        assertThrows(ResourceNotFoundException.class, () -> saldoDiasService.asignarPolitica(1001L, 99L, 0));
 
         verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
     }
@@ -127,7 +129,7 @@ class SaldoDiasServiceTest {
 
         RuntimeCustomException thrown = assertThrows(
                 RuntimeCustomException.class,
-                () -> saldoDiasService.asignarPolitica(1001L, 10L));
+                () -> saldoDiasService.asignarPolitica(1001L, 10L, 0));
 
         assertEquals(Response.Status.CONFLICT, thrown.getStatus());
         verify(politicaRepository, never()).findById(any());
@@ -140,7 +142,7 @@ class SaldoDiasServiceTest {
         when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
         when(politicaRepository.findById(99L)).thenReturn(null);
 
-        assertThrows(ResourceNotFoundException.class, () -> saldoDiasService.asignarPolitica(1001L, 99L));
+        assertThrows(ResourceNotFoundException.class, () -> saldoDiasService.asignarPolitica(1001L, 99L, 0));
 
         verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
     }
@@ -161,10 +163,177 @@ class SaldoDiasServiceTest {
         when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
         when(politicaRepository.findById(11L)).thenReturn(politicaInactiva);
 
-        assertThrows(BadRequestException.class, () -> saldoDiasService.asignarPolitica(1001L, 11L));
+        assertThrows(BadRequestException.class, () -> saldoDiasService.asignarPolitica(1001L, 11L, 12));
 
         verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
         verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
+    void shouldRejectAsignarPoliticaWhenColaboradorDoesNotMeetAntiguedadMinima() {
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .id(12L)
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .acumulable(Boolean.TRUE)
+                .maxDiasAcumulables(40)
+                .activa(Boolean.TRUE)
+                .build();
+
+        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
+        when(politicaRepository.findById(12L)).thenReturn(politicaPremium);
+
+        assertThrows(BadRequestException.class, () -> saldoDiasService.asignarPolitica(1001L, 12L, 6));
+
+        verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
+        verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
+    }
+
+    @Test
+    void shouldRejectAsignarPoliticaWhenAntiguedadMesesIsNullAndPoliticaRequiresAntiguedad() {
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .id(12L)
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .activa(Boolean.TRUE)
+                .build();
+
+        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
+        when(politicaRepository.findById(12L)).thenReturn(politicaPremium);
+
+        assertThrows(BadRequestException.class, () -> saldoDiasService.asignarPolitica(1001L, 12L, null));
+
+        verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
+    }
+
+    @Test
+    void shouldAllowAsignarPoliticaWhenColaboradorMeetsAntiguedadMinimaExactly() {
+        PoliticaEntity politicaPremium = PoliticaEntity.builder()
+                .id(12L)
+                .nombre("Vacaciones premium")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(20)
+                .antiguedadMinimaMeses(12)
+                .activa(Boolean.TRUE)
+                .build();
+
+        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
+        when(politicaRepository.findById(12L)).thenReturn(politicaPremium);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        saldoDiasService.asignarPolitica(1001L, 12L, 12);
+
+        verify(saldoDiasRepository).persist(any(SaldoDiasEntity.class));
+    }
+
+    @Test
+    void shouldAllowAsignarPoliticaWhenPoliticaHasNoAntiguedadRequirementAndAntiguedadMesesIsNull() {
+        PoliticaEntity politicaSinRequisito = PoliticaEntity.builder()
+                .id(13L)
+                .nombre("Vacaciones base")
+                .tipoVacacion("ANUAL")
+                .diasBaseAnio(15)
+                .antiguedadMinimaMeses(0)
+                .activa(Boolean.TRUE)
+                .build();
+
+        when(saldoDiasRepository.findByColaboradorId(1001L)).thenReturn(null);
+        when(politicaRepository.findById(13L)).thenReturn(politicaSinRequisito);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        saldoDiasService.asignarPolitica(1001L, 13L, null);
+
+        verify(saldoDiasRepository).persist(any(SaldoDiasEntity.class));
+    }
+
+    @Test
+    void shouldAssignDefaultPoliticaWhenColaboradorHasNoSaldo() {
+        PoliticaEntity politicaPorDefecto = PoliticaEntity.builder()
+                .id(20L)
+                .nombre("Politica estandar")
+                .diasBaseAnio(30)
+                .activa(Boolean.TRUE)
+                .esPorDefecto(Boolean.TRUE)
+                .build();
+
+        when(saldoDiasRepository.findByColaboradorId(2001L)).thenReturn(null);
+        when(politicaRepository.findByEsPorDefectoTrue()).thenReturn(politicaPorDefecto);
+        when(politicaRepository.findById(20L)).thenReturn(politicaPorDefecto);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        saldoDiasService.asignarPoliticaPorDefectoSiNoTiene(2001L);
+
+        ArgumentCaptor<SaldoDiasEntity> captor = ArgumentCaptor.forClass(SaldoDiasEntity.class);
+        verify(saldoDiasRepository).persist(captor.capture());
+        assertEquals(new BigDecimal("30.0"), captor.getValue().getDiasDisponibles());
+        assertEquals(20L, captor.getValue().getPolitica().getId());
+    }
+
+    @Test
+    void shouldDoNothingWhenColaboradorAlreadyHasSaldoAssigned() {
+        when(saldoDiasRepository.findByColaboradorId(2001L)).thenReturn(buildSaldoDias("30.0", "0.0", "0.0"));
+
+        saldoDiasService.asignarPoliticaPorDefectoSiNoTiene(2001L);
+
+        verify(politicaRepository, never()).findByEsPorDefectoTrue();
+        verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
+    }
+
+    @Test
+    void shouldThrowWhenNoDefaultPoliticaIsConfigured() {
+        when(saldoDiasRepository.findByColaboradorId(2001L)).thenReturn(null);
+        when(politicaRepository.findByEsPorDefectoTrue()).thenReturn(null);
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> saldoDiasService.asignarPoliticaPorDefectoSiNoTiene(2001L));
+
+        verify(saldoDiasRepository, never()).persist(any(SaldoDiasEntity.class));
+    }
+
+    @Test
+    void shouldPublishDiasActualizadosForEachSuccessfulRenovacion() {
+        SaldoDiasEntity saldo = buildSaldoDias("15.0", "0.0", "8.0");
+
+        when(saldoDiasRepository.findAniversariosAcumulables(8, 15)).thenReturn(List.of(saldo));
+        when(saldoDiasWriteOperations.ejecutarRenovacion(saldo.getId())).thenReturn(saldo);
+
+        saldoDiasService.renovarSaldosAcumulablesDelDia(LocalDate.of(2026, 8, 15));
+
+        verify(saldoDiasWriteOperations).ejecutarRenovacion(saldo.getId());
+
+        ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
+                ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
+        verify(emitter).send((DiasDisponiblesActualizadosEvent) captor.capture());
+        assertEquals("RENOVACION_PERIODO_ACUMULACION", captor.getValue().motivoActualizacion());
+    }
+
+    @Test
+    void shouldContinueProcessingOtherSaldosWhenOneRenovacionFails() {
+        PoliticaEntity politica = PoliticaEntity.builder().id(1L).nombre("Vacaciones anuales").build();
+        SaldoDiasEntity saldoFalla = SaldoDiasEntity.builder()
+                .id(1L).colaboradorId(1001L).politica(politica)
+                .diasDisponibles(new BigDecimal("5.0")).diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0")).version(0).build();
+        SaldoDiasEntity saldoOk = SaldoDiasEntity.builder()
+                .id(2L).colaboradorId(1002L).politica(politica)
+                .diasDisponibles(new BigDecimal("5.0")).diasUsados(new BigDecimal("0.0"))
+                .diasAcumulados(new BigDecimal("0.0")).version(0).build();
+
+        when(saldoDiasRepository.findAniversariosAcumulables(8, 15)).thenReturn(List.of(saldoFalla, saldoOk));
+        when(saldoDiasWriteOperations.ejecutarRenovacion(saldoFalla.getId()))
+                .thenThrow(new RuntimeException("fallo inesperado"));
+        when(saldoDiasWriteOperations.ejecutarRenovacion(saldoOk.getId())).thenReturn(saldoOk);
+
+        saldoDiasService.renovarSaldosAcumulablesDelDia(LocalDate.of(2026, 8, 15));
+
+        verify(saldoDiasWriteOperations).ejecutarRenovacion(saldoFalla.getId());
+        verify(saldoDiasWriteOperations).ejecutarRenovacion(saldoOk.getId());
+        verify(emitter, times(1)).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
     @Test

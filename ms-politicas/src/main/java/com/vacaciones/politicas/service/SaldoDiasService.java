@@ -16,11 +16,13 @@ import jakarta.persistence.OptimisticLockException;
 import jakarta.ws.rs.core.Response;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Supplier;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class SaldoDiasService {
@@ -30,6 +32,9 @@ public class SaldoDiasService {
     static final String MOTIVO_DESCUENTO_SOLICITUD_APROBADA = "DESCUENTO_SOLICITUD_APROBADA";
     static final String MOTIVO_DEVOLUCION_SOLICITUD_CANCELADA = "DEVOLUCION_SOLICITUD_CANCELADA";
     static final String MOTIVO_ASIGNACION_POLITICA = "ASIGNACION_POLITICA";
+    static final String MOTIVO_RENOVACION_PERIODO = "RENOVACION_PERIODO_ACUMULACION";
+
+    private static final Logger LOG = Logger.getLogger(SaldoDiasService.class);
 
     private final SaldoDiasRepository saldoDiasRepository;
     private final PoliticaRepository politicaRepository;
@@ -48,7 +53,7 @@ public class SaldoDiasService {
     }
 
     @Transactional
-    public void asignarPolitica(Long colaboradorId, Long politicaId) {
+    public void asignarPolitica(Long colaboradorId, Long politicaId, Integer antiguedadMeses) {
         SaldoDiasEntity existing = saldoDiasRepository.findByColaboradorId(colaboradorId);
         if (existing != null) {
             throw new RuntimeCustomException(
@@ -65,6 +70,12 @@ public class SaldoDiasService {
             throw new BadRequestException("La politica no esta activa");
         }
 
+        Integer antiguedadRequerida = politica.getAntiguedadMinimaMeses();
+        if (antiguedadRequerida != null && antiguedadRequerida > 0
+                && (antiguedadMeses == null || antiguedadMeses < antiguedadRequerida)) {
+            throw new BadRequestException("El colaborador no cumple la antiguedad minima requerida por la politica");
+        }
+
         SaldoDiasEntity nuevoSaldo = SaldoDiasEntity.builder()
                 .colaboradorId(colaboradorId)
                 .politica(politica)
@@ -76,6 +87,35 @@ public class SaldoDiasService {
         saldoDiasRepository.persist(nuevoSaldo);
         saldoDiasRepository.getEntityManager().flush();
         publicarDiasActualizados(nuevoSaldo, MOTIVO_ASIGNACION_POLITICA);
+    }
+
+    @Transactional
+    public void asignarPoliticaPorDefectoSiNoTiene(Long colaboradorId) {
+        if (saldoDiasRepository.findByColaboradorId(colaboradorId) != null) {
+            return;
+        }
+
+        PoliticaEntity politicaPorDefecto = politicaRepository.findByEsPorDefectoTrue();
+        if (politicaPorDefecto == null) {
+            throw new ResourceNotFoundException("No existe una politica por defecto configurada");
+        }
+
+        asignarPolitica(colaboradorId, politicaPorDefecto.getId(), null);
+    }
+
+    public void renovarSaldosAcumulablesDelDia(LocalDate fecha) {
+        java.util.List<SaldoDiasEntity> saldos =
+                saldoDiasRepository.findAniversariosAcumulables(fecha.getMonthValue(), fecha.getDayOfMonth());
+
+        for (SaldoDiasEntity saldo : saldos) {
+            try {
+                SaldoDiasEntity renovado = saldoDiasWriteOperations.ejecutarRenovacion(saldo.getId());
+                publicarDiasActualizados(renovado, MOTIVO_RENOVACION_PERIODO);
+            } catch (RuntimeException e) {
+                LOG.errorf(e, "Fallo al renovar el saldo del colaborador %d, se continua con el resto",
+                        saldo.getColaboradorId());
+            }
+        }
     }
 
     public java.util.List<SaldoDiasResponseDto> getByPoliticaId(Long politicaId) {

@@ -1,6 +1,7 @@
 package com.vacaciones.politicas.service;
 
 import com.vacaciones.politicas.entity.MovimientoSaldoEntity;
+import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
 import com.vacaciones.politicas.exception.ResourceNotFoundException;
 import com.vacaciones.politicas.repository.MovimientoSaldoRepository;
@@ -97,6 +98,31 @@ public class SaldoDiasWriteOperations {
                 eventoId));
 
         return saldoDias;
+    }
+
+    @Transactional
+    public SaldoDiasEntity ejecutarRenovacion(Long saldoId) {
+        SaldoDiasEntity saldo = saldoDiasRepository.findById(saldoId);
+        if (saldo == null) {
+            throw new ResourceNotFoundException("Saldo no encontrado para renovacion");
+        }
+
+        PoliticaEntity politica = saldo.getPolitica();
+
+        BigDecimal nuevoAcumulado = saldo.getDiasAcumulados().add(saldo.getDiasDisponibles());
+        if (politica.getMaxDiasAcumulables() != null) {
+            BigDecimal tope = BigDecimal.valueOf(politica.getMaxDiasAcumulables()).setScale(nuevoAcumulado.scale());
+            nuevoAcumulado = nuevoAcumulado.min(tope);
+        }
+
+        saldo.setDiasAcumulados(nuevoAcumulado);
+        saldo.setDiasDisponibles(BigDecimal.valueOf(politica.getDiasBaseAnio()).setScale(1));
+        saldo.setDiasUsados(BigDecimal.ZERO.setScale(1));
+
+        saldoDiasRepository.persist(saldo);
+        saldoDiasRepository.getEntityManager().flush();
+
+        return saldo;
     }
 
     private MovimientoSaldoEntity buildMovimiento(

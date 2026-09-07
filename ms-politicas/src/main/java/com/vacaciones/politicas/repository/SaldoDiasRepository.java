@@ -15,4 +15,10 @@ public class SaldoDiasRepository implements PanacheRepositoryBase<SaldoDiasEntit
     public List<SaldoDiasEntity> findByPoliticaId(Long politicaId) {
         return find("politica.id", politicaId).list();
     }
+
+    public List<SaldoDiasEntity> findAniversariosAcumulables(int mes, int dia) {
+        return find("politica.acumulable = true"
+                + " and extract(month from createdAt) = ?1"
+                + " and extract(day from createdAt) = ?2", mes, dia).list();
+    }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.acme.messaging.event.UsuarioRegistradoEvent;
 import org.acme.models.RolsUser;
 import org.acme.models.User;
 import org.acme.repository.RolUserRepository;
@@ -15,6 +16,8 @@ import org.acme.repository.UserRepository;
 import org.acme.view.UserRolView;
 import org.mindrot.jbcrypt.BCrypt;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +45,17 @@ public class AuthService {
     @Inject
     EntityManager entityManager;
 
+    @Inject
+    @Channel("usuario-registrado-out")
+    Emitter<UsuarioRegistradoEvent> usuarioRegistradoEmitter;
+
     @Transactional
     public User register(String username, String password, String roles) {
         User user = new User();
         user.username = username;
         user.passwordHash = hashPassword(password);
         userRepository.persist(user);
+        usuarioRegistradoEmitter.send(new UsuarioRegistradoEvent(user.id, user.username, user.email));
         return user;
     }
 

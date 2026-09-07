@@ -50,6 +50,10 @@ public class PoliticaEntity extends PanacheEntityBase {
     @Column(name = "activa", nullable = false)
     private Boolean activa;
 
+    @Column(name = "es_por_defecto", nullable = false, columnDefinition = "boolean not null default false")
+    @Builder.Default
+    private Boolean esPorDefecto = Boolean.FALSE;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -61,6 +65,9 @@ public class PoliticaEntity extends PanacheEntityBase {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
+        if (esPorDefecto == null) {
+            esPorDefecto = Boolean.FALSE;
+        }
     }
 
     @PreUpdate

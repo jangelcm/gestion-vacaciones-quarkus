@@ -65,7 +65,7 @@ class SaldoDiasResourceTest {
 
     @Test
     void shouldAssignPoliticaToColaboradorAndReturnCreated() {
-        doNothing().when(saldoDiasService).asignarPolitica(1001L, 1L);
+        doNothing().when(saldoDiasService).asignarPolitica(1001L, 1L, null);
 
         given()
         .when()
@@ -79,7 +79,7 @@ class SaldoDiasResourceTest {
         doThrow(new RuntimeCustomException(
                 "El colaborador ya tiene una politica asignada",
                 Response.Status.CONFLICT))
-                .when(saldoDiasService).asignarPolitica(1001L, 1L);
+                .when(saldoDiasService).asignarPolitica(1001L, 1L, null);
 
         given()
         .when()

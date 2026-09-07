@@ -109,6 +109,92 @@ class SaldoDiasWriteOperationsTest {
         assertEquals("DEVOLUCION", movimientoCaptor.getValue().getTipoMovimiento());
     }
 
+    @Test
+    void shouldRolloverUnusedDaysIntoAcumuladosAndResetPeriodOnRenovacion() {
+        PoliticaEntity politica = PoliticaEntity.builder()
+                .id(10L)
+                .nombre("Vacaciones anuales")
+                .diasBaseAnio(15)
+                .maxDiasAcumulables(30)
+                .acumulable(Boolean.TRUE)
+                .activa(Boolean.TRUE)
+                .build();
+        SaldoDiasEntity saldo = SaldoDiasEntity.builder()
+                .id(1L)
+                .colaboradorId(1001L)
+                .politica(politica)
+                .diasDisponibles(new BigDecimal("6.0"))
+                .diasUsados(new BigDecimal("9.0"))
+                .diasAcumulados(new BigDecimal("2.0"))
+                .version(0)
+                .build();
+
+        when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarRenovacion(1L);
+
+        assertEquals(new BigDecimal("8.0"), resultado.getDiasAcumulados());
+        assertEquals(new BigDecimal("15.0"), resultado.getDiasDisponibles());
+        assertEquals(new BigDecimal("0.0"), resultado.getDiasUsados());
+        verify(saldoDiasRepository).persist(saldo);
+    }
+
+    @Test
+    void shouldCapAcumuladosAtMaxDiasAcumulablesOnRenovacion() {
+        PoliticaEntity politica = PoliticaEntity.builder()
+                .id(10L)
+                .nombre("Vacaciones anuales")
+                .diasBaseAnio(15)
+                .maxDiasAcumulables(10)
+                .acumulable(Boolean.TRUE)
+                .activa(Boolean.TRUE)
+                .build();
+        SaldoDiasEntity saldo = SaldoDiasEntity.builder()
+                .id(1L)
+                .colaboradorId(1001L)
+                .politica(politica)
+                .diasDisponibles(new BigDecimal("12.0"))
+                .diasUsados(new BigDecimal("3.0"))
+                .diasAcumulados(new BigDecimal("5.0"))
+                .version(0)
+                .build();
+
+        when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarRenovacion(1L);
+
+        assertEquals(new BigDecimal("10.0"), resultado.getDiasAcumulados());
+    }
+
+    @Test
+    void shouldNotCapWhenPoliticaHasNoMaxDiasAcumulables() {
+        PoliticaEntity politica = PoliticaEntity.builder()
+                .id(10L)
+                .nombre("Vacaciones anuales")
+                .diasBaseAnio(15)
+                .acumulable(Boolean.TRUE)
+                .activa(Boolean.TRUE)
+                .build();
+        SaldoDiasEntity saldo = SaldoDiasEntity.builder()
+                .id(1L)
+                .colaboradorId(1001L)
+                .politica(politica)
+                .diasDisponibles(new BigDecimal("12.0"))
+                .diasUsados(new BigDecimal("3.0"))
+                .diasAcumulados(new BigDecimal("5.0"))
+                .version(0)
+                .build();
+
+        when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
+        when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
+
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarRenovacion(1L);
+
+        assertEquals(new BigDecimal("17.0"), resultado.getDiasAcumulados());
+    }
+
     private SaldoDiasEntity buildSaldoDias(String diasDisponibles, String diasUsados, String diasAcumulados) {
         return SaldoDiasEntity.builder()
                 .id(1L)

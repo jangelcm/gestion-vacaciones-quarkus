@@ -1,6 +1,8 @@
 package com.vacaciones.politicas.res;
 
+import com.vacaciones.politicas.dto.request.AsignarPoliticaRequestDto;
 import com.vacaciones.politicas.service.SaldoDiasService;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -27,10 +29,13 @@ public class SaldoDiasResource {
 
     @POST
     @Path("/{politicaId}/colaboradores/{colaboradorId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response asignarPolitica(
             @PathParam("politicaId") Long politicaId,
-            @PathParam("colaboradorId") Long colaboradorId) {
-        saldoDiasService.asignarPolitica(colaboradorId, politicaId);
+            @PathParam("colaboradorId") Long colaboradorId,
+            AsignarPoliticaRequestDto request) {
+        Integer antiguedadMeses = request != null ? request.antiguedadMeses() : null;
+        saldoDiasService.asignarPolitica(colaboradorId, politicaId, antiguedadMeses);
         return Response.status(Response.Status.CREATED).build();
     }
 

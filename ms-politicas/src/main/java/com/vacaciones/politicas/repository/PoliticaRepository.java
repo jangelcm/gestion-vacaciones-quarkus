@@ -6,4 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class PoliticaRepository implements PanacheRepositoryBase<PoliticaEntity, Long> {
+
+    public PoliticaEntity findByEsPorDefectoTrue() {
+        return find("esPorDefecto", true).firstResult();
+    }
 }

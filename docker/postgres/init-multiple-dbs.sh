@@ -61,9 +61,30 @@ if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
   done
 fi
 
+create_schema_and_grants() {
+  local username="$1"
+  local database="$2"
+  local schema="$3"
+
+  if [ -z "$username" ] || [ -z "$database" ] || [ -z "$schema" ]; then
+    return
+  fi
+
+  echo "Ensuring schema '$schema' in '$database' owned by '$username'"
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$database" <<-EOSQL
+    CREATE SCHEMA IF NOT EXISTS "${schema}" AUTHORIZATION "${username}";
+    GRANT ALL ON SCHEMA "${schema}" TO "${username}";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA "${schema}" GRANT ALL ON TABLES TO "${username}";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA "${schema}" GRANT ALL ON SEQUENCES TO "${username}";
+EOSQL
+}
+
 create_role_and_grants "$MS_SOLICITUD_DB_USER" "$MS_SOLICITUD_DB_PASS" "$MS_SOLICITUD_DB_NAME"
 create_role_and_grants "$MS_APROBACIONES_DB_USER" "$MS_APROBACIONES_DB_PASS" "$MS_APROBACIONES_DB_NAME"
 create_role_and_grants "$MS_AUTH_DB_USER" "$MS_AUTH_DB_PASS" "$MS_AUTH_DB_NAME"
 create_role_and_grants "$MS_POLITICAS_DB_USER" "$MS_POLITICAS_DB_PASS" "$MS_POLITICAS_DB_NAME"
+
+# mcsv-auth usa el schema "data" (quarkus.hibernate-orm.database.default-schema=data)
+create_schema_and_grants "$MS_AUTH_DB_USER" "$MS_AUTH_DB_NAME" "data"
 
 echo "PostgreSQL initialization finished"
