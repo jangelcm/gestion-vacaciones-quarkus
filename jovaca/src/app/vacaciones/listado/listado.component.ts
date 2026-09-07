@@ -5,6 +5,8 @@ import { SolicitudesService } from '../../services/solicitudes.service';
 import { Solicitud } from '../../models/solicitud.model';
 import { AuthService } from '../../core/services/auth.service';
 import { UsuariosService } from '../../core/services/usuarios.service';
+import { PoliticasService } from '../../core/services/politicas.service';
+import { SaldoDias } from '../../core/models/politica.model';
 import { ModalComponent } from '../../shared/modal/modal.component';
 import { FormularioComponent } from '../formulario/formulario.component';
 import { DetalleComponent } from '../detalle/detalle.component';
@@ -20,6 +22,7 @@ export class ListadoComponent {
     private svc = inject(SolicitudesService);
     private auth = inject(AuthService);
     private usuariosSvc = inject(UsuariosService);
+    private politicasSvc = inject(PoliticasService);
 
     esAdmin = computed(() => this.auth.hasRole('Administrador'));
 
@@ -31,10 +34,15 @@ export class ListadoComponent {
     modalNuevaAbierta = signal(false);
     solicitudDetalle = signal<Solicitud | null>(null);
 
+    miSaldo = signal<SaldoDias | null>(null);
+    miSaldoError = signal<string | null>(null);
+    miSaldoLoading = signal(false);
+
     private nombresPorId = signal<Map<number, string>>(new Map());
 
     constructor() {
         this.cargar();
+        this.cargarMiSaldo();
         if (this.esAdmin()) {
             this.usuariosSvc.listarUsuarios().subscribe({
                 next: (res) => {
@@ -42,6 +50,21 @@ export class ListadoComponent {
                 }
             });
         }
+    }
+
+    cargarMiSaldo(): void {
+        const miId = this.auth.currentUser()?.id;
+        if (!miId) return;
+        this.miSaldoLoading.set(true);
+        this.miSaldoError.set(null);
+        this.politicasSvc.obtenerSaldo(miId).subscribe({
+            next: (s) => { this.miSaldo.set(s); this.miSaldoLoading.set(false); },
+            error: () => {
+                this.miSaldo.set(null);
+                this.miSaldoError.set('Todavía no tienes una política de vacaciones asignada');
+                this.miSaldoLoading.set(false);
+            }
+        });
     }
 
     nombreColaborador(colaboradorId: string | number): string {

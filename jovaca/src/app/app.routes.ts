@@ -31,6 +31,12 @@ export const routes: Routes = [
         canActivate: [roleGuard('Administrador')],
         loadComponent: () =>
           import('./admin/aprobaciones/listado/aprobaciones-listado.component').then(m => m.AprobacionesListadoComponent)
+      },
+      {
+        path: 'politicas',
+        canActivate: [roleGuard('Administrador')],
+        loadComponent: () =>
+          import('./admin/politicas/listado/politicas-listado.component').then(m => m.PoliticasListadoComponent)
       }
     ]
   },

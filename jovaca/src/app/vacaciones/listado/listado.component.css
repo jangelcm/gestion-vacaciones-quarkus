@@ -5,6 +5,63 @@
   padding: 1.75rem;
 }
 
+/* ── Saldo bar ── */
+.saldo-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(109, 40, 217, 0.2);
+}
+
+.saldo-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.saldo-tile-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.saldo-tile-highlight {
+  color: #fff;
+}
+
+.saldo-tile-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.saldo-bar-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: #f9fafb;
+  color: #6d28d9;
+  font-size: 0.9rem;
+}
+
+.saldo-bar-empty {
+  background: #fef9c3;
+  color: #854d0e;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

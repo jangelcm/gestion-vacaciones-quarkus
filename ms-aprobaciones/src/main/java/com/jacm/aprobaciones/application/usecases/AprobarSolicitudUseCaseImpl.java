@@ -9,6 +9,9 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.NoSuchElementException;
 
 @ApplicationScoped
@@ -24,9 +27,9 @@ public class AprobarSolicitudUseCaseImpl implements AprobarSolicitudUseCase {
 
     @Override
     @Transactional
-    public Aprobacion registrarParaAprobacion(Long solicitudId) {
+    public Aprobacion registrarParaAprobacion(Long solicitudId, String colaboradorId, LocalDate fechaInicio, LocalDate fechaFin) {
         LOG.infof("Registrando solicitud %d para aprobación", solicitudId);
-        var aprobacion = Aprobacion.nuevaPendiente(solicitudId);
+        var aprobacion = Aprobacion.nuevaPendiente(solicitudId, colaboradorId, fechaInicio, fechaFin);
         return repositoryPort.guardar(aprobacion);
     }
 
@@ -41,8 +44,26 @@ public class AprobarSolicitudUseCaseImpl implements AprobarSolicitudUseCase {
 
         aprobacion.aprobar(aprobadorId, comentario);
         var aprobacionGuardada = repositoryPort.guardar(aprobacion);
-        eventPublisherPort.publicarSolicitudAprobada(solicitudId, aprobadorId, comentario);
+
+        BigDecimal diasAprobados = calcularDiasHabiles(aprobacion.getFechaInicio(), aprobacion.getFechaFin());
+        eventPublisherPort.publicarSolicitudAprobada(
+                solicitudId, aprobacion.getColaboradorId(), diasAprobados, aprobadorId, comentario);
 
         return aprobacionGuardada;
+    }
+
+    private BigDecimal calcularDiasHabiles(LocalDate fechaInicio, LocalDate fechaFin) {
+        if (fechaInicio == null || fechaFin == null) {
+            return BigDecimal.ZERO;
+        }
+        long diasHabiles = 0;
+        LocalDate fecha = fechaInicio;
+        while (!fecha.isAfter(fechaFin)) {
+            if (fecha.getDayOfWeek() != DayOfWeek.SATURDAY && fecha.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                diasHabiles++;
+            }
+            fecha = fecha.plusDays(1);
+        }
+        return BigDecimal.valueOf(diasHabiles);
     }
 }

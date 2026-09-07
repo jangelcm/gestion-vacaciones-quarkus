@@ -1,5 +1,6 @@
 package com.jacm.aprobaciones.domain.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -10,16 +11,23 @@ public class Aprobacion {
 
     private Long id;
     private Long solicitudId;
+    private String colaboradorId;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
     private String aprobadorId;
     private EstadoAprobacion estado;
     private String comentario;
     private LocalDateTime fechaAprobacion;
     private int nivelAprobacion;
 
-    public Aprobacion(Long id, Long solicitudId, String aprobadorId, EstadoAprobacion estado,
+    public Aprobacion(Long id, Long solicitudId, String colaboradorId, LocalDate fechaInicio, LocalDate fechaFin,
+                      String aprobadorId, EstadoAprobacion estado,
                       String comentario, LocalDateTime fechaAprobacion, int nivelAprobacion) {
         this.id = id;
         this.solicitudId = solicitudId;
+        this.colaboradorId = colaboradorId;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
         this.aprobadorId = aprobadorId;
         this.estado = estado;
         this.comentario = comentario;
@@ -32,8 +40,8 @@ public class Aprobacion {
     // -------------------------------------------------------------------------
 
     /** Crea una nueva aprobación en estado PENDIENTE al recibir la solicitud. */
-    public static Aprobacion nuevaPendiente(Long solicitudId) {
-        return new Aprobacion(null, solicitudId, null, EstadoAprobacion.PENDIENTE, null, null, 1);
+    public static Aprobacion nuevaPendiente(Long solicitudId, String colaboradorId, LocalDate fechaInicio, LocalDate fechaFin) {
+        return new Aprobacion(null, solicitudId, colaboradorId, fechaInicio, fechaFin, null, EstadoAprobacion.PENDIENTE, null, null, 1);
     }
 
     /** Transiciona el estado a APROBADO y registra la decisión. */
@@ -61,6 +69,15 @@ public class Aprobacion {
 
     public Long getSolicitudId() { return solicitudId; }
     public void setSolicitudId(Long solicitudId) { this.solicitudId = solicitudId; }
+
+    public String getColaboradorId() { return colaboradorId; }
+    public void setColaboradorId(String colaboradorId) { this.colaboradorId = colaboradorId; }
+
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
+
+    public LocalDate getFechaFin() { return fechaFin; }
+    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
 
     public String getAprobadorId() { return aprobadorId; }
     public void setAprobadorId(String aprobadorId) { this.aprobadorId = aprobadorId; }

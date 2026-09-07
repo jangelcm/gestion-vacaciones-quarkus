@@ -1,0 +1,56 @@
+<form class="form" [formGroup]="form" (ngSubmit)="guardar()">
+    <label class="field-label" for="nombre">Nombre</label>
+    <input id="nombre" type="text" formControlName="nombre" class="input-field" placeholder="ej. Vacaciones anuales" />
+    @if (f.nombre.invalid && f.nombre.touched) {
+    <span class="field-error">El nombre es requerido</span>
+    }
+
+    <label class="field-label" for="tipoVacacion">Tipo de Vacación</label>
+    <input id="tipoVacacion" type="text" formControlName="tipoVacacion" class="input-field" placeholder="ANUAL" />
+    @if (f.tipoVacacion.invalid && f.tipoVacacion.touched) {
+    <span class="field-error">El tipo de vacación es requerido</span>
+    }
+
+    <div class="field-row">
+        <div class="field-col">
+            <label class="field-label" for="diasBaseAnio">Días base al año</label>
+            <input id="diasBaseAnio" type="number" formControlName="diasBaseAnio" class="input-field" />
+            @if (f.diasBaseAnio.invalid && f.diasBaseAnio.touched) {
+            <span class="field-error">Debe ser mayor a 0</span>
+            }
+        </div>
+        <div class="field-col">
+            <label class="field-label" for="antiguedadMinimaMeses">Antigüedad mínima (meses)</label>
+            <input id="antiguedadMinimaMeses" type="number" formControlName="antiguedadMinimaMeses" class="input-field" />
+            @if (f.antiguedadMinimaMeses.invalid && f.antiguedadMinimaMeses.touched) {
+            <span class="field-error">Debe ser 0 o mayor</span>
+            }
+        </div>
+    </div>
+
+    <label class="checkbox-label">
+        <input type="checkbox" formControlName="acumulable" />
+        Permite acumular días no usados
+    </label>
+
+    @if (f.acumulable.value) {
+    <label class="field-label" for="maxDiasAcumulables">Máximo de días acumulables</label>
+    <input id="maxDiasAcumulables" type="number" formControlName="maxDiasAcumulables" class="input-field" placeholder="ej. 30" />
+    }
+
+    <label class="checkbox-label">
+        <input type="checkbox" formControlName="activa" />
+        Política activa
+    </label>
+
+    @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+    }
+
+    <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+            {{ loading() ? 'Guardando...' : (esEdicion ? 'Guardar cambios' : 'Crear Política') }}
+        </button>
+    </div>
+</form>

@@ -1,0 +1,38 @@
+<form class="form" [formGroup]="form" (ngSubmit)="asignar()">
+    <label class="field-label" for="colaboradorId">Colaborador</label>
+    <select id="colaboradorId" formControlName="colaboradorId" class="input-field">
+        <option [ngValue]="null" disabled>Seleccione un colaborador</option>
+        @for (u of usuarios(); track u.id) {
+        <option [ngValue]="u.id">{{ u.username }}</option>
+        }
+    </select>
+    @if (f.colaboradorId.invalid && f.colaboradorId.touched) {
+    <span class="field-error">Seleccione un colaborador</span>
+    }
+
+    <label class="field-label" for="politicaId">Política</label>
+    <select id="politicaId" formControlName="politicaId" class="input-field">
+        <option [ngValue]="null" disabled>Seleccione una política</option>
+        @for (p of politicas; track p.id) {
+        <option [ngValue]="p.id" [disabled]="!p.activa">{{ p.nombre }} ({{ p.diasBaseAnio }} días){{ !p.activa ? ' — inactiva' : '' }}</option>
+        }
+    </select>
+    @if (f.politicaId.invalid && f.politicaId.touched) {
+    <span class="field-error">Seleccione una política</span>
+    }
+
+    <label class="field-label" for="antiguedadMeses">Antigüedad del colaborador (meses)</label>
+    <input id="antiguedadMeses" type="number" formControlName="antiguedadMeses" class="input-field"
+        placeholder="Solo si la política lo requiere" />
+
+    @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+    }
+
+    <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+            {{ loading() ? 'Asignando...' : 'Asignar Política' }}
+        </button>
+    </div>
+</form>

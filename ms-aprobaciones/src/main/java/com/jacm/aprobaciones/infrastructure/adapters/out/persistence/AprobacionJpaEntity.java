@@ -6,6 +6,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -19,6 +20,15 @@ public class AprobacionJpaEntity extends PanacheEntity {
 
     @Column(name = "solicitud_id", nullable = false, unique = true)
     public Long solicitudId;
+
+    @Column(name = "colaborador_id")
+    public String colaboradorId;
+
+    @Column(name = "fecha_inicio")
+    public LocalDate fechaInicio;
+
+    @Column(name = "fecha_fin")
+    public LocalDate fechaFin;
 
     @Column(name = "aprobador_id")
     public String aprobadorId;
@@ -45,6 +55,9 @@ public class AprobacionJpaEntity extends PanacheEntity {
         var entity = new AprobacionJpaEntity();
         entity.id = domain.getId();
         entity.solicitudId = domain.getSolicitudId();
+        entity.colaboradorId = domain.getColaboradorId();
+        entity.fechaInicio = domain.getFechaInicio();
+        entity.fechaFin = domain.getFechaFin();
         entity.aprobadorId = domain.getAprobadorId();
         entity.estado = domain.getEstado();
         entity.comentario = domain.getComentario();
@@ -54,6 +67,7 @@ public class AprobacionJpaEntity extends PanacheEntity {
     }
 
     public Aprobacion toDomain() {
-        return new Aprobacion(id, solicitudId, aprobadorId, estado, comentario, fechaAprobacion, nivelAprobacion);
+        return new Aprobacion(id, solicitudId, colaboradorId, fechaInicio, fechaFin,
+                aprobadorId, estado, comentario, fechaAprobacion, nivelAprobacion);
     }
 }

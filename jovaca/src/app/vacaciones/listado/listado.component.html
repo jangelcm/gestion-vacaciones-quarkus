@@ -1,3 +1,30 @@
+@if (miSaldoLoading()) {
+<div class="saldo-bar saldo-bar-loading">
+    <span class="spinner"></span> Cargando tu saldo de vacaciones...
+</div>
+}
+
+@if (miSaldoError()) {
+<div class="saldo-bar saldo-bar-empty">{{ miSaldoError() }}</div>
+}
+
+@if (miSaldo(); as ms) {
+<div class="saldo-bar">
+    <div class="saldo-tile">
+        <span class="saldo-tile-value saldo-tile-highlight">{{ ms.diasDisponibles }}</span>
+        <span class="saldo-tile-label">Días disponibles</span>
+    </div>
+    <div class="saldo-tile">
+        <span class="saldo-tile-value">{{ ms.diasUsados }}</span>
+        <span class="saldo-tile-label">Días usados</span>
+    </div>
+    <div class="saldo-tile">
+        <span class="saldo-tile-value">{{ ms.diasAcumulados }}</span>
+        <span class="saldo-tile-label">Días acumulados</span>
+    </div>
+</div>
+}
+
 <div class="container">
     <div class="header">
         <h2>Mis Solicitudes de Vacaciones</h2>

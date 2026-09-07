@@ -1,0 +1,120 @@
+<div class="container">
+    <div class="header">
+        <h2>Políticas de Vacaciones</h2>
+        <button type="button" class="btn btn-primary" (click)="abrirCrear()">+ Nueva Política</button>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando políticas...
+    </div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (!loading() && !error() && politicas().length === 0) {
+    <div class="state-msg empty-msg">No hay políticas registradas todavía.</div>
+    }
+
+    @if (politicas().length > 0) {
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Días base</th>
+                    <th>Antigüedad mín.</th>
+                    <th>Acumulable</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (p of politicas(); track p.id) {
+                <tr>
+                    <td class="id-col">{{ p.nombre }}</td>
+                    <td>{{ p.tipoVacacion }}</td>
+                    <td>{{ p.diasBaseAnio }}</td>
+                    <td>{{ p.antiguedadMinimaMeses }} meses</td>
+                    <td>{{ p.acumulable ? ('Sí, hasta ' + (p.maxDiasAcumulables ?? '∞')) : 'No' }}</td>
+                    <td>
+                        <span class="badge" [class.badge-activo]="p.activa" [class.badge-inactivo]="!p.activa">
+                            {{ p.activa ? 'Activa' : 'Inactiva' }}
+                        </span>
+                    </td>
+                    <td class="actions-col">
+                        <button class="btn btn-sm" (click)="abrirEditar(p)">Editar</button>
+                        <button class="btn btn-sm btn-danger" (click)="eliminar(p)">Eliminar</button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>
+
+<div class="container saldos-section">
+    <div class="header">
+        <h2>Saldos de Colaboradores</h2>
+        <button type="button" class="btn btn-primary" (click)="abrirAsignar()">+ Asignar Política</button>
+    </div>
+
+    <div class="search-bar">
+        <select [(ngModel)]="colaboradorConsultado" class="input-field">
+            <option [ngValue]="null" disabled>Seleccione un colaborador</option>
+            @for (u of usuarios(); track u.id) {
+            <option [ngValue]="u.id">{{ u.username }}</option>
+            }
+        </select>
+        <button (click)="consultarSaldo()" class="btn btn-secondary">Consultar saldo</button>
+    </div>
+
+    @if (saldoLoading()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Consultando saldo...
+    </div>
+    }
+
+    @if (saldoError()) {
+    <div class="state-msg error-msg">{{ saldoError() }}</div>
+    }
+
+    @if (saldo(); as s) {
+    <div class="saldo-card">
+        <div class="saldo-item">
+            <span class="saldo-label">Colaborador</span>
+            <span class="saldo-value">{{ nombreUsuario(s.colaboradorId) }}</span>
+        </div>
+        <div class="saldo-item">
+            <span class="saldo-label">Días disponibles</span>
+            <span class="saldo-value saldo-highlight">{{ s.diasDisponibles }}</span>
+        </div>
+        <div class="saldo-item">
+            <span class="saldo-label">Días usados</span>
+            <span class="saldo-value">{{ s.diasUsados }}</span>
+        </div>
+        <div class="saldo-item">
+            <span class="saldo-label">Días acumulados</span>
+            <span class="saldo-value">{{ s.diasAcumulados }}</span>
+        </div>
+    </div>
+    }
+</div>
+
+@if (modalPolitica()) {
+<app-modal [titulo]="politicaEditando() ? 'Editar Política' : 'Nueva Política'" anchoMax="480px"
+    (cerrar)="cerrarModalPolitica()">
+    <app-politica-form [politica]="politicaEditando()" (guardada)="onPoliticaGuardada()"
+        (cancelar)="cerrarModalPolitica()" />
+</app-modal>
+}
+
+@if (modalAsignar()) {
+<app-modal titulo="Asignar Política a Colaborador" (cerrar)="cerrarModalAsignar()">
+    <app-asignar-saldo-form [politicas]="politicas()" (asignado)="onAsignado()" (cancelar)="cerrarModalAsignar()" />
+</app-modal>
+}

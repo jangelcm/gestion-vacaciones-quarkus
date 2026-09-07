@@ -31,7 +31,8 @@ public class SolicitudCreatedConsumer {
         LOG.infof("Evento 'solicitud.creada' recibido: %s", mensaje);
         try {
             SolicitudCreadaEventDTO evento = objectMapper.readValue(mensaje, SolicitudCreadaEventDTO.class);
-            aprobarSolicitudUseCase.registrarParaAprobacion(evento.id());
+            aprobarSolicitudUseCase.registrarParaAprobacion(
+                    evento.id(), evento.colaboradorId(), evento.fechaInicio(), evento.fechaFin());
             LOG.infof("Solicitud %d registrada para aprobación (estado: PENDIENTE)", evento.id());
         } catch (JsonProcessingException e) {
             LOG.errorf("Error deserializando evento 'solicitud.creada': %s", e.getMessage());

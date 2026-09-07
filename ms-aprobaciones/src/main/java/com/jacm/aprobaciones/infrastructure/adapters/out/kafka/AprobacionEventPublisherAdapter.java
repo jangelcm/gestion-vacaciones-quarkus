@@ -2,8 +2,12 @@ package com.jacm.aprobaciones.infrastructure.adapters.out.kafka;
 
 import com.jacm.aprobaciones.domain.ports.out.AprobacionEventPublisherPort;
 import com.jacm.aprobaciones.infrastructure.adapters.out.kafka.dto.AprobacionEventoDTO;
+import com.jacm.aprobaciones.infrastructure.adapters.out.kafka.dto.SolicitudAprobadaEventoDTO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
@@ -19,16 +23,23 @@ public class AprobacionEventPublisherAdapter implements AprobacionEventPublisher
 
     @Inject
     @Channel("solicitud-aprobada")
-    Emitter<AprobacionEventoDTO> aprobadaEmitter;
+    Emitter<SolicitudAprobadaEventoDTO> aprobadaEmitter;
 
     @Inject
     @Channel("solicitud-rechazada")
     Emitter<AprobacionEventoDTO> rechazadaEmitter;
 
     @Override
-    public void publicarSolicitudAprobada(Long solicitudId, String aprobadorId, String comentario) {
-        var evento = new AprobacionEventoDTO(solicitudId, aprobadorId, "APROBADO", comentario);
-        LOG.infof("Publicando evento 'solicitud.aprobada' para solicitud ID: %d", solicitudId);
+    public void publicarSolicitudAprobada(
+            Long solicitudId, String colaboradorId, BigDecimal diasAprobados, String aprobadorId, String comentario) {
+        var evento = new SolicitudAprobadaEventoDTO(
+                UUID.randomUUID().toString(),
+                solicitudId,
+                colaboradorId != null ? Long.valueOf(colaboradorId) : null,
+                diasAprobados,
+                LocalDateTime.now());
+        LOG.infof("Publicando evento 'solicitud.aprobada' para solicitud ID: %d, colaborador: %s, dias: %s",
+                solicitudId, colaboradorId, diasAprobados);
         aprobadaEmitter.send(evento);
     }
 

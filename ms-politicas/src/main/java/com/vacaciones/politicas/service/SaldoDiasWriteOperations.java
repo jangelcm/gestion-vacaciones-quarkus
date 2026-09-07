@@ -3,6 +3,7 @@ package com.vacaciones.politicas.service;
 import com.vacaciones.politicas.entity.MovimientoSaldoEntity;
 import com.vacaciones.politicas.entity.PoliticaEntity;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
+import com.vacaciones.politicas.exception.BadRequestException;
 import com.vacaciones.politicas.exception.ResourceNotFoundException;
 import com.vacaciones.politicas.repository.MovimientoSaldoRepository;
 import com.vacaciones.politicas.repository.SaldoDiasRepository;
@@ -41,6 +42,9 @@ public class SaldoDiasWriteOperations {
         if (movimientoSaldoRepository.existsByEventoId(eventoId)) {
             return null;
         }
+        if (dias == null) {
+            throw new BadRequestException("El evento no incluye una cantidad de dias valida para descontar");
+        }
 
         SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(colaboradorId);
         if (saldoDias == null) {
@@ -75,6 +79,9 @@ public class SaldoDiasWriteOperations {
             String eventoId) {
         if (movimientoSaldoRepository.existsByEventoId(eventoId)) {
             return null;
+        }
+        if (dias == null) {
+            throw new BadRequestException("El evento no incluye una cantidad de dias valida para devolver");
         }
 
         SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(colaboradorId);
