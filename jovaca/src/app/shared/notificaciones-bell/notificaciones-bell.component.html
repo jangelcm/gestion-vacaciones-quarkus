@@ -1,0 +1,39 @@
+<div class="bell-wrapper">
+    <button type="button" class="bell-button" (click)="toggle()" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" class="bell-icon" fill="currentColor">
+            <path
+                d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6.6V11c0-3.34-1.79-6.14-5-6.87V3.5a2 2 0 1 0-4 0v.63C6.79 4.86 5 7.65 5 11v4.4L3 17.4V19h18v-1.6l-2-2Z" />
+        </svg>
+        @if (notifSvc.noLeidas() > 0) {
+        <span class="bell-badge">{{ notifSvc.noLeidas() > 9 ? '9+' : notifSvc.noLeidas() }}</span>
+        }
+    </button>
+
+    @if (abierto()) {
+    <div class="bell-panel">
+        <div class="bell-panel-header">
+            <span>Notificaciones</span>
+            @if (notifSvc.conectado()) {
+            <span class="bell-live-dot" title="Conectado en tiempo real"></span>
+            }
+        </div>
+
+        @if (notifSvc.notificaciones().length === 0) {
+        <div class="bell-empty">No tienes notificaciones todavía.</div>
+        }
+
+        <div class="bell-list">
+            @for (n of notifSvc.notificaciones(); track n.id) {
+            <div class="bell-item">
+                <div class="bell-item-header">
+                    <span class="bell-item-asunto">{{ n.asunto }}</span>
+                    <span class="badge" [class]="badgeClaseEstado(n.estado)">{{ n.estado }}</span>
+                </div>
+                <p class="bell-item-cuerpo">{{ n.cuerpo }}</p>
+                <span class="bell-item-fecha">{{ n.fechaCreacion }}</span>
+            </div>
+            }
+        </div>
+    </div>
+    }
+</div>

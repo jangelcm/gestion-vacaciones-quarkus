@@ -1,0 +1,36 @@
+<form class="form" [formGroup]="form" (ngSubmit)="guardar()">
+    <label class="field-label" for="username">Usuario</label>
+    <input id="username" type="text" formControlName="username" class="input-field" autocomplete="off" />
+    @if (f.username.invalid && f.username.touched) {
+    <span class="field-error">El usuario es requerido</span>
+    }
+
+    <label class="field-label" for="email">Email</label>
+    <input id="email" type="email" formControlName="email" class="input-field" autocomplete="off" />
+    @if (f.email.touched && f.email.hasError('required')) {
+    <span class="field-error">El email es requerido</span>
+    }
+    @if (f.email.touched && f.email.hasError('email')) {
+    <span class="field-error">Ingrese un email válido</span>
+    }
+
+    <label class="field-label" for="telefono">Teléfono</label>
+    <input id="telefono" type="text" formControlName="telefono" class="input-field"
+        placeholder="Opcional" autocomplete="off" />
+
+    <label class="checkbox-label">
+        <input type="checkbox" formControlName="isActive" />
+        Usuario activo
+    </label>
+
+    @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+    }
+
+    <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+            {{ loading() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+    </div>
+</form>

@@ -28,6 +28,7 @@
                     <th>Email</th>
                     <th>Teléfono</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,6 +43,9 @@
                             {{ u.isActive ? 'Activo' : 'Inactivo' }}
                         </span>
                     </td>
+                    <td>
+                        <button class="btn btn-sm" (click)="abrirEditar(u)">Editar</button>
+                    </td>
                 </tr>
                 }
             </tbody>
@@ -53,5 +57,11 @@
 @if (modalAbierto()) {
 <app-modal titulo="Nuevo Usuario" (cerrar)="cerrarModal()">
     <app-crear-usuario (usuarioCreado)="onUsuarioCreado()" (cancelar)="cerrarModal()" />
+</app-modal>
+}
+
+@if (usuarioEditando(); as u) {
+<app-modal titulo="Editar Usuario" (cerrar)="cerrarEditar()">
+    <app-editar-usuario [usuario]="u" (guardado)="onUsuarioActualizado()" (cancelar)="cerrarEditar()" />
 </app-modal>
 }

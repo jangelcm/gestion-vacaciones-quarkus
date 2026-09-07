@@ -33,7 +33,9 @@ public class RechazarSolicitudUseCaseImpl implements RechazarSolicitudUseCase {
 
         aprobacion.rechazar(aprobadorId, motivo);
         var aprobacionGuardada = repositoryPort.guardar(aprobacion);
-        eventPublisherPort.publicarSolicitudRechazada(solicitudId, aprobadorId, motivo);
+        eventPublisherPort.publicarSolicitudRechazada(
+                solicitudId, aprobacion.getColaboradorId(), aprobacion.getFechaInicio(), aprobacion.getFechaFin(),
+                aprobadorId, motivo);
 
         return aprobacionGuardada;
     }

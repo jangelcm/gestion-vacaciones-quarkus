@@ -7,9 +7,12 @@ import com.vacaciones.notificaciones.dominio.port.out.NotificacionEventoPublishe
 import com.vacaciones.notificaciones.dominio.port.out.NotificacionRepositoryPort;
 import com.vacaciones.notificaciones.dominio.port.out.NotificadorTiempoRealPort;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EnviarNotificacionService implements EnviarNotificacionUseCase {
+
+    private static final Logger LOG = Logger.getLogger(EnviarNotificacionService.class);
 
     private final NotificacionRepositoryPort repository;
     private final EnviadorEmailPort enviadorEmailPort;
@@ -49,9 +52,24 @@ public class EnviarNotificacionService implements EnviarNotificacionUseCase {
             case EMAIL -> enviarEmail(notificacion);
             case WEBSOCKET -> notificarWebsocket(notificacion);
             case RECORDATORIO -> {
-                enviarEmail(notificacion);
+                // El WebSocket va primero: es el canal critico en tiempo real (campanita) y no
+                // debe esperar al email, que es best-effort y puede fallar o tardar (SMTP lento).
                 notificarWebsocket(notificacion);
+                intentarEnviarEmail(notificacion);
             }
+        }
+    }
+
+    private void intentarEnviarEmail(Notificacion notificacion) {
+        String email = notificacion.getDestinatario().email();
+        if (email == null || email.isBlank()) {
+            return;
+        }
+        try {
+            enviarEmail(notificacion);
+        } catch (RuntimeException e) {
+            LOG.warnf("No se pudo enviar el email de la notificacion %s, continua solo por WebSocket",
+                    notificacion.getEventoId());
         }
     }
 

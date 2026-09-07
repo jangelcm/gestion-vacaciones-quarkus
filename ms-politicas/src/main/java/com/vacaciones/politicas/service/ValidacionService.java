@@ -10,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @ApplicationScoped
@@ -17,6 +18,12 @@ public class ValidacionService {
 
     private static final String SALDO_INSUFICIENTE = "Saldo insuficiente para la solicitud";
     private static final String SALDO_NO_ENCONTRADO = "No se encontro saldo de dias para el colaborador";
+    private static final int DIAS_MINIMOS_ANTICIPACION = 10;
+    private static final String ANTICIPACION_INSUFICIENTE =
+            "La solicitud debe realizarse con al menos 10 dias de anticipacion a la fecha de inicio";
+    private static final int DIAS_MINIMOS_POR_SOLICITUD = 10;
+    private static final String DIAS_MINIMOS_INSUFICIENTES =
+            "La solicitud debe ser de al menos 10 dias calendario";
 
     private final SaldoDiasRepository saldoDiasRepository;
     private final ReglaEspecialRepository reglaEspecialRepository;
@@ -41,8 +48,19 @@ public class ValidacionService {
     }
 
     public ValidarSolicitudResponseDto validarSolicitud(ValidarSolicitudRequestDto request, Integer antiguedadMeses) {
-        SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(request.colaboradorId());
         long diasHabiles = calcularDiasHabiles(request.fechaInicio(), request.fechaFin());
+
+        long diasAnticipacion = ChronoUnit.DAYS.between(LocalDate.now(), request.fechaInicio());
+        if (diasAnticipacion < DIAS_MINIMOS_ANTICIPACION) {
+            return new ValidarSolicitudResponseDto(false, diasHabiles, ANTICIPACION_INSUFICIENTE);
+        }
+
+        long diasCalendario = ChronoUnit.DAYS.between(request.fechaInicio(), request.fechaFin()) + 1;
+        if (diasCalendario < DIAS_MINIMOS_POR_SOLICITUD) {
+            return new ValidarSolicitudResponseDto(false, diasHabiles, DIAS_MINIMOS_INSUFICIENTES);
+        }
+
+        SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(request.colaboradorId());
         if (saldoDias == null) {
             return new ValidarSolicitudResponseDto(false, diasHabiles, SALDO_NO_ENCONTRADO);
         }

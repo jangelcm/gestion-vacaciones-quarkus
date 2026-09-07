@@ -47,7 +47,8 @@ public class AprobarSolicitudUseCaseImpl implements AprobarSolicitudUseCase {
 
         BigDecimal diasAprobados = calcularDiasHabiles(aprobacion.getFechaInicio(), aprobacion.getFechaFin());
         eventPublisherPort.publicarSolicitudAprobada(
-                solicitudId, aprobacion.getColaboradorId(), diasAprobados, aprobadorId, comentario);
+                solicitudId, aprobacion.getColaboradorId(), diasAprobados,
+                aprobacion.getFechaInicio(), aprobacion.getFechaFin(), aprobadorId, comentario);
 
         return aprobacionGuardada;
     }

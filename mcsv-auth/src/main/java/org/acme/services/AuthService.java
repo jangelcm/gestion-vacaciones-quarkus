@@ -52,10 +52,16 @@ public class AuthService {
     Emitter<UsuarioRegistradoEvent> usuarioRegistradoEmitter;
 
     @Transactional
-    public User register(String username, String password, String rol) {
+    public User register(String username, String password, String email, String rol) {
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            throw new IllegalArgumentException("El email es requerido y debe ser valido");
+        }
+
         User user = new User();
         user.username = username;
         user.passwordHash = hashPassword(password);
+        user.email = email.trim();
+        user.isActive = true;
         userRepository.persist(user);
 
         asignarRol(user, rol);

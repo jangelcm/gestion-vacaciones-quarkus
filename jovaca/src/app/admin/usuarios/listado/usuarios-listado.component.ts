@@ -1,13 +1,14 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ModalComponent } from '../../../shared/modal/modal.component';
 import { CrearUsuarioComponent } from '../crear-usuario/crear-usuario.component';
+import { EditarUsuarioComponent } from '../editar-usuario/editar-usuario.component';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Usuario } from '../../../core/models/usuario.model';
 
 @Component({
     selector: 'app-usuarios-listado',
     standalone: true,
-    imports: [ModalComponent, CrearUsuarioComponent],
+    imports: [ModalComponent, CrearUsuarioComponent, EditarUsuarioComponent],
     templateUrl: './usuarios-listado.component.html',
     styleUrl: './usuarios-listado.component.css'
 })
@@ -18,6 +19,7 @@ export class UsuariosListadoComponent implements OnInit {
     loading = signal(false);
     error = signal<string | null>(null);
     modalAbierto = signal(false);
+    usuarioEditando = signal<Usuario | null>(null);
 
     ngOnInit(): void {
         this.cargar();
@@ -42,6 +44,19 @@ export class UsuariosListadoComponent implements OnInit {
 
     onUsuarioCreado(): void {
         this.modalAbierto.set(false);
+        this.cargar();
+    }
+
+    abrirEditar(usuario: Usuario): void {
+        this.usuarioEditando.set(usuario);
+    }
+
+    cerrarEditar(): void {
+        this.usuarioEditando.set(null);
+    }
+
+    onUsuarioActualizado(): void {
+        this.usuarioEditando.set(null);
         this.cargar();
     }
 }

@@ -13,6 +13,16 @@
     <span class="field-error">La contraseña debe tener al menos 6 caracteres</span>
     }
 
+    <label class="field-label" for="email">Email</label>
+    <input id="email" type="email" formControlName="email" class="input-field"
+        placeholder="ej. jperez@empresa.com" autocomplete="off" />
+    @if (f.email.touched && f.email.hasError('required')) {
+    <span class="field-error">El email es requerido</span>
+    }
+    @if (f.email.touched && f.email.hasError('email')) {
+    <span class="field-error">Ingrese un email válido</span>
+    }
+
     <label class="field-label" for="rol">Rol</label>
     <select id="rol" formControlName="rol" class="input-field">
         <option value="" disabled>Seleccione un rol</option>

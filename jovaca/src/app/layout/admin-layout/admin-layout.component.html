@@ -23,7 +23,6 @@
 
             <div class="nav-section-title">Próximamente</div>
             <span class="nav-item nav-item-disabled">Calendario</span>
-            <span class="nav-item nav-item-disabled">Notificaciones</span>
             <span class="nav-item nav-item-disabled">Reportes</span>
             }
         </nav>
@@ -33,6 +32,7 @@
         <header class="topbar">
             <div></div>
             <div class="topbar-user">
+                <app-notificaciones-bell />
                 <div class="user-info">
                     <span class="user-name">{{ auth.currentUser()?.username }}</span>
                     <span class="user-roles">{{ auth.currentUser()?.roles?.join(', ') }}</span>

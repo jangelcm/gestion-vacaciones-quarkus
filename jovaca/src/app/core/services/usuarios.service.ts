@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CrearUsuarioPayload, Rol, UsuarioCreado } from '../models/rol.model';
-import { PageResponse, Usuario } from '../models/usuario.model';
+import { PageResponse, UpdateUsuarioPayload, Usuario } from '../models/usuario.model';
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosService {
@@ -26,5 +26,9 @@ export class UsuariosService {
             filters: [],
             sorts: []
         });
+    }
+
+    actualizar(id: number, payload: UpdateUsuarioPayload): Observable<Usuario> {
+        return this.http.put<Usuario>(`${this.BASE}/users/${id}`, payload);
     }
 }

@@ -6,6 +6,13 @@ export interface Usuario {
     isActive: boolean;
 }
 
+export interface UpdateUsuarioPayload {
+    username?: string;
+    email?: string;
+    telefono?: string;
+    isActive?: boolean;
+}
+
 export interface PageResponse<T> {
     content: T[];
     page: number;

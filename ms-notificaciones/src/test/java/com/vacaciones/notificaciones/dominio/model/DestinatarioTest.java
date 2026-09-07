@@ -26,15 +26,17 @@ class DestinatarioTest {
     }
 
     @Test
-    void shouldThrowWhenEmailIsNull() {
-        assertThrows(IllegalArgumentException.class,
+    void shouldAllowNullEmailSinceItIsOptional() {
+        Destinatario destinatario = assertDoesNotThrow(
                 () -> new Destinatario(1001L, null, "Ana Perez"));
+        assertEquals(null, destinatario.email());
     }
 
     @Test
-    void shouldThrowWhenEmailIsEmpty() {
-        assertThrows(IllegalArgumentException.class,
+    void shouldAllowEmptyEmailSinceItIsOptional() {
+        Destinatario destinatario = assertDoesNotThrow(
                 () -> new Destinatario(1001L, "", "Ana Perez"));
+        assertEquals("", destinatario.email());
     }
 
     @Test

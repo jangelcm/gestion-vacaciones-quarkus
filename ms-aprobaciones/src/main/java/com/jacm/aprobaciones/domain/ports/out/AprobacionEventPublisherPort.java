@@ -1,6 +1,7 @@
 package com.jacm.aprobaciones.domain.ports.out;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * Puerto de salida: publicación de eventos de aprobación hacia Kafka.
@@ -9,7 +10,8 @@ import java.math.BigDecimal;
 public interface AprobacionEventPublisherPort {
 
     void publicarSolicitudAprobada(Long solicitudId, String colaboradorId, BigDecimal diasAprobados,
-            String aprobadorId, String comentario);
+            LocalDate fechaInicio, LocalDate fechaFin, String aprobadorId, String comentario);
 
-    void publicarSolicitudRechazada(Long solicitudId, String aprobadorId, String motivo);
+    void publicarSolicitudRechazada(Long solicitudId, String colaboradorId, LocalDate fechaInicio,
+            LocalDate fechaFin, String aprobadorId, String motivo);
 }

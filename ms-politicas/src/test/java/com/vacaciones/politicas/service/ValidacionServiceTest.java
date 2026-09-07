@@ -49,8 +49,8 @@ class ValidacionServiceTest {
         SaldoDiasEntity saldo = buildSaldoDias(1001L, politica, "2.0");
         ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
                 1001L,
-                LocalDate.of(2026, 8, 17),
-                LocalDate.of(2026, 8, 21),
+                LocalDate.of(2026, 11, 9),
+                LocalDate.of(2026, 11, 18),
                 "ANUAL",
                 12);
 
@@ -60,7 +60,7 @@ class ValidacionServiceTest {
         ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
 
         assertFalse(response.aprobado());
-        assertEquals(5, response.diasSolicitados());
+        assertEquals(8, response.diasSolicitados());
         assertEquals("Saldo insuficiente para la solicitud", response.motivoRechazo());
     }
 
@@ -70,8 +70,8 @@ class ValidacionServiceTest {
         SaldoDiasEntity saldo = buildSaldoDias(1002L, politica, "10.0");
         ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
                 1002L,
-                LocalDate.of(2026, 8, 17),
-                LocalDate.of(2026, 8, 21),
+                LocalDate.of(2026, 11, 9),
+                LocalDate.of(2026, 11, 18),
                 "ANUAL",
                 12);
 
@@ -81,7 +81,7 @@ class ValidacionServiceTest {
         ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
 
         assertTrue(response.aprobado());
-        assertEquals(5, response.diasSolicitados());
+        assertEquals(8, response.diasSolicitados());
         assertNull(response.motivoRechazo());
     }
 
@@ -89,8 +89,8 @@ class ValidacionServiceTest {
     void shouldRejectWithoutThrowingWhenColaboradorHasNoSaldo() {
         ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
                 9999L,
-                LocalDate.of(2026, 8, 17),
-                LocalDate.of(2026, 8, 21),
+                LocalDate.of(2026, 11, 9),
+                LocalDate.of(2026, 11, 18),
                 "ANUAL",
                 12);
 
@@ -99,8 +99,95 @@ class ValidacionServiceTest {
         ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
 
         assertFalse(response.aprobado());
-        assertEquals(5, response.diasSolicitados());
+        assertEquals(8, response.diasSolicitados());
         assertEquals("No se encontro saldo de dias para el colaborador", response.motivoRechazo());
+    }
+
+    @Test
+    void shouldRejectWhenRequestedLessThanTenDaysInAdvance() {
+        ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
+                1004L,
+                LocalDate.now().plusDays(3),
+                LocalDate.now().plusDays(5),
+                "ANUAL",
+                12);
+
+        ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
+
+        assertFalse(response.aprobado());
+        assertEquals(
+                "La solicitud debe realizarse con al menos 10 dias de anticipacion a la fecha de inicio",
+                response.motivoRechazo());
+    }
+
+    @Test
+    void shouldRejectWhenRequestedExactlyNineDaysInAdvance() {
+        ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
+                1004L,
+                LocalDate.now().plusDays(9),
+                LocalDate.now().plusDays(11),
+                "ANUAL",
+                12);
+
+        ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
+
+        assertFalse(response.aprobado());
+        assertEquals(
+                "La solicitud debe realizarse con al menos 10 dias de anticipacion a la fecha de inicio",
+                response.motivoRechazo());
+    }
+
+    @Test
+    void shouldAllowWhenRequestedExactlyTenDaysInAdvanceAndExactlyTenCalendarDaysLong() {
+        PoliticaEntity politica = buildPolitica();
+        SaldoDiasEntity saldo = buildSaldoDias(1004L, politica, "20.0");
+        LocalDate inicio = LocalDate.now().plusDays(10);
+        ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
+                1004L,
+                inicio,
+                inicio.plusDays(9),
+                "ANUAL",
+                12);
+
+        when(saldoDiasRepository.findByColaboradorId(1004L)).thenReturn(saldo);
+        when(reglaEspecialRepository.listAll()).thenReturn(List.of());
+
+        ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
+
+        assertTrue(response.aprobado());
+        assertNull(response.motivoRechazo());
+    }
+
+    @Test
+    void shouldRejectWhenRequestedFewerThanTenCalendarDays() {
+        LocalDate inicio = LocalDate.now().plusDays(15);
+        ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
+                1005L,
+                inicio,
+                inicio.plusDays(2),
+                "ANUAL",
+                12);
+
+        ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
+
+        assertFalse(response.aprobado());
+        assertEquals("La solicitud debe ser de al menos 10 dias calendario", response.motivoRechazo());
+    }
+
+    @Test
+    void shouldRejectWhenRequestedExactlyNineCalendarDays() {
+        LocalDate inicio = LocalDate.now().plusDays(15);
+        ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
+                1005L,
+                inicio,
+                inicio.plusDays(8),
+                "ANUAL",
+                12);
+
+        ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 12);
+
+        assertFalse(response.aprobado());
+        assertEquals("La solicitud debe ser de al menos 10 dias calendario", response.motivoRechazo());
     }
 
     @Test
@@ -117,8 +204,8 @@ class ValidacionServiceTest {
                 .build();
         ValidarSolicitudRequestDto request = new ValidarSolicitudRequestDto(
                 1003L,
-                LocalDate.of(2026, 8, 17),
-                LocalDate.of(2026, 8, 25),
+                LocalDate.of(2026, 11, 9),
+                LocalDate.of(2026, 11, 18),
                 "ANUAL",
                 60);
 
@@ -128,7 +215,7 @@ class ValidacionServiceTest {
         ValidarSolicitudResponseDto response = validacionService.validarSolicitud(request, 60);
 
         assertTrue(response.aprobado());
-        assertEquals(7, response.diasSolicitados());
+        assertEquals(8, response.diasSolicitados());
         assertNull(response.motivoRechazo());
     }
 

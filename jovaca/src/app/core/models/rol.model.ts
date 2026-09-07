@@ -6,6 +6,7 @@ export interface Rol {
 export interface CrearUsuarioPayload {
     username: string;
     password: string;
+    email: string;
     rol: string;
 }
 

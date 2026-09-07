@@ -25,6 +25,7 @@ export class CrearUsuarioComponent implements OnInit {
     form = this.fb.group({
         username: ['', Validators.required],
         password: ['', [Validators.required, Validators.minLength(6)]],
+        email: ['', [Validators.required, Validators.email]],
         rol: ['', Validators.required]
     });
 
@@ -43,8 +44,8 @@ export class CrearUsuarioComponent implements OnInit {
         this.error.set(null);
         this.exito.set(null);
 
-        const { username, password, rol } = this.form.value;
-        this.svc.crear({ username: username!, password: password!, rol: rol! }).subscribe({
+        const { username, password, email, rol } = this.form.value;
+        this.svc.crear({ username: username!, password: password!, email: email!, rol: rol! }).subscribe({
             next: (usuario) => {
                 this.loading.set(false);
                 this.exito.set(`Usuario "${usuario.username}" creado correctamente con rol "${rol}"`);
@@ -56,7 +57,7 @@ export class CrearUsuarioComponent implements OnInit {
                 if (err.status === 409) {
                     this.error.set('Ese usuario ya existe');
                 } else if (err.status === 400) {
-                    this.error.set(typeof err.error === 'string' ? err.error : 'Rol no válido');
+                    this.error.set(typeof err.error === 'string' ? err.error : 'Datos inválidos');
                 } else {
                     this.error.set('No se pudo crear el usuario. Intente nuevamente.');
                 }

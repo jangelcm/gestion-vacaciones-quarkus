@@ -6,6 +6,7 @@ import com.jacm.aprobaciones.infrastructure.adapters.out.kafka.dto.SolicitudApro
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -31,22 +32,31 @@ public class AprobacionEventPublisherAdapter implements AprobacionEventPublisher
 
     @Override
     public void publicarSolicitudAprobada(
-            Long solicitudId, String colaboradorId, BigDecimal diasAprobados, String aprobadorId, String comentario) {
+            Long solicitudId, String colaboradorId, BigDecimal diasAprobados,
+            LocalDate fechaInicio, LocalDate fechaFin, String aprobadorId, String comentario) {
         var evento = new SolicitudAprobadaEventoDTO(
                 UUID.randomUUID().toString(),
                 solicitudId,
                 colaboradorId != null ? Long.valueOf(colaboradorId) : null,
                 diasAprobados,
-                LocalDateTime.now());
+                LocalDateTime.now(),
+                fechaInicio,
+                fechaFin);
         LOG.infof("Publicando evento 'solicitud.aprobada' para solicitud ID: %d, colaborador: %s, dias: %s",
                 solicitudId, colaboradorId, diasAprobados);
         aprobadaEmitter.send(evento);
     }
 
     @Override
-    public void publicarSolicitudRechazada(Long solicitudId, String aprobadorId, String motivo) {
-        var evento = new AprobacionEventoDTO(solicitudId, aprobadorId, "RECHAZADO", motivo);
-        LOG.infof("Publicando evento 'solicitud.rechazada' para solicitud ID: %d", solicitudId);
+    public void publicarSolicitudRechazada(
+            Long solicitudId, String colaboradorId, LocalDate fechaInicio, LocalDate fechaFin,
+            String aprobadorId, String motivo) {
+        var evento = new AprobacionEventoDTO(
+                solicitudId, aprobadorId, "RECHAZADO", motivo,
+                colaboradorId != null ? Long.valueOf(colaboradorId) : null,
+                fechaInicio, fechaFin);
+        LOG.infof("Publicando evento 'solicitud.rechazada' para solicitud ID: %d, colaborador: %s",
+                solicitudId, colaboradorId);
         rechazadaEmitter.send(evento);
     }
 }

@@ -175,6 +175,7 @@ services:
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      AUTH_URL: http://mcsv-auth:9001
     ports:
       - "8084:8084"
     networks:

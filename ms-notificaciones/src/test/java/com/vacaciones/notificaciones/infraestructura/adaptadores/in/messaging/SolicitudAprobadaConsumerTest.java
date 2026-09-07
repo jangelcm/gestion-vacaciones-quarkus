@@ -9,13 +9,16 @@ import com.vacaciones.notificaciones.dominio.model.Destinatario;
 import com.vacaciones.notificaciones.dominio.model.EstadoNotificacion;
 import com.vacaciones.notificaciones.dominio.model.Notificacion;
 import com.vacaciones.notificaciones.dominio.model.TipoNotificacion;
+import com.vacaciones.notificaciones.dominio.model.UsuarioInfo;
 import com.vacaciones.notificaciones.infraestructura.adaptadores.in.messaging.event.SolicitudAprobadaEvent;
 import com.vacaciones.notificaciones.testsupport.EnviarNotificacionUseCaseMock;
+import com.vacaciones.notificaciones.testsupport.ResolverUsuarioPortMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import io.smallrye.reactive.messaging.memory.InMemorySource;
 import jakarta.inject.Inject;
 import java.time.LocalDate;
+import java.util.Optional;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,15 +37,17 @@ class SolicitudAprobadaConsumerTest {
     @BeforeEach
     void setUp() {
         connector.clear();
-        Mockito.reset(EnviarNotificacionUseCaseMock.DELEGATE);
+        Mockito.reset(EnviarNotificacionUseCaseMock.DELEGATE, ResolverUsuarioPortMock.DELEGATE);
         objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     @Test
     void shouldMapEventAndCallUseCaseWhenSolicitudAprobadaArrives() throws Exception {
         SolicitudAprobadaEvent evento = new SolicitudAprobadaEvent(
-                "evt-1", 9001L, 1001L, "colaborador@empresa.com", "Ana Perez",
+                "evt-1", 9001L, 1001L,
                 LocalDate.of(2026, 9, 10), LocalDate.of(2026, 9, 15));
+        Mockito.when(ResolverUsuarioPortMock.DELEGATE.resolverPorColaboradorId(1001L))
+                .thenReturn(Optional.of(new UsuarioInfo(1001L, "colaborador@empresa.com", "Ana Perez")));
 
         InMemorySource<String> source = connector.source("solicitud-aprobada-in");
         source.send(objectMapper.writeValueAsString(evento));
@@ -52,7 +57,7 @@ class SolicitudAprobadaConsumerTest {
 
         Notificacion notificacion = captor.getValue();
         assertEquals("evt-1", notificacion.getEventoId());
-        assertEquals(TipoNotificacion.EMAIL, notificacion.getTipo());
+        assertEquals(TipoNotificacion.RECORDATORIO, notificacion.getTipo());
         assertEquals(
                 new Destinatario(1001L, "colaborador@empresa.com", "Ana Perez"),
                 notificacion.getDestinatario());

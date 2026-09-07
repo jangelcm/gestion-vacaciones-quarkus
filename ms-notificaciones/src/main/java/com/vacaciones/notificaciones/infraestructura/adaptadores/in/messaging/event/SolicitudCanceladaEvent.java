@@ -6,8 +6,6 @@ public record SolicitudCanceladaEvent(
         String eventoId,
         Long solicitudId,
         Long colaboradorId,
-        String colaboradorEmail,
-        String colaboradorNombre,
         LocalDate fechaInicio,
         LocalDate fechaFin) {
 }

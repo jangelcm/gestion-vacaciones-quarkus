@@ -5,6 +5,7 @@ com\vacaciones\notificaciones\dominio\port\out\NotificacionEventoPublisherPort.c
 com\vacaciones\notificaciones\infraestructura\exception\ExceptionMapper.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\event\SolicitudAprobadaEvent.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\out\mail\QuarkusMailerAdapter.class
+com\vacaciones\notificaciones\dominio\model\UsuarioInfo.class
 com\vacaciones\notificaciones\dominio\model\Notificacion.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\out\persistence\NotificacionMongoEntity$NotificacionMongoEntityBuilder.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\SolicitudCreadaConsumer.class
@@ -16,11 +17,14 @@ com\vacaciones\notificaciones\infraestructura\exception\NotificacionNoEncontrada
 com\vacaciones\notificaciones\dominio\model\EstadoNotificacionInvalidoException.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\rest\mapper\NotificacionRestMapper.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\rest\dto\response\NotificacionResponseDto.class
+com\vacaciones\notificaciones\dominio\port\out\ResolverUsuarioPort.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\rest\NotificacionResource.class
 com\vacaciones\notificaciones\dominio\model\Destinatario.class
 com\vacaciones\notificaciones\dominio\port\out\EnviadorEmailPort.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\out\persistence\NotificacionMongoEntity.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\out\client\UsuarioClientAdapter.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\SolicitudRechazadaConsumer.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\out\client\UsuariosClient.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\out\websocket\WebSocketNotificadorAdapter.class
 com\vacaciones\notificaciones\dominio\port\out\NotificadorTiempoRealPort.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\mapper\EventoNotificacionMapper.class
@@ -32,6 +36,7 @@ com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\Solicitud
 com\vacaciones\notificaciones\infraestructura\adaptadores\out\websocket\SesionesWebSocketRegistry.class
 com\vacaciones\notificaciones\aplicacion\casouso\EnviarNotificacionService$1.class
 com\vacaciones\notificaciones\infraestructura\producer\NotificacionEnviadaEventProducer.class
+com\vacaciones\notificaciones\infraestructura\adaptadores\out\client\dto\UsuarioResponse.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\out\persistence\NotificacionPersistenceMapper.class
 com\vacaciones\notificaciones\aplicacion\casouso\ConsultarHistorialService.class
 com\vacaciones\notificaciones\infraestructura\adaptadores\in\messaging\event\SolicitudCanceladaEvent.class
