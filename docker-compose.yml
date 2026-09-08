@@ -181,6 +181,27 @@ services:
     networks:
       - vacaciones-net
 
+  ms-consultas:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ms-consultas
+    container_name: ms-consultas
+    depends_on:
+      mongodb:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_DB: ${MONGO_CONSULTAS_DB:-consultas_db}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-mongo_user}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-mongo_pass}
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-kafka:9092}
+    ports:
+      - "8085:8085"
+    networks:
+      - vacaciones-net
+
   mcsv-auth:
     build:
       context: .
@@ -211,6 +232,7 @@ services:
       - ms-aprobaciones
       - ms-politicas
       - ms-notificaciones
+      - ms-consultas
     ports:
       - "8080:8080"
     networks:

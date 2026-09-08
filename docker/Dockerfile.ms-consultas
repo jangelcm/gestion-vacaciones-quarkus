@@ -9,5 +9,5 @@ WORKDIR /deployments
 
 COPY --from=build /workspace/ms-consultas/target/*-runner.jar /deployments/app.jar
 
-EXPOSE 8084
+EXPOSE 8085
 ENTRYPOINT ["java", "-Dquarkus.http.host=0.0.0.0", "-jar", "/deployments/app.jar"]
