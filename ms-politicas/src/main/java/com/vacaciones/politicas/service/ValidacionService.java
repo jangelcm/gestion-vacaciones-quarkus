@@ -65,7 +65,8 @@ public class ValidacionService {
             return new ValidarSolicitudResponseDto(false, diasHabiles, SALDO_NO_ENCONTRADO);
         }
 
-        long diasAdicionales = calcularDiasAdicionales(saldoDias, antiguedadMeses);
+        Integer antiguedadCalculada = calcularAntiguedadMeses(saldoDias.getFechaIngresoColaborador(), antiguedadMeses);
+        long diasAdicionales = calcularDiasAdicionales(saldoDias, antiguedadCalculada);
         long diasSolicitados = diasHabiles;
 
         BigDecimal saldoEfectivo = saldoDias.getDiasDisponibles().add(BigDecimal.valueOf(diasAdicionales));
@@ -102,5 +103,16 @@ public class ValidacionService {
 
         int mesesRequeridos = Integer.parseInt(condicion.substring("ANTIGUEDAD>=".length()));
         return antiguedadMeses >= mesesRequeridos;
+    }
+
+    private Integer calcularAntiguedadMeses(LocalDate fechaIngreso, Integer antiguedadFallback) {
+        if (fechaIngreso == null) {
+            return antiguedadFallback;
+        }
+        LocalDate hoy = LocalDate.now();
+        if (fechaIngreso.isAfter(hoy)) {
+            return 0;
+        }
+        return (int) ChronoUnit.MONTHS.between(fechaIngreso.withDayOfMonth(1), hoy.withDayOfMonth(1));
     }
 }

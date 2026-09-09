@@ -1,32 +1,42 @@
 <form class="form" [formGroup]="form" (ngSubmit)="asignar()">
-    <label class="field-label" for="colaboradorId">Colaborador</label>
-    <select id="colaboradorId" formControlName="colaboradorId" class="input-field">
-        <option [ngValue]="null" disabled>Seleccione un colaborador</option>
-        @for (u of usuarios(); track u.id) {
-        <option [ngValue]="u.id">{{ u.username }}</option>
-        }
+    <label class="field-label" for="rol">Rol de colaboradores</label>
+    <select id="rol" formControlName="rol" class="input-field">
+        <option value="" disabled>Seleccione un rol</option>
+        <option value="Colaborador">Colaborador</option>
+        <option value="Jefe Inmediato">Jefe Inmediato</option>
+        <option value="Recursos Humanos">Recursos Humanos</option>
+        <option value="Administrador">Administrador</option>
     </select>
-    @if (f.colaboradorId.invalid && f.colaboradorId.touched) {
-    <span class="field-error">Seleccione un colaborador</span>
+    @if (f.rol.invalid && f.rol.touched) {
+    <span class="field-error">Seleccione un rol</span>
+    }
+
+    <label class="field-label" for="fechaInicioPolitica">Fecha inicio de política</label>
+    <input id="fechaInicioPolitica" type="date" formControlName="fechaInicioPolitica" class="input-field" />
+    @if (f.fechaInicioPolitica.invalid && f.fechaInicioPolitica.touched) {
+    <span class="field-error">La fecha de inicio de política es obligatoria</span>
     }
 
     <label class="field-label" for="politicaId">Política</label>
     <select id="politicaId" formControlName="politicaId" class="input-field">
         <option [ngValue]="null" disabled>Seleccione una política</option>
         @for (p of politicas; track p.id) {
-        <option [ngValue]="p.id" [disabled]="!p.activa">{{ p.nombre }} ({{ p.diasBaseAnio }} días){{ !p.activa ? ' — inactiva' : '' }}</option>
+        <option [ngValue]="p.id" [disabled]="!p.activa">{{ p.nombre }} ({{ p.diasBaseAnio }} días){{ !p.activa ? ' —
+            inactiva' : '' }}</option>
         }
     </select>
     @if (f.politicaId.invalid && f.politicaId.touched) {
     <span class="field-error">Seleccione una política</span>
     }
 
-    <label class="field-label" for="antiguedadMeses">Antigüedad del colaborador (meses)</label>
-    <input id="antiguedadMeses" type="number" formControlName="antiguedadMeses" class="input-field"
-        placeholder="Solo si la política lo requiere" />
+    <div class="state-msg">Se asignará automáticamente a todos los usuarios del rol seleccionado según su fecha de
+        ingreso.</div>
 
     @if (error()) {
     <div class="alert alert-error">{{ error() }}</div>
+    }
+    @if (exito()) {
+    <div class="alert alert-success">{{ exito() }}</div>
     }
 
     <div class="form-actions">

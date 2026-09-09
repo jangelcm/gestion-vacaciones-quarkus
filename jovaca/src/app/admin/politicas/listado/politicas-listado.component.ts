@@ -74,13 +74,13 @@ export class PoliticasListadoComponent implements OnInit {
         this.cargar();
     }
 
-    eliminar(p: Politica): void {
-        if (!confirm(`¿Eliminar la política "${p.nombre}"? Esta acción no se puede deshacer.`)) {
+    desactivar(p: Politica): void {
+        if (!confirm(`¿Desactivar la política "${p.nombre}"?`)) {
             return;
         }
-        this.svc.eliminar(p.id).subscribe({
+        this.svc.desactivar(p.id).subscribe({
             next: () => this.cargar(),
-            error: () => this.error.set('No se pudo eliminar la política')
+            error: () => this.error.set('No se pudo desactivar la política')
         });
     }
 

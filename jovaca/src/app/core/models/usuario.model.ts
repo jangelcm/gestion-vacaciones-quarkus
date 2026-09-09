@@ -4,6 +4,7 @@ export interface Usuario {
     email: string | null;
     telefono: string | null;
     isActive: boolean;
+    fechaIngreso: string | null;
 }
 
 export interface UpdateUsuarioPayload {

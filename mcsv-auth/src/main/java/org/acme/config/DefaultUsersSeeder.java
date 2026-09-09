@@ -15,6 +15,7 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
 
 @ApplicationScoped
 public class DefaultUsersSeeder {
@@ -85,6 +86,7 @@ public class DefaultUsersSeeder {
         user.passwordHash = BCrypt.hashpw(defaultUser.password(), BCrypt.gensalt());
         user.email = defaultUser.email();
         user.isActive = true;
+        user.fechaIngreso = LocalDate.now().minusYears(1);
         userRepository.persist(user);
 
         RolsUser rolsUser = new RolsUser();

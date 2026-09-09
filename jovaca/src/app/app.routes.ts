@@ -14,7 +14,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./layout/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
-      { path: '', redirectTo: 'solicitudes', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./vacaciones/saldo-dash-board/saldo-dash-board.component').then(m => m.MiSaldoDashboardComponent)
+      },
       {
         path: 'solicitudes',
         loadComponent: () =>

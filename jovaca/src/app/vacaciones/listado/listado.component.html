@@ -1,45 +1,8 @@
-@if (miSaldoLoading()) {
-<div class="saldo-bar saldo-bar-loading">
-    <span class="spinner"></span> Cargando tu saldo de vacaciones...
-</div>
-}
-
-@if (miSaldoError()) {
-<div class="saldo-bar saldo-bar-empty">{{ miSaldoError() }}</div>
-}
-
-@if (miSaldo(); as ms) {
-<div class="saldo-bar">
-    <div class="saldo-tile">
-        <span class="saldo-tile-value saldo-tile-highlight">{{ ms.diasDisponibles }}</span>
-        <span class="saldo-tile-label">Días disponibles</span>
-    </div>
-    <div class="saldo-tile">
-        <span class="saldo-tile-value">{{ ms.diasUsados }}</span>
-        <span class="saldo-tile-label">Días usados</span>
-    </div>
-    <div class="saldo-tile">
-        <span class="saldo-tile-value">{{ ms.diasAcumulados }}</span>
-        <span class="saldo-tile-label">Días acumulados</span>
-    </div>
-</div>
-}
-
 <div class="container">
     <div class="header">
-        <h2>Mis Solicitudes de Vacaciones</h2>
-        <button type="button" class="btn btn-primary" (click)="abrirModalNueva()">+ Nueva Solicitud</button>
+        <h2>Listado de Solicitudes de Vacaciones</h2>
+        <button type="button" class="btn btn-primary" (click)="cargar()">Actualizar</button>
     </div>
-
-    @if (esAdmin()) {
-    <div class="search-bar">
-        <input type="number" [(ngModel)]="inputId" placeholder="ID de colaborador" class="input-field"
-            (keyup.enter)="cargar()" />
-        <button (click)="cargar()" class="btn btn-secondary">Buscar</button>
-        <button (click)="cargarTodas()" class="btn" [class.btn-secondary]="!verTodas()"
-            [class.btn-primary]="verTodas()">Ver todas</button>
-    </div>
-    }
 
     @if (loading()) {
     <div class="state-msg loading-msg">
@@ -61,30 +24,20 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    @if (esAdmin()) {
-                    <th>Colaborador</th>
-                    }
                     <th>Fecha Inicio</th>
                     <th>Fecha Fin</th>
                     <th>Fecha Solicitud</th>
                     <th>Estado</th>
-                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
                 @for (s of solicitudes(); track s.id) {
                 <tr>
                     <td class="id-col">#{{ s.id }}</td>
-                    @if (esAdmin()) {
-                    <td>{{ nombreColaborador(s.colaboradorId) }}</td>
-                    }
                     <td>{{ s.fechaInicio | date: 'dd/MM/yyyy' }}</td>
                     <td>{{ s.fechaFin | date: 'dd/MM/yyyy' }}</td>
                     <td>{{ s.fechaSolicitud | date: 'dd/MM/yyyy' }}</td>
                     <td><span [class]="'badge ' + badgeClass(s.estado)">{{ s.estado }}</span></td>
-                    <td>
-                        <button (click)="verDetalle(s)" class="btn btn-sm">Ver detalle</button>
-                    </td>
                 </tr>
                 }
             </tbody>
@@ -92,16 +45,3 @@
     </div>
     }
 </div>
-
-@if (modalNuevaAbierta()) {
-<app-modal titulo="Nueva Solicitud" (cerrar)="cerrarModalNueva()">
-    <app-formulario (creada)="onSolicitudCreada()" (cancelar)="cerrarModalNueva()" />
-</app-modal>
-}
-
-@if (solicitudDetalle(); as s) {
-<app-modal titulo="Detalle de Solicitud" anchoMax="520px" (cerrar)="cerrarDetalle()">
-    <app-detalle [solicitud]="s" [nombreColaborador]="esAdmin() ? nombreColaborador(s.colaboradorId) : null"
-        (cerrar)="cerrarDetalle()" />
-</app-modal>
-}

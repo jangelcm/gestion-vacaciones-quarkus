@@ -28,10 +28,18 @@ export interface SaldoDias {
     diasDisponibles: string;
     diasUsados: string;
     diasAcumulados: string;
+    diasHabilitados: string;
+    saldoActual: string;
+    diasTruncos: string;
+    diasTrabajados: string;
+    diasPendientes: string;
+    fechaIngresoColaborador: string | null;
+    fechaAsignacionPolitica: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
 export interface AsignarPoliticaPayload {
-    antiguedadMeses: number | null;
+    fechaInicioPolitica: string;
+    fechaIngresoColaborador: string | null;
 }

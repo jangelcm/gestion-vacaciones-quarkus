@@ -2,7 +2,7 @@ package com.vacaciones.politicas.messaging.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vacaciones.politicas.messaging.event.UsuarioRegistradoEvent;
+import com.vacaciones.politicas.messaging.event.EmpleadoCreadoEvent;
 import com.vacaciones.politicas.service.SaldoDiasService;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -21,10 +21,11 @@ public class UsuarioRegistradoConsumer {
         this.saldoDiasService = saldoDiasService;
     }
 
-    @Incoming("usuario-registrado-in")
-    public void onUsuarioRegistrado(String mensaje) throws JsonProcessingException {
-        LOG.infof("Evento 'usuario.registrado' recibido: %s", mensaje);
-        UsuarioRegistradoEvent evento = objectMapper.readValue(mensaje, UsuarioRegistradoEvent.class);
-        saldoDiasService.asignarPoliticaPorDefectoSiNoTiene(evento.colaboradorId());
+    @Incoming("empleado-creado-in")
+    public void onEmpleadoCreado(String mensaje) throws JsonProcessingException {
+        LOG.infof("Evento 'empleado.creado' recibido: %s", mensaje);
+        EmpleadoCreadoEvent evento = objectMapper.readValue(mensaje, EmpleadoCreadoEvent.class);
+        saldoDiasService.asignarPoliticaPorDefectoSiNoTiene(evento.trabajadorId(), evento.fechaIngreso());
     }
+
 }

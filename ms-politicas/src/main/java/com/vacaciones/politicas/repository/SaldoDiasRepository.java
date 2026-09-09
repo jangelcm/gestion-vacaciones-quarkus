@@ -16,6 +16,10 @@ public class SaldoDiasRepository implements PanacheRepositoryBase<SaldoDiasEntit
         return find("politica.id", politicaId).list();
     }
 
+    public long countByPoliticaId(Long politicaId) {
+        return count("politica.id", politicaId);
+    }
+
     public List<SaldoDiasEntity> findAniversariosAcumulables(int mes, int dia) {
         return find("politica.acumulable = true"
                 + " and extract(month from createdAt) = ?1"

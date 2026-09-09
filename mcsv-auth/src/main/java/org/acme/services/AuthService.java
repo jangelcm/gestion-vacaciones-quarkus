@@ -2,12 +2,13 @@
 package org.acme.services;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.acme.messaging.event.UsuarioRegistradoEvent;
+import org.acme.messaging.event.EmpleadoCreadoEvent;
 import org.acme.models.Rols;
 import org.acme.models.RolsUser;
 import org.acme.models.User;
@@ -48,13 +49,19 @@ public class AuthService {
     EntityManager entityManager;
 
     @Inject
-    @Channel("usuario-registrado-out")
-    Emitter<UsuarioRegistradoEvent> usuarioRegistradoEmitter;
+    @Channel("empleado-creado-out")
+    Emitter<EmpleadoCreadoEvent> empleadoCreadoEmitter;
 
     @Transactional
-    public User register(String username, String password, String email, String rol) {
+    public User register(String username, String password, String email, String rol, LocalDate fechaIngreso) {
         if (email == null || email.isBlank() || !email.contains("@")) {
             throw new IllegalArgumentException("El email es requerido y debe ser valido");
+        }
+        if (fechaIngreso == null) {
+            throw new IllegalArgumentException("La fecha de ingreso es obligatoria");
+        }
+        if (fechaIngreso.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("La fecha de ingreso no puede estar en el futuro");
         }
 
         User user = new User();
@@ -62,11 +69,12 @@ public class AuthService {
         user.passwordHash = hashPassword(password);
         user.email = email.trim();
         user.isActive = true;
+        user.fechaIngreso = fechaIngreso;
         userRepository.persist(user);
 
         asignarRol(user, rol);
 
-        usuarioRegistradoEmitter.send(new UsuarioRegistradoEvent(user.id, user.username, user.email));
+        empleadoCreadoEmitter.send(new EmpleadoCreadoEvent(user.id, user.fechaIngreso, Boolean.TRUE));
         return user;
     }
 

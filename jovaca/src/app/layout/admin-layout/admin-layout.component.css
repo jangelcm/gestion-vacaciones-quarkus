@@ -1,14 +1,14 @@
 .shell {
     display: flex;
     min-height: 100vh;
-    background: #f6f5fa;
+    background: transparent;
 }
 
 /* ── Sidebar ── */
 .sidebar {
     width: 240px;
     flex-shrink: 0;
-    background: linear-gradient(180deg, #111111 0%, #1c1030 100%);
+    background: linear-gradient(180deg, var(--cold-900) 0%, #3d5d6f 100%);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -60,7 +60,7 @@
 
 .nav-item.active {
     color: #fff;
-    background: #6d28d9;
+    background: rgba(255, 255, 255, 0.2);
     font-weight: 700;
 }
 
@@ -80,8 +80,8 @@
 .topbar {
     height: 60px;
     flex-shrink: 0;
-    background: #fff;
-    border-bottom: 1px solid #e5e7eb;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid var(--border-soft);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -107,19 +107,19 @@
 .user-name {
     font-size: 0.88rem;
     font-weight: 700;
-    color: #1e1e2e;
+    color: var(--text-main);
 }
 
 .user-roles {
     font-size: 0.72rem;
-    color: #6d28d9;
+    color: var(--cold-700);
     font-weight: 600;
 }
 
 .btn-logout {
-    border: 1.5px solid #e5e7eb;
-    background: #fff;
-    color: #374151;
+    border: 1.5px solid var(--border-soft);
+    background: var(--surface);
+    color: var(--text-main);
     border-radius: 8px;
     padding: 0.45rem 0.9rem;
     font-size: 0.82rem;
@@ -129,9 +129,9 @@
 }
 
 .btn-logout:hover {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #991b1b;
+    background: var(--cold-200);
+    border-color: var(--cold-500);
+    color: var(--cold-900);
 }
 
 .main-content {

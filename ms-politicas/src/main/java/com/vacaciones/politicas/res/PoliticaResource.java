@@ -51,6 +51,12 @@ public class PoliticaResource {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        return Response.ok(politicaService.delete(id)).build();
+        return Response.ok(politicaService.desactivar(id)).build();
+    }
+
+    @PUT
+    @Path("/{id}/desactivar")
+    public Response desactivar(@PathParam("id") Long id) {
+        return Response.ok(politicaService.desactivar(id)).build();
     }
 }

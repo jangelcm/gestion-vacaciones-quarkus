@@ -50,6 +50,7 @@ public class UserService {
                         .email(user.email)
                         .telefono(user.telefono)
                         .isActive(user.isActive)
+                    .fechaIngreso(user.fechaIngreso)
                         .build())
                 .toList();
     }
@@ -65,6 +66,7 @@ public class UserService {
                 .email(user.email)
                 .telefono(user.telefono)
                 .isActive(user.isActive)
+            .fechaIngreso(user.fechaIngreso)
                 .build();
     }
 
@@ -98,6 +100,7 @@ public class UserService {
                 .email(user.email)
                 .telefono(user.telefono)
                 .isActive(user.isActive)
+            .fechaIngreso(user.fechaIngreso)
                 .build();
     }
 
@@ -108,10 +111,10 @@ public class UserService {
 
         String jpql =
         "SELECT " +
-        "p.id, p.username, p.email, p.telefono, p.isActive" +
+        "p.id, p.username, p.email, p.telefono, p.isActive, p.fechaIngreso" +
         " FROM User p";   
 
-        List<String> fieldsDto = List.of("id", "username", "email", "telefono", "isActive");
+        List<String> fieldsDto = List.of("id", "username", "email", "telefono", "isActive", "fechaIngreso");
      
         Map<String, Object> filtersMap = new HashMap<>();
         if(paginationModel.getFilters() != null && !paginationModel.getFilters().isEmpty()){

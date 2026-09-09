@@ -4,6 +4,10 @@
 
         <nav class="sidebar-nav">
             <div class="nav-section-title">Vacaciones</div>
+            <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+                class="nav-item">
+                Panel de control
+            </a>
             <a routerLink="/solicitudes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
                 class="nav-item">
                 Mis Solicitudes

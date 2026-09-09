@@ -22,8 +22,8 @@ export class PoliticasService {
         return this.http.put<Politica>(`${this.BASE}/${id}`, payload);
     }
 
-    eliminar(id: number): Observable<Politica> {
-        return this.http.delete<Politica>(`${this.BASE}/${id}`);
+    desactivar(id: number): Observable<Politica> {
+        return this.http.put<Politica>(`${this.BASE}/${id}/desactivar`, {});
     }
 
     obtenerSaldo(colaboradorId: number): Observable<SaldoDias> {

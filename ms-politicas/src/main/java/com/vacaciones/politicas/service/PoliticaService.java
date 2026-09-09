@@ -7,6 +7,7 @@ import com.vacaciones.politicas.exception.ResourceNotFoundException;
 import com.vacaciones.politicas.mappers.PoliticaMapper;
 import com.vacaciones.politicas.messaging.event.PoliticaActualizadaEvent;
 import com.vacaciones.politicas.repository.PoliticaRepository;
+import com.vacaciones.politicas.repository.SaldoDiasRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -20,12 +21,15 @@ public class PoliticaService {
     private static final String POLITICA_NO_ENCONTRADA = "Politica no encontrada";
 
     private final PoliticaRepository politicaRepository;
+    private final SaldoDiasRepository saldoDiasRepository;
     private final Emitter<PoliticaActualizadaEvent> politicaActualizadaEmitter;
 
     public PoliticaService(
             PoliticaRepository politicaRepository,
+            SaldoDiasRepository saldoDiasRepository,
             @Channel("politica-actualizada-out") Emitter<PoliticaActualizadaEvent> politicaActualizadaEmitter) {
         this.politicaRepository = politicaRepository;
+        this.saldoDiasRepository = saldoDiasRepository;
         this.politicaActualizadaEmitter = politicaActualizadaEmitter;
     }
 
@@ -56,6 +60,8 @@ public class PoliticaService {
     private void publicarPoliticaActualizada(PoliticaEntity entity) {
         politicaActualizadaEmitter.send(new PoliticaActualizadaEvent(
                 entity.getId(),
+            null,
+            null,
                 entity.getNombre(),
                 entity.getTipoVacacion(),
                 entity.getDiasBaseAnio(),
@@ -69,10 +75,29 @@ public class PoliticaService {
 
     @Transactional
     public PoliticaResponseDto delete(Long id) {
+        return desactivar(id);
+    }
+
+    @Transactional
+    public PoliticaResponseDto desactivar(Long id) {
         PoliticaEntity existing = findEntityById(id);
-        PoliticaResponseDto response = PoliticaMapper.toDto(existing);
-        politicaRepository.deleteById(id);
-        return response;
+
+        if (!Boolean.TRUE.equals(existing.getActiva())) {
+            return PoliticaMapper.toDto(existing);
+        }
+
+        long asignaciones = saldoDiasRepository.countByPoliticaId(id);
+        if (asignaciones > 0) {
+            existing.setActiva(Boolean.FALSE);
+            politicaRepository.getEntityManager().flush();
+            publicarPoliticaActualizada(existing);
+            return PoliticaMapper.toDto(existing);
+        }
+
+        existing.setActiva(Boolean.FALSE);
+        politicaRepository.getEntityManager().flush();
+        publicarPoliticaActualizada(existing);
+        return PoliticaMapper.toDto(existing);
     }
 
     public List<PoliticaResponseDto> getAll() {

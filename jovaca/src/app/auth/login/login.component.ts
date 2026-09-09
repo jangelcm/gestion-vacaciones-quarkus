@@ -34,7 +34,7 @@ export class LoginComponent {
         this.auth.login({ username: username!, password: password! }).subscribe({
             next: () => {
                 this.loading.set(false);
-                this.router.navigate(['/solicitudes']);
+                this.router.navigate(['/dashboard']);
             },
             error: (err) => {
                 this.loading.set(false);

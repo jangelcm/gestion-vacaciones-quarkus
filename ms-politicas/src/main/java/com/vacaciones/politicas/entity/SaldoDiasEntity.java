@@ -14,6 +14,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,6 +56,12 @@ public class SaldoDiasEntity extends PanacheEntityBase {
 
     @Column(name = "dias_trabajados", nullable = false)
     private Integer diasTrabajados;
+
+    @Column(name = "fecha_ingreso_colaborador")
+    private LocalDate fechaIngresoColaborador;
+
+    @Column(name = "fecha_asignacion_politica")
+    private LocalDate fechaAsignacionPolitica;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

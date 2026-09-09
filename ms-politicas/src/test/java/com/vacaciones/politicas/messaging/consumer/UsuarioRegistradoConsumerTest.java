@@ -7,13 +7,15 @@ import static org.junit.jupiter.api.Assertions.fail;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vacaciones.politicas.entity.SaldoDiasEntity;
-import com.vacaciones.politicas.messaging.event.UsuarioRegistradoEvent;
+import com.vacaciones.politicas.messaging.event.EmpleadoCreadoEvent;
 import com.vacaciones.politicas.repository.SaldoDiasRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import io.smallrye.reactive.messaging.memory.InMemorySource;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +43,7 @@ class UsuarioRegistradoConsumerTest {
 
     @Test
     void shouldAssignDefaultPoliticaWhenUsuarioRegistradoEventArrives() throws Exception {
-        publishEvent(new UsuarioRegistradoEvent(COLABORADOR_NUEVO, "nuevo.usuario", "nuevo@empresa.com"));
+        publishEvent(new EmpleadoCreadoEvent(COLABORADOR_NUEVO, LocalDate.now(),true));
 
         awaitUntil(() -> saldoDiasRepository.findByColaboradorId(COLABORADOR_NUEVO) != null);
 
@@ -52,8 +54,8 @@ class UsuarioRegistradoConsumerTest {
 
     @Test
     void shouldBeIdempotentWhenUsuarioRegistradoEventArrivesTwice() throws Exception {
-        UsuarioRegistradoEvent evento =
-                new UsuarioRegistradoEvent(COLABORADOR_IDEMPOTENCIA, "duplicado.usuario", "duplicado@empresa.com");
+        EmpleadoCreadoEvent evento =
+                new EmpleadoCreadoEvent(COLABORADOR_IDEMPOTENCIA,  LocalDate.now(), true);
 
         publishEvent(evento);
         awaitUntil(() -> saldoDiasRepository.findByColaboradorId(COLABORADOR_IDEMPOTENCIA) != null);
@@ -66,9 +68,9 @@ class UsuarioRegistradoConsumerTest {
                 saldoDiasRepository.findByColaboradorId(COLABORADOR_IDEMPOTENCIA).getDiasDisponibles());
     }
 
-    private void publishEvent(UsuarioRegistradoEvent evento) {
+    private void publishEvent(EmpleadoCreadoEvent evento) {
         try {
-            InMemorySource<String> source = connector.source("usuario-registrado-in");
+            InMemorySource<String> source = connector.source("empleado-creado-in");
             source.send(objectMapper.writeValueAsString(evento));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

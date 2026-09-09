@@ -47,7 +47,7 @@
                     </td>
                     <td class="actions-col">
                         <button class="btn btn-sm" (click)="abrirEditar(p)">Editar</button>
-                        <button class="btn btn-sm btn-danger" (click)="eliminar(p)">Eliminar</button>
+                        <button class="btn btn-sm btn-danger" (click)="desactivar(p)">Desactivar</button>
                     </td>
                 </tr>
                 }
@@ -60,7 +60,7 @@
 <div class="container saldos-section">
     <div class="header">
         <h2>Saldos de Colaboradores</h2>
-        <button type="button" class="btn btn-primary" (click)="abrirAsignar()">+ Asignar Política</button>
+        <button type="button" class="btn btn-primary" (click)="abrirAsignar()">+ Asignación Masiva por Rol</button>
     </div>
 
     <div class="search-bar">
@@ -114,7 +114,7 @@
 }
 
 @if (modalAsignar()) {
-<app-modal titulo="Asignar Política a Colaborador" (cerrar)="cerrarModalAsignar()">
+<app-modal titulo="Asignar Política por Rol" (cerrar)="cerrarModalAsignar()">
     <app-asignar-saldo-form [politicas]="politicas()" (asignado)="onAsignado()" (cancelar)="cerrarModalAsignar()" />
 </app-modal>
 }

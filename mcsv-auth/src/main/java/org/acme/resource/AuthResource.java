@@ -41,7 +41,7 @@ public class AuthResource {
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
         try {
-            User user = authService.register(username, password, req.email, req.rol);
+            User user = authService.register(username, password, req.email, req.rol, req.fechaIngreso);
             return Response.ok().entity(user).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

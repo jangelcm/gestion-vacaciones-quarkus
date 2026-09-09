@@ -1,7 +1,7 @@
 <form class="form" [formGroup]="form" (ngSubmit)="crear()">
     <label class="field-label" for="username">Usuario</label>
-    <input id="username" type="text" formControlName="username" class="input-field"
-        placeholder="ej. jperez" autocomplete="off" />
+    <input id="username" type="text" formControlName="username" class="input-field" placeholder="ej. jperez"
+        autocomplete="off" />
     @if (f.username.invalid && f.username.touched) {
     <span class="field-error">El usuario es requerido</span>
     }
@@ -14,8 +14,8 @@
     }
 
     <label class="field-label" for="email">Email</label>
-    <input id="email" type="email" formControlName="email" class="input-field"
-        placeholder="ej. jperez@empresa.com" autocomplete="off" />
+    <input id="email" type="email" formControlName="email" class="input-field" placeholder="ej. jperez@empresa.com"
+        autocomplete="off" />
     @if (f.email.touched && f.email.hasError('required')) {
     <span class="field-error">El email es requerido</span>
     }
@@ -32,6 +32,12 @@
     </select>
     @if (f.rol.invalid && f.rol.touched) {
     <span class="field-error">Seleccione un rol</span>
+    }
+
+    <label class="field-label" for="fechaIngreso">Fecha de ingreso</label>
+    <input id="fechaIngreso" type="date" formControlName="fechaIngreso" class="input-field" />
+    @if (f.fechaIngreso.invalid && f.fechaIngreso.touched) {
+    <span class="field-error">La fecha de ingreso es obligatoria</span>
     }
 
     @if (error()) {

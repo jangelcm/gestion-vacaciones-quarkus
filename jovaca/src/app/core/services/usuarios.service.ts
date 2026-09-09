@@ -28,6 +28,10 @@ export class UsuariosService {
         });
     }
 
+    listarUsuariosPorRol(rol: string): Observable<Usuario[]> {
+        return this.http.get<Usuario[]>(`${this.BASE}/users/rol/${encodeURIComponent(rol)}`);
+    }
+
     actualizar(id: number, payload: UpdateUsuarioPayload): Observable<Usuario> {
         return this.http.put<Usuario>(`${this.BASE}/users/${id}`, payload);
     }

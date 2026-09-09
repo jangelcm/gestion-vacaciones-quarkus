@@ -1,0 +1,160 @@
+<div class="dashboard-container">
+    <!-- Encabezado con Perfil e Ingreso -->
+    <header class="dashboard-header">
+        <div class="user-info">
+            <h1>Panel de Control de Vacaciones</h1>
+            @if (saldo(); as s) {
+            <p class="subtext">
+                Fecha de ingreso: <strong>{{ s.fechaIngresoColaborador | date:'dd/MM/yyyy' }}</strong>
+                · <strong>{{ s.diasTrabajados }}</strong> días laborados acumulados
+            </p>
+            }
+        </div>
+        <button type="button" class="btn btn-primary" (click)="irANuevaSolicitud()">
+            + Nueva Solicitud
+        </button>
+    </header>
+
+    @if (loading()) {
+    <div class="state-card loading-card">
+        <span class="spinner"></span> Cargando información de saldo...
+    </div>
+    }
+
+    @if (error()) {
+    <div class="state-card error-card">{{ error() }}</div>
+    }
+
+    @if (saldo(); as s) {
+    <!-- KPIs Principales -->
+    <div class="kpi-grid">
+        <!-- Días Disponibles -->
+        <div class="kpi-card highlight">
+            <div class="kpi-icon-container">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <path d="M9 16l2 2 4-4"></path>
+                </svg>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-value">{{ s.diasDisponibles }}</span>
+                <span class="kpi-label">Días Disponibles</span>
+            </div>
+        </div>
+
+        <!-- Días Usados -->
+        <div class="kpi-card">
+            <div class="kpi-icon-container">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-value">{{ s.diasUsados }}</span>
+                <span class="kpi-label">Días Gozados / Usados</span>
+            </div>
+        </div>
+
+        <!-- Días Truncos -->
+        <div class="kpi-card">
+            <div class="kpi-icon-container">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="20" x2="12" y2="10"></line>
+                    <line x1="18" y1="20" x2="18" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="16"></line>
+                </svg>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-value">{{ s.diasTruncos }}</span>
+                <span class="kpi-label">Días En Generación (Truncos)</span>
+            </div>
+        </div>
+
+        <!-- Días Pendientes -->
+        <div class="kpi-card">
+            <div class="kpi-icon-container">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-value">{{ s.diasPendientes }}</span>
+                <span class="kpi-label">Días En Revisión</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Desglose Legal y Técnico -->
+    <div class="details-card">
+        <div class="details-card-header">
+            <h3>Detalle de Política y Adquisición de Días</h3>
+        </div>
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="detail-label">Días Habilitados (Por Ley)</span>
+                <span class="detail-value">{{ s.diasHabilitados }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Días Acumulados Totales</span>
+                <span class="detail-value">{{ s.diasAcumulados }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Asignación de Política</span>
+                <span class="detail-value">{{ s.fechaAsignacionPolitica | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Identificador de Política</span>
+                <span class="detail-value">ID #{{ s.politicaId }}</span>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Widget de Solicitudes Recientes -->
+    <section class="recent-section">
+        <div class="section-header">
+            <h3>Solicitudes Recientes</h3>
+            <button class="btn-link" (click)="irAHistorialCompleto()">
+                Ver historial completo
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
+        </div>
+
+        @if (solicitudesRecientes().length === 0) {
+        <div class="empty-state">No se registran solicitudes de vacaciones activas en el período.</div>
+        } @else {
+        <div class="recent-table-wrapper">
+            <table class="recent-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Periodo Solicitado</th>
+                        <th>Fecha Registro</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (sol of solicitudesRecientes(); track sol.id) {
+                    <tr>
+                        <td class="id-col">#{{ sol.id }}</td>
+                        <td>{{ sol.fechaInicio | date:'dd/MM/yyyy' }} — {{ sol.fechaFin | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ sol.fechaSolicitud | date:'dd/MM/yyyy' }}</td>
+                        <td><span [class]="'badge ' + badgeClass(sol.estado)">{{ sol.estado }}</span></td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </section>
+</div>

@@ -34,8 +34,11 @@ public class SaldoDiasResource {
             @PathParam("politicaId") Long politicaId,
             @PathParam("colaboradorId") Long colaboradorId,
             AsignarPoliticaRequestDto request) {
-        Integer antiguedadMeses = request != null ? request.antiguedadMeses() : null;
-        saldoDiasService.asignarPolitica(colaboradorId, politicaId, antiguedadMeses);
+        saldoDiasService.asignarPolitica(
+            colaboradorId,
+            politicaId,
+            request != null ? request.fechaInicioPolitica() : null,
+            request != null ? request.fechaIngresoColaborador() : null);
         return Response.status(Response.Status.CREATED).build();
     }
 

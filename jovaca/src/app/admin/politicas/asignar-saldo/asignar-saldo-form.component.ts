@@ -4,6 +4,7 @@ import { PoliticasService } from '../../../core/services/politicas.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Politica } from '../../../core/models/politica.model';
 import { Usuario } from '../../../core/models/usuario.model';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
     selector: 'app-asignar-saldo-form',
@@ -25,11 +26,12 @@ export class AsignarSaldoFormComponent implements OnInit {
     usuarios = signal<Usuario[]>([]);
     loading = signal(false);
     error = signal<string | null>(null);
+    exito = signal<string | null>(null);
 
     form = this.fb.group({
-        colaboradorId: [null as number | null, Validators.required],
+        rol: ['', Validators.required],
         politicaId: [null as number | null, Validators.required],
-        antiguedadMeses: [null as number | null]
+        fechaInicioPolitica: ['', Validators.required]
     });
 
     get f() { return this.form.controls; }
@@ -46,19 +48,49 @@ export class AsignarSaldoFormComponent implements OnInit {
 
         this.loading.set(true);
         this.error.set(null);
-        const { colaboradorId, politicaId, antiguedadMeses } = this.form.value;
+        this.exito.set(null);
+        const { rol, politicaId, fechaInicioPolitica } = this.form.value;
 
-        this.politicasSvc.asignar(politicaId!, colaboradorId!, { antiguedadMeses: antiguedadMeses ?? null }).subscribe({
-            next: () => { this.loading.set(false); this.asignado.emit(); },
-            error: (err) => {
-                this.loading.set(false);
-                if (err.status === 409) {
-                    this.error.set('Este colaborador ya tiene una política asignada');
-                } else if (err.status === 400) {
-                    this.error.set(typeof err.error?.mensaje === 'string' ? err.error.mensaje : 'No cumple los requisitos de la política');
-                } else {
-                    this.error.set('No se pudo asignar la política. Intente nuevamente.');
+        this.usuariosSvc.listarUsuariosPorRol(rol!).subscribe({
+            next: (usuariosRol) => {
+                if (usuariosRol.length === 0) {
+                    this.loading.set(false);
+                    this.error.set('No hay colaboradores con el rol seleccionado');
+                    return;
                 }
+
+                let completados = 0;
+                let errores = 0;
+                const tareas = usuariosRol.map((usuario) =>
+                    this.politicasSvc.asignar(politicaId!, usuario.id, {
+                        fechaInicioPolitica: fechaInicioPolitica!,
+                        fechaIngresoColaborador: usuario.fechaIngreso
+                    })
+                );
+
+                // Ejecuta la asignacion por lote y contabiliza conflictos sin abortar todo el proceso.
+                Promise.all(
+                    tareas.map((obs) =>
+                        firstValueFrom(obs)
+                            .then(() => { completados += 1; })
+                            .catch(() => { errores += 1; })
+                    )
+                ).finally(() => {
+                    this.loading.set(false);
+                    if (completados > 0) {
+                        this.exito.set(`Asignación aplicada a ${completados} colaborador(es)`);
+                    }
+                    if (errores > 0) {
+                        this.error.set(`${errores} colaborador(es) no pudieron asignarse (ya tenían política o no cumplen condiciones)`);
+                    }
+                    if (completados > 0 && errores === 0) {
+                        this.asignado.emit();
+                    }
+                });
+            },
+            error: () => {
+                this.loading.set(false);
+                this.error.set('No se pudo obtener el listado por rol. Intente nuevamente.');
             }
         });
     }

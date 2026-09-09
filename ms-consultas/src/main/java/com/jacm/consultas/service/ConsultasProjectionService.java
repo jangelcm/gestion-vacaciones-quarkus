@@ -93,6 +93,8 @@ public class ConsultasProjectionService {
             doc.colaboradorId = event.colaboradorId();
         }
 
+        doc.politicaId = event.politicaId();
+        doc.fechaInicioPolitica = event.fechaInicioPolitica();
         doc.diasGozados = toScale(event.diasUsados());
         doc.diasHabilitados = toScale(event.diasHabilitados());
         doc.saldoActual = toScale(event.saldoActual());

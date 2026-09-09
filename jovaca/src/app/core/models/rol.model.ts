@@ -8,6 +8,7 @@ export interface CrearUsuarioPayload {
     password: string;
     email: string;
     rol: string;
+    fechaIngreso: string;
 }
 
 export interface UsuarioCreado {
@@ -16,4 +17,5 @@ export interface UsuarioCreado {
     isActive: boolean;
     email: string | null;
     telefono: string | null;
+    fechaIngreso: string | null;
 }

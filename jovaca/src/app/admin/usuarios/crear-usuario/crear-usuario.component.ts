@@ -26,7 +26,8 @@ export class CrearUsuarioComponent implements OnInit {
         username: ['', Validators.required],
         password: ['', [Validators.required, Validators.minLength(6)]],
         email: ['', [Validators.required, Validators.email]],
-        rol: ['', Validators.required]
+        rol: ['', Validators.required],
+        fechaIngreso: ['', Validators.required]
     });
 
     get f() { return this.form.controls; }
@@ -44,8 +45,14 @@ export class CrearUsuarioComponent implements OnInit {
         this.error.set(null);
         this.exito.set(null);
 
-        const { username, password, email, rol } = this.form.value;
-        this.svc.crear({ username: username!, password: password!, email: email!, rol: rol! }).subscribe({
+        const { username, password, email, rol, fechaIngreso } = this.form.value;
+        this.svc.crear({
+            username: username!,
+            password: password!,
+            email: email!,
+            rol: rol!,
+            fechaIngreso: fechaIngreso!
+        }).subscribe({
             next: (usuario) => {
                 this.loading.set(false);
                 this.exito.set(`Usuario "${usuario.username}" creado correctamente con rol "${rol}"`);

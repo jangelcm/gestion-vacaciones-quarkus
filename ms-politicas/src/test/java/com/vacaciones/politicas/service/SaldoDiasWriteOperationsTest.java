@@ -136,7 +136,7 @@ class SaldoDiasWriteOperationsTest {
         when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(1L);
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(saldo);
 
         assertEquals(11, resultado.getDiasTrabajados());
         assertEquals(new BigDecimal("2.0"), resultado.getDiasAcumulados());
@@ -168,7 +168,7 @@ class SaldoDiasWriteOperationsTest {
         when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-                SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(1L);
+                SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(saldo);
 
         assertEquals(new BigDecimal("10.0"), resultado.getDiasAcumulados());
                 assertEquals(0, resultado.getDiasTrabajados());
@@ -198,7 +198,7 @@ class SaldoDiasWriteOperationsTest {
         when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(1L);
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(saldo);
 
         assertEquals(new BigDecimal("35.0"), resultado.getDiasAcumulados());
         assertEquals(0, resultado.getDiasTrabajados());
