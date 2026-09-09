@@ -54,6 +54,26 @@ public class UserService {
                 .toList();
     }
 
+    /**
+     * Resolucion en lote (ej. pantalla de aprobaciones pidiendo solo los nombres de los pocos
+     * colaboradores con solicitudes pendientes) en vez de traer una pagina completa de usuarios
+     * solo para cruzar 3-4 ids en el cliente.
+     */
+    public List<UserResponseDto> obtenerPorIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return userRepository.list("id in ?1", ids).stream()
+                .map(user -> UserResponseDto.builder()
+                        .id(user.id)
+                        .username(user.username)
+                        .email(user.email)
+                        .telefono(user.telefono)
+                        .isActive(user.isActive)
+                        .build())
+                .toList();
+    }
+
     public UserResponseDto obtenerPorId(Long id) {
         User user = userRepository.findById(id);
         if (user == null) {

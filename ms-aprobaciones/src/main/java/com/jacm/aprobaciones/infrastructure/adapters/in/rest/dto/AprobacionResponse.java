@@ -2,11 +2,15 @@ package com.jacm.aprobaciones.infrastructure.adapters.in.rest.dto;
 
 import com.jacm.aprobaciones.domain.model.Aprobacion;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record AprobacionResponse(
         Long id,
         Long solicitudId,
+        String colaboradorId,
+        LocalDate fechaInicio,
+        LocalDate fechaFin,
         String aprobadorId,
         String estado,
         String comentario,
@@ -17,6 +21,9 @@ public record AprobacionResponse(
         return new AprobacionResponse(
                 aprobacion.getId(),
                 aprobacion.getSolicitudId(),
+                aprobacion.getColaboradorId(),
+                aprobacion.getFechaInicio(),
+                aprobacion.getFechaFin(),
                 aprobacion.getAprobadorId(),
                 aprobacion.getEstado().name(),
                 aprobacion.getComentario(),

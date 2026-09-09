@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CrearUsuarioPayload, Rol, UsuarioCreado } from '../models/rol.model';
 import { PageResponse, UpdateUsuarioPayload, Usuario } from '../models/usuario.model';
@@ -25,6 +25,15 @@ export class UsuariosService {
             rowsPerPage: 50,
             filters: [],
             sorts: []
+        });
+    }
+
+    listarPorIds(ids: number[]): Observable<Usuario[]> {
+        if (ids.length === 0) {
+            return of([]);
+        }
+        return this.http.get<Usuario[]>(`${this.BASE}/users/batch`, {
+            params: { ids: ids.join(',') }
         });
     }
 

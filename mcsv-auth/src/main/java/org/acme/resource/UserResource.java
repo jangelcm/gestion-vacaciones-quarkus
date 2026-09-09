@@ -6,6 +6,7 @@ import org.acme.dto.UpdateUserRequest;
 import org.acme.dto.UserResponseDto;
 import org.acme.services.UserService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -17,6 +18,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -50,6 +52,20 @@ public class UserResource {
     @Path("/rol/{rol}")
     public List<UserResponseDto> listarPorRol(@PathParam("rol") String rol) {
         return service.listarPorRol(rol);
+    }
+
+    @GET
+    @Path("/batch")
+    public List<UserResponseDto> obtenerPorIds(@QueryParam("ids") String ids) {
+        if (ids == null || ids.isBlank()) {
+            return List.of();
+        }
+        List<Long> idsList = Arrays.stream(ids.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::valueOf)
+                .toList();
+        return service.obtenerPorIds(idsList);
     }
 
     @PUT

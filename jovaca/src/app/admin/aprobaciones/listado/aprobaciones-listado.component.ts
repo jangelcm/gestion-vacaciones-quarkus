@@ -1,18 +1,15 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 import { AprobacionesService } from '../../../core/services/aprobaciones.service';
-import { SolicitudesService } from '../../../services/solicitudes.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { ModalComponent } from '../../../shared/modal/modal.component';
 import { Aprobacion } from '../../../core/models/aprobacion.model';
-import { Solicitud } from '../../../models/solicitud.model';
 
 interface PendienteView {
     aprobacion: Aprobacion;
-    solicitud: Solicitud;
 }
 
 type Accion = 'aprobar' | 'rechazar';
@@ -26,7 +23,6 @@ type Accion = 'aprobar' | 'rechazar';
 })
 export class AprobacionesListadoComponent implements OnInit {
     private aprobService = inject(AprobacionesService);
-    private solService = inject(SolicitudesService);
     private auth = inject(AuthService);
     private usuariosSvc = inject(UsuariosService);
 
@@ -49,22 +45,21 @@ export class AprobacionesListadoComponent implements OnInit {
     cargar(): void {
         this.loading.set(true);
         this.error.set(null);
-        forkJoin({
-            pendientes: this.aprobService.listarPendientes(),
-            solicitudes: this.solService.listarTodas(),
-            usuarios: this.usuariosSvc.listarUsuarios()
-        }).subscribe({
-            next: ({ pendientes, solicitudes, usuarios }) => {
-                this.nombresPorId.set(new Map(usuarios.content.map(u => [u.id, u.username])));
-
-                const mapa = new Map(solicitudes.map(s => [s.id, s]));
-                const vistas = pendientes
-                    .map((p): PendienteView | null => {
-                        const s = mapa.get(p.solicitudId);
-                        return s ? { aprobacion: p, solicitud: s } : null;
-                    })
-                    .filter((v): v is PendienteView => v !== null);
-                this.pendientes.set(vistas);
+        this.aprobService.listarPendientes().pipe(
+            switchMap(pendientes => {
+                const ids = [...new Set(
+                    pendientes
+                        .map(p => Number(p.colaboradorId))
+                        .filter(id => !Number.isNaN(id))
+                )];
+                return this.usuariosSvc.listarPorIds(ids).pipe(
+                    map(usuarios => ({ pendientes, usuarios }))
+                );
+            })
+        ).subscribe({
+            next: ({ pendientes, usuarios }) => {
+                this.nombresPorId.set(new Map(usuarios.map(u => [u.id, u.username])));
+                this.pendientes.set(pendientes.map((aprobacion): PendienteView => ({ aprobacion })));
                 this.loading.set(false);
             },
             error: () => {
@@ -80,7 +75,7 @@ export class AprobacionesListadoComponent implements OnInit {
 
     nombreColaboradorSeleccionado = computed(() => {
         const v = this.solicitudSeleccionada();
-        return v ? this.nombreColaborador(v.solicitud.colaboradorId) : '';
+        return v && v.aprobacion.colaboradorId ? this.nombreColaborador(v.aprobacion.colaboradorId) : '';
     });
 
     abrirAprobar(v: PendienteView): void {
@@ -118,7 +113,7 @@ export class AprobacionesListadoComponent implements OnInit {
 
         this.procesando.set(true);
         this.accionError.set(null);
-        const solicitudId = v.solicitud.id;
+        const solicitudId = v.aprobacion.solicitudId;
 
         const obs = accion === 'aprobar'
             ? this.aprobService.aprobar(solicitudId, { aprobadorId, comentario: this.comentario })

@@ -1,6 +1,9 @@
 export interface Aprobacion {
     id: number;
     solicitudId: number;
+    colaboradorId: string | null;
+    fechaInicio: string | null;
+    fechaFin: string | null;
     aprobadorId: string;
     estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
     comentario: string | null;

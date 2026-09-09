@@ -32,10 +32,10 @@
             <tbody>
                 @for (v of pendientes(); track v.aprobacion.id) {
                 <tr>
-                    <td class="id-col">#{{ v.solicitud.id }}</td>
-                    <td>{{ nombreColaborador(v.solicitud.colaboradorId) }}</td>
-                    <td>{{ v.solicitud.fechaInicio | date: 'dd/MM/yyyy' }}</td>
-                    <td>{{ v.solicitud.fechaFin | date: 'dd/MM/yyyy' }}</td>
+                    <td class="id-col">#{{ v.aprobacion.solicitudId }}</td>
+                    <td>{{ v.aprobacion.colaboradorId ? nombreColaborador(v.aprobacion.colaboradorId) : '—' }}</td>
+                    <td>{{ v.aprobacion.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ v.aprobacion.fechaFin | date: 'dd/MM/yyyy' }}</td>
                     <td class="actions-col">
                         <button class="btn btn-approve" (click)="abrirAprobar(v)">Aprobar</button>
                         <button class="btn btn-reject" (click)="abrirRechazar(v)">Rechazar</button>
@@ -51,7 +51,7 @@
 @if (modalAccion(); as accion) {
 <app-modal [titulo]="accion === 'aprobar' ? 'Aprobar Solicitud' : 'Rechazar Solicitud'" (cerrar)="cerrarModal()">
     <p class="modal-info">
-        Solicitud #{{ solicitudSeleccionada()?.solicitud?.id }} — Colaborador
+        Solicitud #{{ solicitudSeleccionada()?.aprobacion?.solicitudId }} — Colaborador
         {{ nombreColaboradorSeleccionado() }}
     </p>
 
