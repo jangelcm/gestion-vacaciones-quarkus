@@ -51,7 +51,7 @@
         "port": 8080
       }
     ],
-    "requiresJwt": false,
+    "requiresJwt": true,
     "stripPrefix": false
   },
   {
@@ -62,7 +62,7 @@
         "port": 8080
       }
     ],
-    "requiresJwt": false,
+    "requiresJwt": true,
     "stripPrefix": false
   },
   {
@@ -73,7 +73,7 @@
         "port": 8081
       }
     ],
-    "requiresJwt": false,
+    "requiresJwt": true,
     "stripPrefix": false
   },
   {
@@ -84,7 +84,18 @@
         "port": 8085
       }
     ],
-    "requiresJwt": false,
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/reportes",
+    "targets": [
+      {
+        "host": "ms-reportes",
+        "port": 8086
+      }
+    ],
+    "requiresJwt": true,
     "stripPrefix": false
   },
   {
@@ -93,6 +104,17 @@
       {
         "host": "ms-notificaciones",
         "port": 8084
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
+    "path": "/consultas-updates",
+    "targets": [
+      {
+        "host": "ms-consultas",
+        "port": 8085
       }
     ],
     "requiresJwt": false,

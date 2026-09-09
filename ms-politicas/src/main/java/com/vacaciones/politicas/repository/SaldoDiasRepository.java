@@ -21,4 +21,8 @@ public class SaldoDiasRepository implements PanacheRepositoryBase<SaldoDiasEntit
                 + " and extract(month from createdAt) = ?1"
                 + " and extract(day from createdAt) = ?2", mes, dia).list();
     }
+
+    public List<SaldoDiasEntity> findParaProcesoDiario() {
+        return listAll();
+    }
 }

@@ -74,7 +74,7 @@ class SaldoDiasServiceTest {
         saldoDiasService.asignarPolitica(1001L, 10L, 0);
 
         ArgumentCaptor<SaldoDiasEntity> saldoCaptor = ArgumentCaptor.forClass(SaldoDiasEntity.class);
-        verify(saldoDiasRepository).persist(saldoCaptor.capture());
+        verify(saldoDiasRepository, times(2)).persist(saldoCaptor.capture());
 
         SaldoDiasEntity saldoPersistido = saldoCaptor.getValue();
         assertNotNull(saldoPersistido);
@@ -83,6 +83,8 @@ class SaldoDiasServiceTest {
         assertEquals(new BigDecimal("15.0"), saldoPersistido.getDiasDisponibles());
         assertEquals(new BigDecimal("0.0"), saldoPersistido.getDiasUsados());
         assertEquals(new BigDecimal("0.0"), saldoPersistido.getDiasAcumulados());
+        assertEquals(new BigDecimal("0.0"), saldoPersistido.getDiasPendientes());
+        assertEquals(0, saldoPersistido.getDiasTrabajados());
     }
 
     @Test
@@ -108,6 +110,11 @@ class SaldoDiasServiceTest {
         assertEquals(1001L, evento.colaboradorId());
         assertEquals(new BigDecimal("15.0"), evento.diasDisponibles());
         assertEquals(new BigDecimal("0.0"), evento.diasUsados());
+        assertEquals(new BigDecimal("15.0"), evento.diasHabilitados());
+        assertEquals(new BigDecimal("15.0"), evento.saldoActual());
+        assertEquals(new BigDecimal("0.0"), evento.diasTruncos());
+        assertEquals(0, evento.diasTrabajados());
+        assertEquals(new BigDecimal("0.0"), evento.diasPendientes());
         assertEquals("ASIGNACION_POLITICA", evento.motivoActualizacion());
         assertNotNull(evento.fechaEvento());
     }
@@ -227,7 +234,7 @@ class SaldoDiasServiceTest {
 
         saldoDiasService.asignarPolitica(1001L, 12L, 12);
 
-        verify(saldoDiasRepository).persist(any(SaldoDiasEntity.class));
+        verify(saldoDiasRepository, times(2)).persist(any(SaldoDiasEntity.class));
     }
 
     @Test
@@ -247,7 +254,7 @@ class SaldoDiasServiceTest {
 
         saldoDiasService.asignarPolitica(1001L, 13L, null);
 
-        verify(saldoDiasRepository).persist(any(SaldoDiasEntity.class));
+        verify(saldoDiasRepository, times(2)).persist(any(SaldoDiasEntity.class));
     }
 
     @Test
@@ -268,7 +275,7 @@ class SaldoDiasServiceTest {
         saldoDiasService.asignarPoliticaPorDefectoSiNoTiene(2001L);
 
         ArgumentCaptor<SaldoDiasEntity> captor = ArgumentCaptor.forClass(SaldoDiasEntity.class);
-        verify(saldoDiasRepository).persist(captor.capture());
+        verify(saldoDiasRepository, times(2)).persist(captor.capture());
         assertEquals(new BigDecimal("30.0"), captor.getValue().getDiasDisponibles());
         assertEquals(20L, captor.getValue().getPolitica().getId());
     }
@@ -296,43 +303,45 @@ class SaldoDiasServiceTest {
     }
 
     @Test
-    void shouldPublishDiasActualizadosForEachSuccessfulRenovacion() {
+        void shouldPublishDiasActualizadosForEachSuccessfulBatchDiario() {
         SaldoDiasEntity saldo = buildSaldoDias("15.0", "0.0", "8.0");
 
-        when(saldoDiasRepository.findAniversariosAcumulables(8, 15)).thenReturn(List.of(saldo));
-        when(saldoDiasWriteOperations.ejecutarRenovacion(saldo.getId())).thenReturn(saldo);
+                when(saldoDiasRepository.findParaProcesoDiario()).thenReturn(List.of(saldo));
+                when(saldoDiasWriteOperations.ejecutarProcesoDiario(saldo.getId())).thenReturn(saldo);
 
         saldoDiasService.renovarSaldosAcumulablesDelDia(LocalDate.of(2026, 8, 15));
 
-        verify(saldoDiasWriteOperations).ejecutarRenovacion(saldo.getId());
+                verify(saldoDiasWriteOperations).ejecutarProcesoDiario(saldo.getId());
 
         ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
                 ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
         verify(emitter).send((DiasDisponiblesActualizadosEvent) captor.capture());
-        assertEquals("RENOVACION_PERIODO_ACUMULACION", captor.getValue().motivoActualizacion());
+        assertEquals("BATCH_DIARIO", captor.getValue().motivoActualizacion());
     }
 
     @Test
-    void shouldContinueProcessingOtherSaldosWhenOneRenovacionFails() {
+    void shouldContinueProcessingOtherSaldosWhenOneBatchProcessFails() {
         PoliticaEntity politica = PoliticaEntity.builder().id(1L).nombre("Vacaciones anuales").build();
         SaldoDiasEntity saldoFalla = SaldoDiasEntity.builder()
                 .id(1L).colaboradorId(1001L).politica(politica)
                 .diasDisponibles(new BigDecimal("5.0")).diasUsados(new BigDecimal("0.0"))
-                .diasAcumulados(new BigDecimal("0.0")).version(0).build();
+                .diasAcumulados(new BigDecimal("0.0")).diasPendientes(new BigDecimal("0.0")).diasTrabajados(5)
+                .version(0).build();
         SaldoDiasEntity saldoOk = SaldoDiasEntity.builder()
                 .id(2L).colaboradorId(1002L).politica(politica)
                 .diasDisponibles(new BigDecimal("5.0")).diasUsados(new BigDecimal("0.0"))
-                .diasAcumulados(new BigDecimal("0.0")).version(0).build();
+                .diasAcumulados(new BigDecimal("0.0")).diasPendientes(new BigDecimal("0.0")).diasTrabajados(5)
+                .version(0).build();
 
-        when(saldoDiasRepository.findAniversariosAcumulables(8, 15)).thenReturn(List.of(saldoFalla, saldoOk));
-        when(saldoDiasWriteOperations.ejecutarRenovacion(saldoFalla.getId()))
+        when(saldoDiasRepository.findParaProcesoDiario()).thenReturn(List.of(saldoFalla, saldoOk));
+        when(saldoDiasWriteOperations.ejecutarProcesoDiario(saldoFalla.getId()))
                 .thenThrow(new RuntimeException("fallo inesperado"));
-        when(saldoDiasWriteOperations.ejecutarRenovacion(saldoOk.getId())).thenReturn(saldoOk);
+        when(saldoDiasWriteOperations.ejecutarProcesoDiario(saldoOk.getId())).thenReturn(saldoOk);
 
         saldoDiasService.renovarSaldosAcumulablesDelDia(LocalDate.of(2026, 8, 15));
 
-        verify(saldoDiasWriteOperations).ejecutarRenovacion(saldoFalla.getId());
-        verify(saldoDiasWriteOperations).ejecutarRenovacion(saldoOk.getId());
+                verify(saldoDiasWriteOperations).ejecutarProcesoDiario(saldoFalla.getId());
+                verify(saldoDiasWriteOperations).ejecutarProcesoDiario(saldoOk.getId());
         verify(emitter, times(1)).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
@@ -361,8 +370,9 @@ class SaldoDiasServiceTest {
 
         DiasDisponiblesActualizadosEvent evento = captor.getValue();
         assertEquals(1001L, evento.colaboradorId());
-        assertEquals(new BigDecimal("7.0"), evento.diasDisponibles());
+        assertEquals(new BigDecimal("25.0"), evento.diasDisponibles());
         assertEquals(new BigDecimal("5.0"), evento.diasUsados());
+                assertEquals(new BigDecimal("1.0"), evento.diasPendientes());
         assertEquals("DESCUENTO_SOLICITUD_APROBADA", evento.motivoActualizacion());
         assertNotNull(evento.fechaEvento());
     }
@@ -474,14 +484,54 @@ class SaldoDiasServiceTest {
         verify(emitter, never()).send(any(DiasDisponiblesActualizadosEvent.class));
     }
 
+        @Test
+        void shouldCalculateDiasTruncosWithBusinessFormula() {
+                BigDecimal truncos = saldoDiasService.calcularDiasTruncos(180);
+                assertEquals(new BigDecimal("15.0"), truncos);
+        }
+
+        @Test
+        void shouldCalculateSaldoActualAsHabilitadosMinusGozadosMinusPendientes() {
+                SaldoDiasEntity saldo = buildSaldoDias("20.0", "5.0", "2.0");
+                saldo.setDiasPendientes(new BigDecimal("3.0"));
+                saldo.setDiasTrabajados(0);
+
+                BigDecimal truncos = saldoDiasService.calcularDiasTruncos(0);
+                BigDecimal habilitados = saldoDiasService.calcularDiasHabilitados(saldo, truncos);
+                BigDecimal saldoActual = saldoDiasService.calcularSaldoActual(saldo, habilitados);
+
+                assertEquals(new BigDecimal("17.0"), habilitados);
+                assertEquals(new BigDecimal("9.0"), saldoActual);
+        }
+
+        @Test
+        void shouldPublishRenovacionMotivoWhenWorkerCompletes360Days() {
+                SaldoDiasEntity saldoAntes = buildSaldoDias("12.0", "2.0", "5.0");
+                saldoAntes.setDiasTrabajados(359);
+                SaldoDiasEntity saldoDespues = buildSaldoDias("12.0", "2.0", "35.0");
+                saldoDespues.setDiasTrabajados(0);
+
+                when(saldoDiasRepository.findParaProcesoDiario()).thenReturn(List.of(saldoAntes));
+                when(saldoDiasWriteOperations.ejecutarProcesoDiario(saldoAntes.getId())).thenReturn(saldoDespues);
+
+                saldoDiasService.renovarSaldosAcumulablesDelDia(LocalDate.of(2026, 9, 9));
+
+                ArgumentCaptor<DiasDisponiblesActualizadosEvent> captor =
+                                ArgumentCaptor.forClass(DiasDisponiblesActualizadosEvent.class);
+                verify(emitter).send((DiasDisponiblesActualizadosEvent) captor.capture());
+                assertEquals("RENOVACION_PERIODO_ACUMULACION", captor.getValue().motivoActualizacion());
+        }
+
     private SaldoDiasEntity buildSaldoDias(String diasDisponibles, String diasUsados, String diasAcumulados) {
         return SaldoDiasEntity.builder()
                 .id(1L)
                 .colaboradorId(1001L)
-                .politica(PoliticaEntity.builder().id(1L).nombre("Vacaciones anuales").build())
+                                .politica(PoliticaEntity.builder().id(1L).nombre("Vacaciones anuales").diasBaseAnio(15).build())
                 .diasDisponibles(new BigDecimal(diasDisponibles))
                 .diasUsados(new BigDecimal(diasUsados))
                 .diasAcumulados(new BigDecimal(diasAcumulados))
+                                .diasPendientes(new BigDecimal("1.0"))
+                                .diasTrabajados(180)
                 .version(0)
                 .build();
     }

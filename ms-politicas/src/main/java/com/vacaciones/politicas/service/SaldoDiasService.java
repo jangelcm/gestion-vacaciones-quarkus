@@ -12,10 +12,12 @@ import com.vacaciones.politicas.messaging.event.SolicitudCanceladaEvent;
 import com.vacaciones.politicas.repository.PoliticaRepository;
 import com.vacaciones.politicas.repository.SaldoDiasRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.ws.rs.core.Response;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +35,10 @@ public class SaldoDiasService {
     static final String MOTIVO_DEVOLUCION_SOLICITUD_CANCELADA = "DEVOLUCION_SOLICITUD_CANCELADA";
     static final String MOTIVO_ASIGNACION_POLITICA = "ASIGNACION_POLITICA";
     static final String MOTIVO_RENOVACION_PERIODO = "RENOVACION_PERIODO_ACUMULACION";
+    static final String MOTIVO_BATCH_DIARIO = "BATCH_DIARIO";
+
+    static final BigDecimal DIAS_BASE_PERIODO = new BigDecimal("30.0");
+    static final BigDecimal DIAS_LABORALES_PERIODO = new BigDecimal("360");
 
     private static final Logger LOG = Logger.getLogger(SaldoDiasService.class);
 
@@ -82,10 +88,13 @@ public class SaldoDiasService {
                 .diasDisponibles(BigDecimal.valueOf(politica.getDiasBaseAnio()).setScale(1))
                 .diasUsados(BigDecimal.ZERO.setScale(1))
                 .diasAcumulados(BigDecimal.ZERO.setScale(1))
+            .diasPendientes(BigDecimal.ZERO.setScale(1))
+            .diasTrabajados(0)
                 .version(0)
                 .build();
         saldoDiasRepository.persist(nuevoSaldo);
         saldoDiasRepository.getEntityManager().flush();
+        recalcularSaldoDisponible(nuevoSaldo);
         publicarDiasActualizados(nuevoSaldo, MOTIVO_ASIGNACION_POLITICA);
     }
 
@@ -104,13 +113,15 @@ public class SaldoDiasService {
     }
 
     public void renovarSaldosAcumulablesDelDia(LocalDate fecha) {
-        java.util.List<SaldoDiasEntity> saldos =
-                saldoDiasRepository.findAniversariosAcumulables(fecha.getMonthValue(), fecha.getDayOfMonth());
+        java.util.List<SaldoDiasEntity> saldos = saldoDiasRepository.findParaProcesoDiario();
 
         for (SaldoDiasEntity saldo : saldos) {
             try {
-                SaldoDiasEntity renovado = saldoDiasWriteOperations.ejecutarRenovacion(saldo.getId());
-                publicarDiasActualizados(renovado, MOTIVO_RENOVACION_PERIODO);
+                int trabajadosAntes = safeDiasTrabajados(saldo);
+                SaldoDiasEntity procesado = saldoDiasWriteOperations.ejecutarProcesoDiario(saldo.getId());
+                recalcularSaldoDisponible(procesado);
+                boolean aniversario = trabajadosAntes + 1 >= 360;
+                publicarDiasActualizados(procesado, aniversario ? MOTIVO_RENOVACION_PERIODO : MOTIVO_BATCH_DIARIO);
             } catch (RuntimeException e) {
                 LOG.errorf(e, "Fallo al renovar el saldo del colaborador %d, se continua con el resto",
                         saldo.getColaboradorId());
@@ -161,6 +172,7 @@ public class SaldoDiasService {
         SaldoDiasEntity saldo = ejecutarConReintento(() -> saldoDiasWriteOperations.ejecutarDescuento(
                 colaboradorId, solicitudId, dias, eventoOrigen, eventoId));
         if (saldo != null) {
+            recalcularSaldoDisponible(saldo);
             publicarDiasActualizados(saldo, MOTIVO_DESCUENTO_SOLICITUD_APROBADA);
         }
     }
@@ -174,6 +186,7 @@ public class SaldoDiasService {
         SaldoDiasEntity saldo = ejecutarConReintento(() -> saldoDiasWriteOperations.ejecutarDevolucion(
                 colaboradorId, solicitudId, dias, eventoOrigen, eventoId));
         if (saldo != null) {
+            recalcularSaldoDisponible(saldo);
             publicarDiasActualizados(saldo, MOTIVO_DEVOLUCION_SOLICITUD_CANCELADA);
         }
     }
@@ -191,15 +204,68 @@ public class SaldoDiasService {
     }
 
     private void publicarDiasActualizados(SaldoDiasEntity saldo, String motivo) {
+        BigDecimal diasTruncos = calcularDiasTruncos(safeDiasTrabajados(saldo));
+        BigDecimal diasHabilitados = calcularDiasHabilitados(saldo, diasTruncos);
+        BigDecimal saldoActual = calcularSaldoActual(saldo, diasHabilitados);
         diasDisponiblesEmitter.send(new DiasDisponiblesActualizadosEvent(
                 saldo.getColaboradorId(),
                 saldo.getDiasDisponibles(),
                 saldo.getDiasUsados(),
+                diasHabilitados,
+                saldoActual,
+                diasTruncos,
+                safeDiasTrabajados(saldo),
+                safeBigDecimal(saldo.getDiasPendientes()),
                 motivo,
                 LocalDateTime.now()));
     }
 
+    void recalcularSaldoDisponible(SaldoDiasEntity saldo) {
+        BigDecimal diasTruncos = calcularDiasTruncos(safeDiasTrabajados(saldo));
+        BigDecimal diasHabilitados = calcularDiasHabilitados(saldo, diasTruncos);
+        BigDecimal saldoActual = calcularSaldoActual(saldo, diasHabilitados);
+        saldo.setDiasDisponibles(saldoActual);
+        saldoDiasRepository.persist(saldo);
+        EntityManager entityManager = saldoDiasRepository.getEntityManager();
+        if (entityManager != null) {
+            entityManager.flush();
+        }
+    }
+
+    BigDecimal calcularDiasTruncos(int diasTrabajados) {
+        return BigDecimal.valueOf(diasTrabajados)
+                .multiply(DIAS_BASE_PERIODO)
+                .divide(DIAS_LABORALES_PERIODO, 1, RoundingMode.HALF_UP);
+    }
+
+    BigDecimal calcularDiasHabilitados(SaldoDiasEntity saldo, BigDecimal diasTruncos) {
+        BigDecimal base = saldo.getPolitica() != null && saldo.getPolitica().getDiasBaseAnio() != null
+                ? BigDecimal.valueOf(saldo.getPolitica().getDiasBaseAnio()).setScale(1)
+                : BigDecimal.ZERO.setScale(1);
+        return base
+                .add(safeBigDecimal(saldo.getDiasAcumulados()))
+                .add(diasTruncos);
+    }
+
+    BigDecimal calcularSaldoActual(SaldoDiasEntity saldo, BigDecimal diasHabilitados) {
+        BigDecimal saldoActual = diasHabilitados
+                .subtract(safeBigDecimal(saldo.getDiasUsados()))
+                .subtract(safeBigDecimal(saldo.getDiasPendientes()));
+        return saldoActual.max(BigDecimal.ZERO.setScale(1));
+    }
+
+    private BigDecimal safeBigDecimal(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO.setScale(1) : value.setScale(1, RoundingMode.HALF_UP);
+    }
+
+    private int safeDiasTrabajados(SaldoDiasEntity saldo) {
+        return saldo.getDiasTrabajados() == null ? 0 : saldo.getDiasTrabajados();
+    }
+
     private SaldoDiasResponseDto toResponseDto(SaldoDiasEntity saldoDias) {
+        BigDecimal diasTruncos = calcularDiasTruncos(safeDiasTrabajados(saldoDias));
+        BigDecimal diasHabilitados = calcularDiasHabilitados(saldoDias, diasTruncos);
+        BigDecimal saldoActual = calcularSaldoActual(saldoDias, diasHabilitados);
         return new SaldoDiasResponseDto(
                 saldoDias.getId(),
                 saldoDias.getColaboradorId(),
@@ -207,6 +273,11 @@ public class SaldoDiasService {
                 String.valueOf(saldoDias.getDiasDisponibles()),
                 String.valueOf(saldoDias.getDiasUsados()),
                 String.valueOf(saldoDias.getDiasAcumulados()),
+                String.valueOf(diasHabilitados),
+                String.valueOf(saldoActual),
+                String.valueOf(diasTruncos),
+                String.valueOf(safeDiasTrabajados(saldoDias)),
+                String.valueOf(safeBigDecimal(saldoDias.getDiasPendientes())),
                 saldoDias.getCreatedAt() != null ? saldoDias.getCreatedAt().format(FORMATTER) : null,
                 saldoDias.getUpdatedAt() != null ? saldoDias.getUpdatedAt().format(FORMATTER) : null);
     }

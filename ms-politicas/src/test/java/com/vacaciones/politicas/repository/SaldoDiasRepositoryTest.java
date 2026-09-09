@@ -44,6 +44,8 @@ class SaldoDiasRepositoryTest {
                 .diasDisponibles(new BigDecimal("15.0"))
                 .diasUsados(new BigDecimal("0.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build();
 
         saldoDiasRepository.persist(saldoDias);
@@ -78,6 +80,8 @@ class SaldoDiasRepositoryTest {
                 .diasDisponibles(new BigDecimal("20.0"))
                 .diasUsados(new BigDecimal("2.0"))
                 .diasAcumulados(new BigDecimal("1.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build();
 
         saldoDiasRepository.persist(saldoDias);
@@ -125,6 +129,8 @@ class SaldoDiasRepositoryTest {
                 .diasDisponibles(new BigDecimal("15.0"))
                 .diasUsados(new BigDecimal("0.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build());
 
         saldoDiasRepository.persist(SaldoDiasEntity.builder()
@@ -133,6 +139,8 @@ class SaldoDiasRepositoryTest {
                 .diasDisponibles(new BigDecimal("10.0"))
                 .diasUsados(new BigDecimal("5.0"))
                 .diasAcumulados(new BigDecimal("1.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build());
 
         saldoDiasRepository.persist(SaldoDiasEntity.builder()
@@ -141,6 +149,8 @@ class SaldoDiasRepositoryTest {
                 .diasDisponibles(new BigDecimal("20.0"))
                 .diasUsados(new BigDecimal("2.0"))
                 .diasAcumulados(new BigDecimal("3.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build());
 
         List<SaldoDiasEntity> saldosPoliticaAnual = saldoDiasRepository.findByPoliticaId(politicaAnual.getId());

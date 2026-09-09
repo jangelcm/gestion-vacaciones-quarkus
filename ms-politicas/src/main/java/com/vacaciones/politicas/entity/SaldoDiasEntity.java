@@ -50,6 +50,12 @@ public class SaldoDiasEntity extends PanacheEntityBase {
     @Column(name = "dias_acumulados", nullable = false, precision = 5, scale = 1)
     private BigDecimal diasAcumulados;
 
+    @Column(name = "dias_pendientes", nullable = false, precision = 5, scale = 1)
+    private BigDecimal diasPendientes;
+
+    @Column(name = "dias_trabajados", nullable = false)
+    private Integer diasTrabajados;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

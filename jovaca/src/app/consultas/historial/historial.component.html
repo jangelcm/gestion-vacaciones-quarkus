@@ -1,0 +1,90 @@
+<div class="container">
+    <div class="header">
+        <h2>Mis Consultas e Historial</h2>
+    </div>
+
+    @if (esAdmin()) {
+    <div class="search-bar">
+        <input type="number" [(ngModel)]="inputId" placeholder="ID de colaborador" class="input-field"
+            (keyup.enter)="cargarSolicitudes()" />
+        <button (click)="cargarSolicitudes()" class="btn btn-secondary">Buscar</button>
+    </div>
+    }
+
+    @if (loadingSolicitudes()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando solicitudes...
+    </div>
+    }
+
+    @if (errorSolicitudes()) {
+    <div class="state-msg error-msg">{{ errorSolicitudes() }}</div>
+    }
+
+    @if (!loadingSolicitudes() && !errorSolicitudes() && solicitudes().length === 0) {
+    <div class="state-msg empty-msg">No hay solicitudes para mostrar.</div>
+    }
+
+    @if (solicitudes().length > 0) {
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Estado</th>
+                    <th>Última Actualización</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (s of solicitudes(); track s.id) {
+                <tr>
+                    <td class="id-col">#{{ s.id }}</td>
+                    <td>{{ s.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ s.fechaFin | date: 'dd/MM/yyyy' }}</td>
+                    <td><span [class]="'badge ' + badgeClass(s.estado)">{{ s.estado }}</span></td>
+                    <td>{{ s.ultimaActualizacion | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td><button class="btn btn-sm" (click)="verHistorial(s)">Ver historial</button></td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>
+
+@if (solicitudSeleccionada(); as solicitud) {
+<div class="panel">
+    <h3>Historial de Solicitud #{{ solicitud.id }}</h3>
+
+    @if (loadingHistorial()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando historial...
+    </div>
+    }
+
+    @if (errorHistorial()) {
+    <div class="state-msg error-msg">{{ errorHistorial() }}</div>
+    }
+
+    @if (!loadingHistorial() && !errorHistorial() && historial().length === 0) {
+    <div class="state-msg empty-msg">Sin eventos registrados para esta solicitud.</div>
+    }
+
+    @if (historial().length > 0) {
+    <ul class="timeline">
+        @for (h of historial(); track $index) {
+        <li>
+            <div class="timeline-head">
+                <span [class]="'badge ' + badgeClass(h.estado)">{{ h.estado }}</span>
+                <strong>{{ h.fechaEvento | date: 'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+            <p>{{ h.detalle }}</p>
+        </li>
+        }
+    </ul>
+    }
+</div>
+}

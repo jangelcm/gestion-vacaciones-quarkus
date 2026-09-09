@@ -240,6 +240,8 @@ class ValidacionServiceTest {
                 .diasDisponibles(new BigDecimal(diasDisponibles))
                 .diasUsados(new BigDecimal("0.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .version(0)
                 .build();
     }

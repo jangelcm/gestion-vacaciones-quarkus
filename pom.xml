@@ -36,6 +36,7 @@
         <module>ms-notificaciones</module>
         <!-- Agregar más módulos conforme los vayan creando -->
         <module>ms-consultas</module>
+        <module>ms-reportes</module>
     </modules>
 
     <dependencyManagement>

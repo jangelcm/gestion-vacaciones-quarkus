@@ -7,6 +7,11 @@ public record SaldoDiasResponseDto(
         String diasDisponibles,
         String diasUsados,
         String diasAcumulados,
+        String diasHabilitados,
+        String saldoActual,
+        String diasTruncos,
+        String diasTrabajados,
+        String diasPendientes,
         String createdAt,
         String updatedAt) {
 }

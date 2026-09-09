@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { SolicitudesService } from '../../services/solicitudes.service';
@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { UsuariosService } from '../../core/services/usuarios.service';
 import { PoliticasService } from '../../core/services/politicas.service';
 import { SaldoDias } from '../../core/models/politica.model';
+import { ConsultasRealtimeService } from '../../core/services/consultas-realtime.service';
 import { ModalComponent } from '../../shared/modal/modal.component';
 import { FormularioComponent } from '../formulario/formulario.component';
 import { DetalleComponent } from '../detalle/detalle.component';
@@ -18,11 +19,12 @@ import { DetalleComponent } from '../detalle/detalle.component';
     templateUrl: './listado.component.html',
     styleUrl: './listado.component.css'
 })
-export class ListadoComponent {
+export class ListadoComponent implements OnDestroy {
     private svc = inject(SolicitudesService);
     private auth = inject(AuthService);
     private usuariosSvc = inject(UsuariosService);
     private politicasSvc = inject(PoliticasService);
+    private consultasRealtime = inject(ConsultasRealtimeService);
 
     esAdmin = computed(() => this.auth.hasRole('Administrador'));
 
@@ -43,6 +45,22 @@ export class ListadoComponent {
     constructor() {
         this.cargar();
         this.cargarMiSaldo();
+        const colaboradorId = this.auth.currentUser()?.id;
+        if (colaboradorId) {
+            this.consultasRealtime.conectar(colaboradorId);
+        }
+        effect(() => {
+            const tick = this.consultasRealtime.version();
+            if (tick < 1) {
+                return;
+            }
+            if (this.verTodas()) {
+                this.cargarTodas();
+            } else {
+                this.cargar();
+            }
+            this.cargarMiSaldo();
+        });
         if (this.esAdmin()) {
             this.usuariosSvc.listarUsuarios().subscribe({
                 next: (res) => {
@@ -50,6 +68,10 @@ export class ListadoComponent {
                 }
             });
         }
+    }
+
+    ngOnDestroy(): void {
+        this.consultasRealtime.desconectar();
     }
 
     cargarMiSaldo(): void {
@@ -124,7 +146,8 @@ export class ListadoComponent {
         const map: Record<string, string> = {
             PENDIENTE: 'badge-pendiente',
             APROBADA: 'badge-aprobada',
-            RECHAZADA: 'badge-rechazada'
+            RECHAZADA: 'badge-rechazada',
+            CANCELADA: 'badge-cancelada'
         };
         return map[estado] ?? '';
     }

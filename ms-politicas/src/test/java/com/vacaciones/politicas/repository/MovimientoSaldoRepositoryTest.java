@@ -47,6 +47,8 @@ class MovimientoSaldoRepositoryTest {
                 .diasDisponibles(new BigDecimal("12.0"))
                 .diasUsados(new BigDecimal("3.0"))
                 .diasAcumulados(new BigDecimal("1.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build();
 
         saldoDiasRepository.persist(saldoDias);
@@ -92,6 +94,8 @@ class MovimientoSaldoRepositoryTest {
                 .diasDisponibles(new BigDecimal("18.0"))
                 .diasUsados(new BigDecimal("1.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .build();
 
         saldoDiasRepository.persist(saldoDias);

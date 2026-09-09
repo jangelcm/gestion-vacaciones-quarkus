@@ -73,8 +73,9 @@ class SolicitudAprobadaConsumerTest {
         awaitUntil(() -> movimientoSaldoRepository.existsByEventoId(EVENTO_CONSUMO_ID));
 
         SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(COLABORADOR_CONSUMO);
-        assertEquals(new BigDecimal("7.0"), saldo.getDiasDisponibles());
-        assertEquals(new BigDecimal("5.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("10.0"), saldo.getDiasDisponibles());
+        assertEquals(new BigDecimal("2.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("3.0"), saldo.getDiasPendientes());
 
         List<MovimientoSaldoEntity> movimientos = movimientoSaldoRepository
                 .find("eventoId", EVENTO_CONSUMO_ID).list();
@@ -102,8 +103,9 @@ class SolicitudAprobadaConsumerTest {
         awaitUntil(() -> movimientoSaldoRepository.existsByEventoId(EVENTO_IDEMPOTENCIA_ID));
 
         SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(COLABORADOR_IDEMPOTENCIA);
-        assertEquals(new BigDecimal("7.0"), saldo.getDiasDisponibles());
-        assertEquals(new BigDecimal("5.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("10.0"), saldo.getDiasDisponibles());
+        assertEquals(new BigDecimal("2.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("3.0"), saldo.getDiasPendientes());
         assertEquals(1, movimientoSaldoRepository.count("eventoId", EVENTO_IDEMPOTENCIA_ID));
     }
 
@@ -140,8 +142,9 @@ class SolicitudAprobadaConsumerTest {
                 && movimientoSaldoRepository.existsByEventoId("evt-conc-91004-2"));
 
         SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(COLABORADOR_CONCURRENCIA);
-        assertEquals(new BigDecimal("5.0"), saldo.getDiasDisponibles());
-        assertEquals(new BigDecimal("5.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("10.0"), saldo.getDiasDisponibles());
+        assertEquals(new BigDecimal("0.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("5.0"), saldo.getDiasPendientes());
         assertTrue(movimientoSaldoRepository.existsByEventoId("evt-conc-91004-1"));
         assertTrue(movimientoSaldoRepository.existsByEventoId("evt-conc-91004-2"));
         assertEquals(2, movimientoSaldoRepository.count("eventoId in ?1",

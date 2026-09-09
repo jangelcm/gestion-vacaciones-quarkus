@@ -68,7 +68,8 @@ class SolicitudCanceladaConsumerTest {
 
         SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(COLABORADOR_DEVOLUCION);
         assertEquals(new BigDecimal("10.0"), saldo.getDiasDisponibles());
-        assertEquals(new BigDecimal("2.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("5.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("0.0"), saldo.getDiasPendientes());
 
         MovimientoSaldoEntity movimiento = movimientoSaldoRepository
                 .find("eventoId", EVENTO_DEVOLUCION_ID).firstResult();
@@ -94,12 +95,13 @@ class SolicitudCanceladaConsumerTest {
 
         SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(COLABORADOR_IDEMPOTENCIA);
         assertEquals(new BigDecimal("10.0"), saldo.getDiasDisponibles());
-        assertEquals(new BigDecimal("2.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("5.0"), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("0.0"), saldo.getDiasPendientes());
         assertEquals(1, movimientoSaldoRepository.count("eventoId", EVENTO_IDEMPOTENCIA_ID));
     }
 
     @Test
-    void shouldFloorDiasUsadosAtZeroWhenDevolucionExceedsUsados() throws Exception {
+    void shouldFloorDiasPendientesAtZeroWhenDevolucionExceedsPendientes() throws Exception {
         saldoTestDataHelper.seedSaldo(COLABORADOR_BORDE, "5.0", "2.0");
 
         publishEvent(buildEvent(EVENTO_BORDE_ID, SOLICITUD_ID, COLABORADOR_BORDE, new BigDecimal("5.0")));
@@ -108,7 +110,8 @@ class SolicitudCanceladaConsumerTest {
 
         SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(COLABORADOR_BORDE);
         assertEquals(new BigDecimal("10.0"), saldo.getDiasDisponibles());
-        assertEquals(BigDecimal.ZERO.setScale(1), saldo.getDiasUsados());
+        assertEquals(new BigDecimal("2.0"), saldo.getDiasUsados());
+        assertEquals(BigDecimal.ZERO.setScale(1), saldo.getDiasPendientes());
 
         MovimientoSaldoEntity movimiento = movimientoSaldoRepository
                 .find("eventoId", EVENTO_BORDE_ID).firstResult();

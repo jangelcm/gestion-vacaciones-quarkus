@@ -38,6 +38,8 @@ public class SaldoTestDataHelper {
                 .diasDisponibles(new BigDecimal(diasDisponibles))
                 .diasUsados(new BigDecimal(diasUsados))
                 .diasAcumulados(BigDecimal.ZERO.setScale(1))
+            .diasPendientes(BigDecimal.ZERO.setScale(1))
+            .diasTrabajados(0)
                 .version(0)
                 .build());
     }

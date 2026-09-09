@@ -54,7 +54,8 @@ class SaldoDiasWriteOperationsTest {
 
         assertNotNull(resultado);
         assertEquals(new BigDecimal("7.0"), resultado.getDiasDisponibles());
-        assertEquals(new BigDecimal("5.0"), resultado.getDiasUsados());
+        assertEquals(new BigDecimal("2.0"), resultado.getDiasUsados());
+        assertEquals(new BigDecimal("3.0"), resultado.getDiasPendientes());
 
         ArgumentCaptor<MovimientoSaldoEntity> movimientoCaptor = ArgumentCaptor.forClass(MovimientoSaldoEntity.class);
         verify(movimientoSaldoRepository).persist(movimientoCaptor.capture());
@@ -101,7 +102,8 @@ class SaldoDiasWriteOperationsTest {
 
         assertNotNull(resultado);
         assertEquals(new BigDecimal("10.0"), resultado.getDiasDisponibles());
-        assertEquals(new BigDecimal("2.0"), resultado.getDiasUsados());
+        assertEquals(new BigDecimal("5.0"), resultado.getDiasUsados());
+        assertEquals(new BigDecimal("0.0"), resultado.getDiasPendientes());
 
         ArgumentCaptor<MovimientoSaldoEntity> movimientoCaptor = ArgumentCaptor.forClass(MovimientoSaldoEntity.class);
         verify(movimientoSaldoRepository).persist(movimientoCaptor.capture());
@@ -110,7 +112,7 @@ class SaldoDiasWriteOperationsTest {
     }
 
     @Test
-    void shouldRolloverUnusedDaysIntoAcumuladosAndResetPeriodOnRenovacion() {
+    void shouldIncrementDiasTrabajadosInProcesoDiario() {
         PoliticaEntity politica = PoliticaEntity.builder()
                 .id(10L)
                 .nombre("Vacaciones anuales")
@@ -126,22 +128,23 @@ class SaldoDiasWriteOperationsTest {
                 .diasDisponibles(new BigDecimal("6.0"))
                 .diasUsados(new BigDecimal("9.0"))
                 .diasAcumulados(new BigDecimal("2.0"))
+                .diasPendientes(new BigDecimal("1.0"))
+                .diasTrabajados(10)
                 .version(0)
                 .build();
 
         when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarRenovacion(1L);
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(1L);
 
-        assertEquals(new BigDecimal("8.0"), resultado.getDiasAcumulados());
-        assertEquals(new BigDecimal("15.0"), resultado.getDiasDisponibles());
-        assertEquals(new BigDecimal("0.0"), resultado.getDiasUsados());
+        assertEquals(11, resultado.getDiasTrabajados());
+        assertEquals(new BigDecimal("2.0"), resultado.getDiasAcumulados());
         verify(saldoDiasRepository).persist(saldo);
     }
 
     @Test
-    void shouldCapAcumuladosAtMaxDiasAcumulablesOnRenovacion() {
+    void shouldRolloverAtDay360AndCapAcumuladosAtMax() {
         PoliticaEntity politica = PoliticaEntity.builder()
                 .id(10L)
                 .nombre("Vacaciones anuales")
@@ -157,19 +160,22 @@ class SaldoDiasWriteOperationsTest {
                 .diasDisponibles(new BigDecimal("12.0"))
                 .diasUsados(new BigDecimal("3.0"))
                 .diasAcumulados(new BigDecimal("5.0"))
+                                .diasPendientes(new BigDecimal("0.0"))
+                                .diasTrabajados(359)
                 .version(0)
                 .build();
 
         when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarRenovacion(1L);
+                SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(1L);
 
         assertEquals(new BigDecimal("10.0"), resultado.getDiasAcumulados());
+                assertEquals(0, resultado.getDiasTrabajados());
     }
 
     @Test
-    void shouldNotCapWhenPoliticaHasNoMaxDiasAcumulables() {
+        void shouldRolloverAtDay360WithoutCapWhenNoMax() {
         PoliticaEntity politica = PoliticaEntity.builder()
                 .id(10L)
                 .nombre("Vacaciones anuales")
@@ -184,15 +190,18 @@ class SaldoDiasWriteOperationsTest {
                 .diasDisponibles(new BigDecimal("12.0"))
                 .diasUsados(new BigDecimal("3.0"))
                 .diasAcumulados(new BigDecimal("5.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(359)
                 .version(0)
                 .build();
 
         when(saldoDiasRepository.findById(1L)).thenReturn(saldo);
         when(saldoDiasRepository.getEntityManager()).thenReturn(entityManager);
 
-        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarRenovacion(1L);
+        SaldoDiasEntity resultado = saldoDiasWriteOperations.ejecutarProcesoDiario(1L);
 
-        assertEquals(new BigDecimal("17.0"), resultado.getDiasAcumulados());
+        assertEquals(new BigDecimal("35.0"), resultado.getDiasAcumulados());
+        assertEquals(0, resultado.getDiasTrabajados());
     }
 
     private SaldoDiasEntity buildSaldoDias(String diasDisponibles, String diasUsados, String diasAcumulados) {
@@ -203,6 +212,8 @@ class SaldoDiasWriteOperationsTest {
                 .diasDisponibles(new BigDecimal(diasDisponibles))
                 .diasUsados(new BigDecimal(diasUsados))
                 .diasAcumulados(new BigDecimal(diasAcumulados))
+                .diasPendientes(BigDecimal.ZERO.setScale(1))
+                .diasTrabajados(0)
                 .version(0)
                 .build();
     }

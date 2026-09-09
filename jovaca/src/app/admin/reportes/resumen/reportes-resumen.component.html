@@ -1,0 +1,39 @@
+<div class="container">
+    <div class="header">
+        <h2>Reportes</h2>
+        <button class="btn btn-secondary" (click)="cargar()">Actualizar</button>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando resumen...
+    </div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (resumen(); as r) {
+    <div class="cards">
+        <article class="card">
+            <h3>Pendientes</h3>
+            <strong>{{ r.pendientes }}</strong>
+        </article>
+        <article class="card">
+            <h3>Aprobadas</h3>
+            <strong>{{ r.aprobadas }}</strong>
+        </article>
+        <article class="card">
+            <h3>Rechazadas</h3>
+            <strong>{{ r.rechazadas }}</strong>
+        </article>
+        <article class="card">
+            <h3>Canceladas</h3>
+            <strong>{{ r.canceladas }}</strong>
+        </article>
+    </div>
+
+    <p class="hint">{{ r.mensaje }}</p>
+    }
+</div>

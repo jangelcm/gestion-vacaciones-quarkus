@@ -79,6 +79,8 @@ public class DataSeeder {
                 .diasDisponibles(new BigDecimal("10.0"))
                 .diasUsados(new BigDecimal("2.0"))
                 .diasAcumulados(new BigDecimal("1.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .version(0)
                 .build());
 
@@ -89,6 +91,8 @@ public class DataSeeder {
                 .diasDisponibles(new BigDecimal("2.0"))
                 .diasUsados(new BigDecimal("8.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .version(0)
                 .build());
 
@@ -99,6 +103,8 @@ public class DataSeeder {
                 .diasDisponibles(new BigDecimal("5.0"))
                 .diasUsados(new BigDecimal("0.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .version(0)
                 .build());
 
@@ -109,6 +115,8 @@ public class DataSeeder {
                 .diasDisponibles(new BigDecimal("15.0"))
                 .diasUsados(new BigDecimal("0.0"))
                 .diasAcumulados(new BigDecimal("0.0"))
+                .diasPendientes(new BigDecimal("0.0"))
+                .diasTrabajados(0)
                 .version(0)
                 .build());
 

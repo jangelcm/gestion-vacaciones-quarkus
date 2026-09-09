@@ -2,6 +2,7 @@ package com.jacm.consultas.api.resource;
 
 import com.jacm.consultas.api.dto.SolicitudConsultaResponse;
 import com.jacm.consultas.api.dto.SolicitudHistorialResponse;
+import com.jacm.consultas.api.dto.SaldoVacacionalResponse;
 import com.jacm.consultas.service.ConsultasProjectionService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -40,5 +41,11 @@ public class ConsultaResource {
                 .stream()
                 .map(SolicitudHistorialResponse::fromDocument)
                 .toList();
+    }
+
+    @GET
+    @Path("/balances/{colaboradorId}")
+    public SaldoVacacionalResponse obtenerBalance(@PathParam("colaboradorId") Long colaboradorId) {
+        return SaldoVacacionalResponse.fromDocument(consultasProjectionService.obtenerSaldoVacacional(colaboradorId));
     }
 }

@@ -21,6 +21,11 @@ export const routes: Routes = [
           import('./vacaciones/listado/listado.component').then(m => m.ListadoComponent)
       },
       {
+        path: 'consultas',
+        loadComponent: () =>
+          import('./consultas/historial/historial.component').then(m => m.HistorialComponent)
+      },
+      {
         path: 'usuarios',
         canActivate: [roleGuard('Administrador')],
         loadComponent: () =>
@@ -37,6 +42,12 @@ export const routes: Routes = [
         canActivate: [roleGuard('Administrador')],
         loadComponent: () =>
           import('./admin/politicas/listado/politicas-listado.component').then(m => m.PoliticasListadoComponent)
+      },
+      {
+        path: 'reportes',
+        canActivate: [roleGuard('Administrador')],
+        loadComponent: () =>
+          import('./admin/reportes/resumen/reportes-resumen.component').then(m => m.ReportesResumenComponent)
       }
     ]
   },
