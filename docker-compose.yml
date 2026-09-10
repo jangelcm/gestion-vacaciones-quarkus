@@ -245,12 +245,10 @@ services:
       context: .
       dockerfile: docker/Dockerfile.mcsv-gateway
     container_name: mcsv-gateway
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - ms-solicitud
       - ms-aprobaciones
-  ##    - ms-politicas
+      - ms-politicas
       - ms-notificaciones
       - ms-consultas
       - ms-reportes

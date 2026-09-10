@@ -35,6 +35,7 @@ public class SaldoDiasService {
 
     static final String MOTIVO_DESCUENTO_SOLICITUD_APROBADA = "DESCUENTO_SOLICITUD_APROBADA";
     static final String MOTIVO_DEVOLUCION_SOLICITUD_CANCELADA = "DEVOLUCION_SOLICITUD_CANCELADA";
+    static final String MOTIVO_RESERVA_SOLICITUD_CREADA = "RESERVA_SOLICITUD_CREADA";
     static final String MOTIVO_ASIGNACION_POLITICA = "ASIGNACION_POLITICA";
     static final String MOTIVO_RENOVACION_PERIODO = "RENOVACION_PERIODO_ACUMULACION";
     static final String MOTIVO_BATCH_DIARIO = "BATCH_DIARIO";
@@ -197,6 +198,23 @@ public class SaldoDiasService {
                 evento.eventoId());
     }
 
+    public void reservarDiasPorSolicitudCreada(
+            Long colaboradorId,
+            Long solicitudId,
+            BigDecimal dias,
+            String eventoId) {
+        SaldoDiasEntity saldo = ejecutarConReintento(() -> saldoDiasWriteOperations.reservarDiasPendientes(
+                colaboradorId,
+                solicitudId,
+                dias,
+                eventoId));
+
+        if (saldo != null) {
+            recalcularSaldoDisponible(saldo);
+            publicarDiasActualizados(saldo, MOTIVO_RESERVA_SOLICITUD_CREADA);
+        }
+    }
+
     public void descontarDias(
             Long colaboradorId,
             Long solicitudId,
@@ -296,7 +314,25 @@ public class SaldoDiasService {
     }
 
     BigDecimal calcularDiasHabilitados(SaldoDiasEntity saldo) {
-        return safeBigDecimal(saldo.getDiasAcumulados());
+        if (saldo == null || saldo.getPolitica() == null) {
+            return safeBigDecimal(saldo != null ? saldo.getDiasAcumulados() : null);
+        }
+
+        // 1. Días acumulados previamente en BBDD
+        BigDecimal acumuladosBD = safeBigDecimal(saldo.getDiasAcumulados());
+
+        // 2. Si ya acumula periodos completos de 360 días
+        int periodosCompletados = safeDiasTrabajados(saldo) / 360;
+
+        if (periodosCompletados > 0) {
+            BigDecimal diasBase = BigDecimal.valueOf(saldo.getPolitica().getDiasBaseAnio());
+            BigDecimal diasPorPeriodos = diasBase.multiply(BigDecimal.valueOf(periodosCompletados));
+            return acumuladosBD.max(diasPorPeriodos);
+        }
+
+        // Si tiene menos de 360 días trabajados (como en este caso: 122 días),
+        // sus días habilitados por derecho de antigüedad son 0.00
+        return acumuladosBD;
     }
 
     BigDecimal calcularSaldoActual(SaldoDiasEntity saldo, BigDecimal diasHabilitados) {

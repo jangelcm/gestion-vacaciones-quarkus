@@ -15,8 +15,10 @@ import java.math.RoundingMode;
 @ApplicationScoped
 public class SaldoDiasWriteOperations {
 
+    static final String TIPO_RESERVA = "RESERVA";
     static final String TIPO_DESCUENTO = "DESCUENTO";
     static final String TIPO_DEVOLUCION = "DEVOLUCION";
+    static final String ORIGEN_SOLICITUD_CREADA = "solicitud.creada";
     static final String ORIGEN_SOLICITUD_APROBADA = "solicitud.aprobada";
     static final String ORIGEN_SOLICITUD_CANCELADA = "solicitud.cancelada";
     static final int DIAS_PERIODO_ANUAL = 360;
@@ -66,6 +68,41 @@ public class SaldoDiasWriteOperations {
                 TIPO_DESCUENTO,
                 dias,
                 eventoOrigen,
+                eventoId));
+
+        return saldoDias;
+    }
+
+    @Transactional
+    public SaldoDiasEntity reservarDiasPendientes(
+            Long colaboradorId,
+            Long solicitudId,
+            BigDecimal dias,
+            String eventoId) {
+        if (movimientoSaldoRepository.existsByEventoId(eventoId)) {
+            return null;
+        }
+        if (dias == null || dias.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("El evento no incluye una cantidad de dias valida para reservar");
+        }
+
+        SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(colaboradorId);
+        if (saldoDias == null) {
+            throw new ResourceNotFoundException("Saldo no encontrado para el colaborador");
+        }
+
+        normalizarCampos(saldoDias);
+        saldoDias.setDiasPendientes(saldoDias.getDiasPendientes().add(dias));
+
+        saldoDiasRepository.persist(saldoDias);
+        saldoDiasRepository.getEntityManager().flush();
+
+        movimientoSaldoRepository.persist(buildMovimiento(
+                saldoDias,
+                solicitudId,
+                TIPO_RESERVA,
+                dias,
+                ORIGEN_SOLICITUD_CREADA,
                 eventoId));
 
         return saldoDias;

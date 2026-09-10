@@ -10,10 +10,29 @@
             </p>
             }
         </div>
-        <button type="button" class="btn btn-primary" (click)="irANuevaSolicitud()">
+        <button type="button" class="btn btn-primary" (click)="abrirModalNueva()">
             + Nueva Solicitud
         </button>
     </header>
+
+        @if (modalNuevaAbierta()) {
+        <div class="modal-backdrop" (click)="cerrarModalNueva()">
+            <div class="modal-card" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <div>
+                        <h2>Nueva Solicitud</h2>
+                        <p>Completa el formulario para registrar tu solicitud de vacaciones.</p>
+                    </div>
+                    <button type="button" class="modal-close" aria-label="Cerrar modal" (click)="cerrarModalNueva()">×</button>
+                </div>
+
+                <app-formulario
+                    (creada)="onSolicitudCreada()"
+                    (cancelar)="cerrarModalNueva()">
+                </app-formulario>
+            </div>
+        </div>
+        }
 
     @if (loading()) {
     <div class="state-card loading-card">

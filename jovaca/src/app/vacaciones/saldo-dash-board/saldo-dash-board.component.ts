@@ -7,11 +7,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { ConsultasRealtimeService } from '../../core/services/consultas-realtime.service';
 import { SaldoDias } from '../../core/models/politica.model';
 import { Solicitud } from '../../models/solicitud.model';
+import { FormularioComponent } from '../formulario/formulario.component';
 
 @Component({
   selector: 'app-saldo-dashboard',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, FormularioComponent],
   templateUrl: './saldo-dash-board.component.html',
   styleUrls: ['./saldo-dash-board.component.css']
 })
@@ -26,7 +27,7 @@ export class MiSaldoDashboardComponent implements OnDestroy {
   solicitudes = signal<Solicitud[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
-
+  modalNuevaAbierta = signal(false);
   // Muestra solo las primeras 3 solicitudes para mantener limpia la vista
   solicitudesRecientes = computed(() => this.solicitudes().slice(0, 3));
 
@@ -65,8 +66,17 @@ export class MiSaldoDashboardComponent implements OnDestroy {
     });
   }
 
-  irANuevaSolicitud(): void {
-    this.router.navigate(['/solicitudes'], { queryParams: { nueva: 'true' } });
+  abrirModalNueva(): void {
+    this.modalNuevaAbierta.set(true);
+  }
+
+  cerrarModalNueva(): void {
+    this.modalNuevaAbierta.set(false);
+  }
+
+  onSolicitudCreada(): void {
+    this.cerrarModalNueva();
+    this.cargarDashboard();
   }
 
   irAHistorialCompleto(): void {
