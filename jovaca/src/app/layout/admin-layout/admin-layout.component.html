@@ -15,6 +15,9 @@
             <a routerLink="/consultas" routerLinkActive="active" class="nav-item">
                 Mis Consultas / Historial
             </a>
+            <a routerLink="/calendario" routerLinkActive="active" class="nav-item">
+                Calendario
+            </a>
 
             @if (auth.hasRole('Administrador')) {
             <div class="nav-section-title">Administración</div>
@@ -28,8 +31,6 @@
                 Políticas y Saldos
             </a>
 
-            <div class="nav-section-title">Próximamente</div>
-            <span class="nav-item nav-item-disabled">Calendario</span>
             <a routerLink="/reportes" routerLinkActive="active" class="nav-item">Reportes</a>
             }
         </nav>

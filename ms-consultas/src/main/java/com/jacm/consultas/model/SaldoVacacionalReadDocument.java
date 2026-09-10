@@ -15,12 +15,15 @@ public class SaldoVacacionalReadDocument {
     public Long politicaId;
     public LocalDate fechaInicioPolitica;
 
+    public BigDecimal diasDisponibles;
     public BigDecimal diasGozados;
     public BigDecimal diasHabilitados;
     public BigDecimal saldoActual;
     public BigDecimal diasTruncos;
     public Integer diasTrabajados;
     public BigDecimal diasPendientes;
+    public BigDecimal diasAcumulados;
+    public LocalDate fechaIngresoColaborador;
 
     public String motivoActualizacion;
     public LocalDateTime ultimaActualizacion;

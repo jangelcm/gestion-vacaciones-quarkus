@@ -19,12 +19,17 @@ export interface SolicitudHistorialDto {
 
 export interface BalanceVacacionalDto {
     colaboradorId: number;
+    politicaId: number;
+    fechaInicioPolitica: string | null;
+    diasDisponibles: number;
     diasGozados: number;
     diasHabilitados: number;
     saldoActual: number;
     diasTruncos: number;
     diasTrabajados: number;
     diasPendientes: number;
+    diasAcumulados: number;
+    fechaIngresoColaborador: string | null;
     motivoActualizacion: string;
     ultimaActualizacion: string;
 }

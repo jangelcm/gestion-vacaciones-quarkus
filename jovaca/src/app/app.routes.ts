@@ -30,6 +30,11 @@ export const routes: Routes = [
           import('./consultas/historial/historial.component').then(m => m.HistorialComponent)
       },
       {
+        path: 'calendario',
+        loadComponent: () =>
+          import('./calendario/calendario.component').then(m => m.CalendarioComponent)
+      },
+      {
         path: 'usuarios',
         canActivate: [roleGuard('Administrador')],
         loadComponent: () =>

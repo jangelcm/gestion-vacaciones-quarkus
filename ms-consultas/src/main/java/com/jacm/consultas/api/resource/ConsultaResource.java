@@ -9,7 +9,9 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.time.LocalDate;
 import java.util.List;
 
 @Path("/api/v1/consultas")
@@ -23,6 +25,17 @@ public class ConsultaResource {
     @Path("/solicitudes/{id}")
     public SolicitudConsultaResponse obtenerSolicitud(@PathParam("id") Long solicitudId) {
         return SolicitudConsultaResponse.fromDocument(consultasProjectionService.obtenerSolicitud(solicitudId));
+    }
+
+    /** Solicitudes de todos los colaboradores que se solapan con [desde, hasta] — para el calendario de equipo. */
+    @GET
+    @Path("/solicitudes")
+    public List<SolicitudConsultaResponse> listarSolicitudesEnRango(
+            @QueryParam("desde") String desde, @QueryParam("hasta") String hasta) {
+        return consultasProjectionService.listarSolicitudesEnRango(LocalDate.parse(desde), LocalDate.parse(hasta))
+                .stream()
+                .map(SolicitudConsultaResponse::fromDocument)
+                .toList();
     }
 
     @GET

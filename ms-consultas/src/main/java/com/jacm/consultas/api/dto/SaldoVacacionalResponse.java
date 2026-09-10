@@ -9,12 +9,15 @@ public record SaldoVacacionalResponse(
         Long colaboradorId,
     Long politicaId,
     LocalDate fechaInicioPolitica,
+        BigDecimal diasDisponibles,
         BigDecimal diasGozados,
         BigDecimal diasHabilitados,
         BigDecimal saldoActual,
         BigDecimal diasTruncos,
     Integer diasTrabajados,
         BigDecimal diasPendientes,
+        BigDecimal diasAcumulados,
+        LocalDate fechaIngresoColaborador,
         String motivoActualizacion,
         LocalDateTime ultimaActualizacion) {
 
@@ -23,12 +26,15 @@ public record SaldoVacacionalResponse(
                 doc.colaboradorId,
             doc.politicaId,
             doc.fechaInicioPolitica,
+                doc.diasDisponibles,
                 doc.diasGozados,
                 doc.diasHabilitados,
                 doc.saldoActual,
                 doc.diasTruncos,
                 doc.diasTrabajados,
                 doc.diasPendientes,
+                doc.diasAcumulados,
+                doc.fechaIngresoColaborador,
                 doc.motivoActualizacion,
                 doc.ultimaActualizacion);
     }

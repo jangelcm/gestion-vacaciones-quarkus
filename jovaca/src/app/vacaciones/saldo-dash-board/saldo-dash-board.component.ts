@@ -1,11 +1,11 @@
 import { Component, OnDestroy, inject, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { PoliticasService } from '../../core/services/politicas.service';
+import { ConsultasService } from '../../core/services/consultas.service';
 import { SolicitudesService } from '../../services/solicitudes.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConsultasRealtimeService } from '../../core/services/consultas-realtime.service';
-import { SaldoDias } from '../../core/models/politica.model';
+import { BalanceVacacionalDto } from '../../core/models/consulta.model';
 import { Solicitud } from '../../models/solicitud.model';
 import { FormularioComponent } from '../formulario/formulario.component';
 
@@ -17,13 +17,13 @@ import { FormularioComponent } from '../formulario/formulario.component';
   styleUrls: ['./saldo-dash-board.component.css']
 })
 export class MiSaldoDashboardComponent implements OnDestroy {
-  private politicasSvc = inject(PoliticasService);
+  private consultasSvc = inject(ConsultasService);
   private solicitudesSvc = inject(SolicitudesService);
   private auth = inject(AuthService);
   private router = inject(Router);
   private consultasRealtime = inject(ConsultasRealtimeService);
 
-  saldo = signal<SaldoDias | null>(null);
+  saldo = signal<BalanceVacacionalDto | null>(null);
   solicitudes = signal<Solicitud[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
@@ -50,8 +50,8 @@ export class MiSaldoDashboardComponent implements OnDestroy {
     this.loading.set(true);
     this.error.set(null);
 
-    // Carga de saldo
-    this.politicasSvc.obtenerSaldo(userId).subscribe({
+    // Carga de saldo (lado de lectura CQRS: ms-consultas, no ms-politicas)
+    this.consultasSvc.obtenerBalanceColaborador(userId).subscribe({
       next: (res) => this.saldo.set(res),
       error: () => this.error.set('No se pudo obtener la información de tu saldo de vacaciones.')
     });

@@ -82,6 +82,10 @@ public class ConsultasProjectionService {
         return solicitudReadRepository.listarPorColaboradorId(colaboradorId);
     }
 
+    public List<SolicitudReadDocument> listarSolicitudesEnRango(java.time.LocalDate desde, java.time.LocalDate hasta) {
+        return solicitudReadRepository.listarEnRango(desde, hasta);
+    }
+
     public List<SolicitudHistorialDocument> listarHistorial(Long solicitudId) {
         return solicitudHistorialRepository.listarPorSolicitudId(solicitudId);
     }
@@ -95,12 +99,15 @@ public class ConsultasProjectionService {
 
         doc.politicaId = event.politicaId();
         doc.fechaInicioPolitica = event.fechaInicioPolitica();
+        doc.diasDisponibles = toScale(event.diasDisponibles());
         doc.diasGozados = toScale(event.diasUsados());
         doc.diasHabilitados = toScale(event.diasHabilitados());
         doc.saldoActual = toScale(event.saldoActual());
         doc.diasTruncos = toScale(event.diasTruncos());
         doc.diasTrabajados = event.diasTrabajados() == null ? 0 : event.diasTrabajados();
         doc.diasPendientes = toScale(event.diasPendientes());
+        doc.diasAcumulados = toScale(event.diasAcumulados());
+        doc.fechaIngresoColaborador = event.fechaIngresoColaborador();
         doc.motivoActualizacion = event.motivoActualizacion();
         doc.ultimaActualizacion = event.fechaEvento() != null ? event.fechaEvento() : LocalDateTime.now();
 

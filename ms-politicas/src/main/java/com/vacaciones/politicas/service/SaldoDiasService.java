@@ -147,6 +147,7 @@ public class SaldoDiasService {
         throw new BadRequestException("La fecha de ingreso del colaborador es obligatoria para asignar la política por defecto");
     }
 
+    @Transactional
     public void renovarSaldosAcumulablesDelDia(LocalDate fecha) {
         java.util.List<SaldoDiasEntity> saldos = saldoDiasRepository.findParaProcesoDiario();
 
@@ -198,6 +199,7 @@ public class SaldoDiasService {
                 evento.eventoId());
     }
 
+    @Transactional
     public void reservarDiasPorSolicitudCreada(
             Long colaboradorId,
             Long solicitudId,
@@ -215,6 +217,7 @@ public class SaldoDiasService {
         }
     }
 
+    @Transactional
     public void descontarDias(
             Long colaboradorId,
             Long solicitudId,
@@ -229,6 +232,7 @@ public class SaldoDiasService {
         }
     }
 
+    @Transactional
     public void devolverDias(
             Long colaboradorId,
             Long solicitudId,
@@ -270,6 +274,8 @@ public class SaldoDiasService {
                 diasTruncos,
                 safeDiasTrabajados(saldo),
                 safeBigDecimal(saldo.getDiasPendientes()),
+                safeBigDecimal(saldo.getDiasAcumulados()),
+                saldo.getFechaIngresoColaborador(),
                 motivo,
                 LocalDateTime.now()));
     }

@@ -1,0 +1,42 @@
+<div class="calendario-container">
+    <div class="calendario-header">
+        <h2>Mi Calendario de Vacaciones</h2>
+        <div class="nav-controls">
+            <button type="button" class="btn-nav" (click)="mesAnterior()" aria-label="Mes anterior">‹</button>
+            <span class="mes-titulo">{{ tituloMes() }}</span>
+            <button type="button" class="btn-nav" (click)="mesSiguiente()" aria-label="Mes siguiente">›</button>
+            <button type="button" class="btn-hoy" (click)="irAHoy()">Hoy</button>
+        </div>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg">Cargando calendario...</div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (!loading() && !error()) {
+    <div class="grilla">
+        @for (nombre of nombresDia; track nombre) {
+        <div class="celda-encabezado">{{ nombre }}</div>
+        }
+        @for (dia of dias(); track dia.fecha.getTime()) {
+        <div class="celda-dia" [class.fuera-de-mes]="!dia.esDelMesActual" [class.es-hoy]="dia.esHoy">
+            <span class="numero-dia">{{ dia.numero }}</span>
+            @if (dia.solicitud) {
+            <span class="chip" [class]="badgeClass(dia.solicitud.estado)">{{ dia.solicitud.estado }}</span>
+            }
+        </div>
+        }
+    </div>
+
+    <div class="leyenda">
+        <span class="leyenda-item"><span class="dot badge-pendiente"></span> Pendiente</span>
+        <span class="leyenda-item"><span class="dot badge-aprobada"></span> Aprobada</span>
+        <span class="leyenda-item"><span class="dot badge-rechazada"></span> Rechazada</span>
+        <span class="leyenda-item"><span class="dot badge-cancelada"></span> Cancelada</span>
+    </div>
+    }
+</div>

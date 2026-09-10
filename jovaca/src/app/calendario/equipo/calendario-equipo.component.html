@@ -1,0 +1,54 @@
+<div class="calendario-container">
+    <div class="calendario-header">
+        <h2>Calendario del Equipo</h2>
+        <div class="nav-controls">
+            <button type="button" class="btn-nav" (click)="mesAnterior()" aria-label="Mes anterior">‹</button>
+            <span class="mes-titulo">{{ tituloMes() }}</span>
+            <button type="button" class="btn-nav" (click)="mesSiguiente()" aria-label="Mes siguiente">›</button>
+            <button type="button" class="btn-hoy" (click)="irAHoy()">Hoy</button>
+        </div>
+    </div>
+
+    @if (loading()) {
+    <div class="state-msg">Cargando calendario del equipo...</div>
+    }
+
+    @if (error()) {
+    <div class="state-msg error-msg">{{ error() }}</div>
+    }
+
+    @if (!loading() && !error() && filas().length === 0) {
+    <div class="state-msg">No hay solicitudes de vacaciones registradas este mes.</div>
+    }
+
+    @if (!loading() && !error() && filas().length > 0) {
+    <div class="timeline-scroll">
+        <div class="timeline-header" [style.grid-template-columns]="'12rem repeat(' + diasDelMes() + ', minmax(1.75rem, 1fr))'">
+            <div class="celda-nombre-header">Colaborador</div>
+            @for (d of numerosDia(); track d) {
+            <div class="celda-dia-header">{{ d }}</div>
+            }
+        </div>
+
+        @for (fila of filas(); track fila.colaboradorId) {
+        <div class="timeline-fila" [style.grid-template-columns]="'12rem repeat(' + diasDelMes() + ', minmax(1.75rem, 1fr))'">
+            <div class="celda-nombre" [style.grid-row]="1" [style.grid-column]="1">{{ fila.nombre }}</div>
+            @for (barra of fila.barras; track barra.solicitud.id) {
+            <div class="barra" [class]="badgeClass(barra.solicitud.estado)" [style.grid-row]="1"
+                [style.grid-column]="(barra.columnaInicio + 1) + ' / ' + (barra.columnaFin + 2)"
+                [title]="fila.nombre + ': ' + barra.solicitud.fechaInicio.slice(0,10) + ' a ' + barra.solicitud.fechaFin.slice(0,10) + ' (' + barra.solicitud.estado + ')'">
+                <span class="barra-label">{{ barra.solicitud.estado }}</span>
+            </div>
+            }
+        </div>
+        }
+    </div>
+
+    <div class="leyenda">
+        <span class="leyenda-item"><span class="dot badge-pendiente"></span> Pendiente</span>
+        <span class="leyenda-item"><span class="dot badge-aprobada"></span> Aprobada</span>
+        <span class="leyenda-item"><span class="dot badge-rechazada"></span> Rechazada</span>
+        <span class="leyenda-item"><span class="dot badge-cancelada"></span> Cancelada</span>
+    </div>
+    }
+</div>

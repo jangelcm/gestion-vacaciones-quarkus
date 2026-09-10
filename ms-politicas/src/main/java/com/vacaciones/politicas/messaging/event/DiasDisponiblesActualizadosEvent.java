@@ -15,6 +15,8 @@ public record DiasDisponiblesActualizadosEvent(
         BigDecimal diasTruncos,
         Integer diasTrabajados,
         BigDecimal diasPendientes,
+        BigDecimal diasAcumulados,
+        LocalDate fechaIngresoColaborador,
         String motivoActualizacion,
         LocalDateTime fechaEvento) {
 }

@@ -14,6 +14,10 @@ export class ConsultasService {
         return this.http.get<SolicitudConsultaDto[]>(`${this.BASE}/solicitudes/usuario/${colaboradorId}`);
     }
 
+    listarSolicitudesEnRango(desde: string, hasta: string): Observable<SolicitudConsultaDto[]> {
+        return this.http.get<SolicitudConsultaDto[]>(`${this.BASE}/solicitudes`, { params: { desde, hasta } });
+    }
+
     obtenerSolicitud(solicitudId: number): Observable<SolicitudConsultaDto> {
         return this.http.get<SolicitudConsultaDto>(`${this.BASE}/solicitudes/${solicitudId}`);
     }
