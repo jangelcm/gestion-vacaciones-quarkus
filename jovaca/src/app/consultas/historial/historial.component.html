@@ -5,10 +5,42 @@
 
     @if (esAdmin()) {
     <div class="search-bar">
-        <input type="number" [(ngModel)]="inputId" placeholder="ID de colaborador" class="input-field"
-            (keyup.enter)="cargarSolicitudes()" />
-        <button (click)="cargarSolicitudes()" class="btn btn-secondary">Buscar</button>
+        <div class="autocomplete">
+            <input type="text" [(ngModel)]="nombreBusqueda" placeholder="Buscar colaborador por nombre"
+                class="input-field" (focus)="mostrarSugerencias.set(true); actualizarSugerencias()"
+                (input)="mostrarSugerencias.set(true); colaboradorSeleccionado.set(null); actualizarSugerencias()"
+                (blur)="mostrarSugerencias.set(false)" (keyup.enter)="buscar()" />
+            @if (colaboradorSeleccionado()) {
+            <button type="button" class="clear-btn" (mousedown)="limpiarColaborador()" title="Quitar selección">✕</button>
+            }
+            @if (mostrarSugerencias() && sugerencias().length > 0) {
+            <ul class="suggestions">
+                @for (u of sugerencias(); track u.id) {
+                <li (mousedown)="seleccionarColaborador(u)">{{ u.username }}</li>
+                }
+            </ul>
+            }
+        </div>
+
+        <label class="date-label">
+            Desde
+            <input type="date" [(ngModel)]="desde" class="input-field" />
+        </label>
+        <label class="date-label">
+            Hasta
+            <input type="date" [(ngModel)]="hasta" class="input-field" />
+        </label>
+
+        <button (click)="buscar()" class="btn btn-secondary">Buscar</button>
+        <button (click)="limpiarFiltros()" class="btn btn-secondary">Limpiar</button>
     </div>
+
+    @if (!yaBusco()) {
+    <div class="state-msg empty-msg">
+        Elegí un colaborador de la lista, o completá "Desde" y "Hasta" para ver a todos los colaboradores en ese
+        rango.
+    </div>
+    }
     }
 
     @if (loadingSolicitudes()) {
@@ -21,7 +53,7 @@
     <div class="state-msg error-msg">{{ errorSolicitudes() }}</div>
     }
 
-    @if (!loadingSolicitudes() && !errorSolicitudes() && solicitudes().length === 0) {
+    @if (!loadingSolicitudes() && !errorSolicitudes() && solicitudes().length === 0 && (!esAdmin() || yaBusco())) {
     <div class="state-msg empty-msg">No hay solicitudes para mostrar.</div>
     }
 
@@ -31,6 +63,9 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    @if (mostrandoTodos()) {
+                    <th>Colaborador</th>
+                    }
                     <th>Fecha Inicio</th>
                     <th>Fecha Fin</th>
                     <th>Estado</th>
@@ -42,6 +77,9 @@
                 @for (s of solicitudes(); track s.id) {
                 <tr>
                     <td class="id-col">#{{ s.id }}</td>
+                    @if (mostrandoTodos()) {
+                    <td>{{ nombreColaborador(s.colaboradorId) }}</td>
+                    }
                     <td>{{ s.fechaInicio | date: 'dd/MM/yyyy' }}</td>
                     <td>{{ s.fechaFin | date: 'dd/MM/yyyy' }}</td>
                     <td><span [class]="'badge ' + badgeClass(s.estado)">{{ s.estado }}</span></td>
