@@ -1,19 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 import { AprobacionesService } from '../../../core/services/aprobaciones.service';
-import { SolicitudesService } from '../../../services/solicitudes.service';
+import { ConsultasService } from '../../../core/services/consultas.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { ModalComponent } from '../../../shared/modal/modal.component';
-import { Aprobacion } from '../../../core/models/aprobacion.model';
-import { Solicitud } from '../../../models/solicitud.model';
-
-interface PendienteView {
-    aprobacion: Aprobacion;
-    solicitud: Solicitud;
-}
+import { SolicitudConsultaDto } from '../../../core/models/consulta.model';
 
 type Accion = 'aprobar' | 'rechazar';
 
@@ -26,18 +20,18 @@ type Accion = 'aprobar' | 'rechazar';
 })
 export class AprobacionesListadoComponent implements OnInit {
     private aprobService = inject(AprobacionesService);
-    private solService = inject(SolicitudesService);
+    private consultasSvc = inject(ConsultasService);
     private auth = inject(AuthService);
     private usuariosSvc = inject(UsuariosService);
 
-    pendientes = signal<PendienteView[]>([]);
+    pendientes = signal<SolicitudConsultaDto[]>([]);
     loading = signal(false);
     error = signal<string | null>(null);
 
     private nombresPorId = signal<Map<number, string>>(new Map());
 
     modalAccion = signal<Accion | null>(null);
-    solicitudSeleccionada = signal<PendienteView | null>(null);
+    solicitudSeleccionada = signal<SolicitudConsultaDto | null>(null);
     comentario = '';
     procesando = signal(false);
     accionError = signal<string | null>(null);
@@ -49,22 +43,20 @@ export class AprobacionesListadoComponent implements OnInit {
     cargar(): void {
         this.loading.set(true);
         this.error.set(null);
-        forkJoin({
-            pendientes: this.aprobService.listarPendientes(),
-            solicitudes: this.solService.listarTodas(),
-            usuarios: this.usuariosSvc.listarUsuarios()
-        }).subscribe({
-            next: ({ pendientes, solicitudes, usuarios }) => {
-                this.nombresPorId.set(new Map(usuarios.content.map(u => [u.id, u.username])));
-
-                const mapa = new Map(solicitudes.map(s => [s.id, s]));
-                const vistas = pendientes
-                    .map((p): PendienteView | null => {
-                        const s = mapa.get(p.solicitudId);
-                        return s ? { aprobacion: p, solicitud: s } : null;
-                    })
-                    .filter((v): v is PendienteView => v !== null);
-                this.pendientes.set(vistas);
+        // Lado de lectura CQRS: ms-consultas, no ms-aprobaciones/ms-solicitud directo.
+        this.consultasSvc.listarSolicitudesPendientes().pipe(
+            switchMap(pendientes => {
+                const ids = [...new Set(
+                    pendientes.map(p => Number(p.colaboradorId)).filter(id => !Number.isNaN(id))
+                )];
+                return this.usuariosSvc.listarPorIds(ids).pipe(
+                    map(usuarios => ({ pendientes, usuarios }))
+                );
+            })
+        ).subscribe({
+            next: ({ pendientes, usuarios }) => {
+                this.nombresPorId.set(new Map(usuarios.map(u => [u.id, u.username])));
+                this.pendientes.set(pendientes);
                 this.loading.set(false);
             },
             error: () => {
@@ -80,17 +72,17 @@ export class AprobacionesListadoComponent implements OnInit {
 
     nombreColaboradorSeleccionado = computed(() => {
         const v = this.solicitudSeleccionada();
-        return v ? this.nombreColaborador(v.solicitud.colaboradorId) : '';
+        return v ? this.nombreColaborador(v.colaboradorId) : '';
     });
 
-    abrirAprobar(v: PendienteView): void {
+    abrirAprobar(v: SolicitudConsultaDto): void {
         this.solicitudSeleccionada.set(v);
         this.comentario = '';
         this.accionError.set(null);
         this.modalAccion.set('aprobar');
     }
 
-    abrirRechazar(v: PendienteView): void {
+    abrirRechazar(v: SolicitudConsultaDto): void {
         this.solicitudSeleccionada.set(v);
         this.comentario = '';
         this.accionError.set(null);
@@ -118,8 +110,9 @@ export class AprobacionesListadoComponent implements OnInit {
 
         this.procesando.set(true);
         this.accionError.set(null);
-        const solicitudId = v.solicitud.id;
+        const solicitudId = v.id;
 
+        // Acción de escritura: sigue contra ms-aprobaciones, no ms-consultas.
         const obs = accion === 'aprobar'
             ? this.aprobService.aprobar(solicitudId, { aprobadorId, comentario: this.comentario })
             : this.aprobService.rechazar(solicitudId, { aprobadorId, motivo: this.comentario });

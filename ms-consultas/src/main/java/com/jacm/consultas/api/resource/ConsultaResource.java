@@ -3,6 +3,7 @@ package com.jacm.consultas.api.resource;
 import com.jacm.consultas.api.dto.SolicitudConsultaResponse;
 import com.jacm.consultas.api.dto.SolicitudHistorialResponse;
 import com.jacm.consultas.api.dto.SaldoVacacionalResponse;
+import com.jacm.consultas.api.dto.PoliticaConsultaResponse;
 import com.jacm.consultas.service.ConsultasProjectionService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -38,6 +39,16 @@ public class ConsultaResource {
                 .toList();
     }
 
+    /** Solicitudes PENDIENTE de todos los colaboradores — para la pantalla de aprobaciones. */
+    @GET
+    @Path("/solicitudes/pendientes")
+    public List<SolicitudConsultaResponse> listarSolicitudesPendientes() {
+        return consultasProjectionService.listarSolicitudesPendientes()
+                .stream()
+                .map(SolicitudConsultaResponse::fromDocument)
+                .toList();
+    }
+
     @GET
     @Path("/solicitudes/usuario/{colaboradorId}")
     public List<SolicitudConsultaResponse> listarSolicitudesPorUsuario(@PathParam("colaboradorId") String colaboradorId) {
@@ -60,5 +71,14 @@ public class ConsultaResource {
     @Path("/balances/{colaboradorId}")
     public SaldoVacacionalResponse obtenerBalance(@PathParam("colaboradorId") Long colaboradorId) {
         return SaldoVacacionalResponse.fromDocument(consultasProjectionService.obtenerSaldoVacacional(colaboradorId));
+    }
+
+    @GET
+    @Path("/politicas")
+    public List<PoliticaConsultaResponse> listarPoliticas() {
+        return consultasProjectionService.listarPoliticas()
+                .stream()
+                .map(PoliticaConsultaResponse::fromDocument)
+                .toList();
     }
 }

@@ -1,8 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PoliticasService } from '../../../core/services/politicas.service';
+import { ConsultasService } from '../../../core/services/consultas.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
-import { Politica, SaldoDias } from '../../../core/models/politica.model';
+import { Politica } from '../../../core/models/politica.model';
+import { BalanceVacacionalDto, PoliticaConsultaDto } from '../../../core/models/consulta.model';
 import { Usuario } from '../../../core/models/usuario.model';
 import { ModalComponent } from '../../../shared/modal/modal.component';
 import { PoliticaFormComponent } from '../politica-form/politica-form.component';
@@ -17,9 +19,10 @@ import { AsignarSaldoFormComponent } from '../asignar-saldo/asignar-saldo-form.c
 })
 export class PoliticasListadoComponent implements OnInit {
     private svc = inject(PoliticasService);
+    private consultasSvc = inject(ConsultasService);
     private usuariosSvc = inject(UsuariosService);
 
-    politicas = signal<Politica[]>([]);
+    politicas = signal<PoliticaConsultaDto[]>([]);
     loading = signal(false);
     error = signal<string | null>(null);
 
@@ -28,7 +31,7 @@ export class PoliticasListadoComponent implements OnInit {
 
     usuarios = signal<Usuario[]>([]);
     colaboradorConsultado: number | null = null;
-    saldo = signal<SaldoDias | null>(null);
+    saldo = signal<BalanceVacacionalDto | null>(null);
     saldoLoading = signal(false);
     saldoError = signal<string | null>(null);
 
@@ -44,7 +47,8 @@ export class PoliticasListadoComponent implements OnInit {
     cargar(): void {
         this.loading.set(true);
         this.error.set(null);
-        this.svc.listar().subscribe({
+        // Lado de lectura CQRS: ms-consultas, no ms-politicas directo.
+        this.consultasSvc.listarPoliticas().subscribe({
             next: (data) => { this.politicas.set(data); this.loading.set(false); },
             error: () => { this.error.set('No se pudieron cargar las políticas'); this.loading.set(false); }
         });
@@ -59,7 +63,7 @@ export class PoliticasListadoComponent implements OnInit {
         this.modalPolitica.set(true);
     }
 
-    abrirEditar(p: Politica): void {
+    abrirEditar(p: PoliticaConsultaDto): void {
         this.politicaEditando.set(p);
         this.modalPolitica.set(true);
     }
@@ -74,7 +78,7 @@ export class PoliticasListadoComponent implements OnInit {
         this.cargar();
     }
 
-    desactivar(p: Politica): void {
+    desactivar(p: PoliticaConsultaDto): void {
         if (!confirm(`¿Desactivar la política "${p.nombre}"?`)) {
             return;
         }
@@ -89,7 +93,8 @@ export class PoliticasListadoComponent implements OnInit {
         this.saldoLoading.set(true);
         this.saldoError.set(null);
         this.saldo.set(null);
-        this.svc.obtenerSaldo(this.colaboradorConsultado).subscribe({
+        // Lado de lectura CQRS: ms-consultas, no ms-politicas directo.
+        this.consultasSvc.obtenerBalanceColaborador(this.colaboradorConsultado).subscribe({
             next: (s) => { this.saldo.set(s); this.saldoLoading.set(false); },
             error: () => {
                 this.saldoError.set('Este colaborador no tiene una política asignada');

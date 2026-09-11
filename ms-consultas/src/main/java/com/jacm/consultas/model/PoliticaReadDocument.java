@@ -13,6 +13,9 @@ public class PoliticaReadDocument {
     public String nombre;
     public String tipoVacacion;
     public Integer diasBaseAnio;
+    public Integer antiguedadMinimaMeses;
+    public Boolean acumulable;
+    public Integer maxDiasAcumulables;
     public Boolean activa;
     public LocalDateTime ultimaActualizacion;
 }

@@ -7,8 +7,8 @@ export interface Politica {
     acumulable: boolean;
     maxDiasAcumulables: number | null;
     activa: boolean;
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface PoliticaPayload {

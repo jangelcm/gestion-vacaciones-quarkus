@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { SolicitudesService } from '../../services/solicitudes.service';
-import { Solicitud } from '../../models/solicitud.model';
+import { ConsultasService } from '../../core/services/consultas.service';
+import { SolicitudConsultaDto } from '../../core/models/consulta.model';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -12,10 +12,10 @@ import { AuthService } from '../../core/services/auth.service';
     styleUrl: './listado.component.css'
 })
 export class ListadoComponent {
-    private svc = inject(SolicitudesService);
+    private svc = inject(ConsultasService);
     private auth = inject(AuthService);
 
-    solicitudes = signal<Solicitud[]>([]);
+    solicitudes = signal<SolicitudConsultaDto[]>([]);
     loading = signal(false);
     error = signal<string | null>(null);
 
@@ -31,7 +31,7 @@ export class ListadoComponent {
         }
         this.loading.set(true);
         this.error.set(null);
-        this.svc.listar(id).subscribe({
+        this.svc.listarSolicitudesUsuario(id).subscribe({
             next: (data) => { this.solicitudes.set(data); this.loading.set(false); },
             error: () => { this.error.set('Error al cargar solicitudes'); this.loading.set(false); }
         });

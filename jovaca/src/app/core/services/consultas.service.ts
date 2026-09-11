@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { BalanceVacacionalDto, SolicitudConsultaDto, SolicitudHistorialDto } from '../models/consulta.model';
+import { BalanceVacacionalDto, PoliticaConsultaDto, SolicitudConsultaDto, SolicitudHistorialDto } from '../models/consulta.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConsultasService {
@@ -28,5 +28,13 @@ export class ConsultasService {
 
     obtenerBalanceColaborador(colaboradorId: number): Observable<BalanceVacacionalDto> {
         return this.http.get<BalanceVacacionalDto>(`${this.BASE}/balances/${colaboradorId}`);
+    }
+
+    listarSolicitudesPendientes(): Observable<SolicitudConsultaDto[]> {
+        return this.http.get<SolicitudConsultaDto[]>(`${this.BASE}/solicitudes/pendientes`);
+    }
+
+    listarPoliticas(): Observable<PoliticaConsultaDto[]> {
+        return this.http.get<PoliticaConsultaDto[]>(`${this.BASE}/politicas`);
     }
 }

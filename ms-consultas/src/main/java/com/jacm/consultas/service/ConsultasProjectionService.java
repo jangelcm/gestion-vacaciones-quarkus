@@ -124,9 +124,20 @@ public class ConsultasProjectionService {
         doc.nombre = event.nombre();
         doc.tipoVacacion = event.tipoVacacion();
         doc.diasBaseAnio = event.diasBaseAnio();
+        doc.antiguedadMinimaMeses = event.antiguedadMinimaMeses();
+        doc.acumulable = event.acumulable();
+        doc.maxDiasAcumulables = event.maxDiasAcumulables();
         doc.activa = event.activa();
         doc.ultimaActualizacion = event.fechaEvento() != null ? event.fechaEvento() : LocalDateTime.now();
         politicaReadRepository.persistOrUpdate(doc);
+    }
+
+    public List<PoliticaReadDocument> listarPoliticas() {
+        return politicaReadRepository.listAll();
+    }
+
+    public List<SolicitudReadDocument> listarSolicitudesPendientes() {
+        return solicitudReadRepository.listarPorEstado("PENDIENTE");
     }
 
     public SaldoVacacionalReadDocument obtenerSaldoVacacional(Long colaboradorId) {
@@ -173,6 +184,8 @@ public class ConsultasProjectionService {
     }
 
     private BigDecimal toScale(BigDecimal value) {
-        return value == null ? BigDecimal.ZERO.setScale(1) : value.setScale(1);
+        return value == null
+                ? BigDecimal.ZERO.setScale(1, java.math.RoundingMode.HALF_UP)
+                : value.setScale(1, java.math.RoundingMode.HALF_UP);
     }
 }

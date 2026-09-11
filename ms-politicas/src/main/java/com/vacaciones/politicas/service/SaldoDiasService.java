@@ -292,6 +292,9 @@ public class SaldoDiasService {
                 politica.getNombre(),
                 politica.getTipoVacacion(),
                 politica.getDiasBaseAnio(),
+                politica.getAntiguedadMinimaMeses(),
+                politica.getAcumulable(),
+                politica.getMaxDiasAcumulables(),
                 politica.getActiva(),
                 LocalDateTime.now()));
     }

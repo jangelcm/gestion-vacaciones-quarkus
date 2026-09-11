@@ -10,6 +10,9 @@ public record PoliticaActualizadaEvent(
         String nombre,
         String tipoVacacion,
         Integer diasBaseAnio,
+        Integer antiguedadMinimaMeses,
+        Boolean acumulable,
+        Integer maxDiasAcumulables,
         Boolean activa,
         LocalDateTime fechaEvento) {
 }

@@ -18,4 +18,9 @@ public class SolicitudReadRepository implements PanacheMongoRepositoryBase<Solic
     public List<SolicitudReadDocument> listarEnRango(LocalDate desde, LocalDate hasta) {
         return find("fechaInicio <= ?1 and fechaFin >= ?2", Sort.ascending("fechaInicio"), hasta, desde).list();
     }
+
+    /** Solicitudes en un estado dado, de todos los colaboradores (ej. PENDIENTE, para la pantalla de aprobaciones). */
+    public List<SolicitudReadDocument> listarPorEstado(String estado) {
+        return find("estado", Sort.ascending("fechaSolicitud"), estado).list();
+    }
 }

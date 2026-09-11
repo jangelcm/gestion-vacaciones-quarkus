@@ -65,6 +65,9 @@ public class PoliticaService {
                 entity.getNombre(),
                 entity.getTipoVacacion(),
                 entity.getDiasBaseAnio(),
+                entity.getAntiguedadMinimaMeses(),
+                entity.getAcumulable(),
+                entity.getMaxDiasAcumulables(),
                 entity.getActiva(),
                 LocalDateTime.now()));
     }

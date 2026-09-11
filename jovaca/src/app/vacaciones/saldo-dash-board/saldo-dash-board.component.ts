@@ -2,11 +2,9 @@ import { Component, OnDestroy, inject, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ConsultasService } from '../../core/services/consultas.service';
-import { SolicitudesService } from '../../services/solicitudes.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConsultasRealtimeService } from '../../core/services/consultas-realtime.service';
-import { BalanceVacacionalDto } from '../../core/models/consulta.model';
-import { Solicitud } from '../../models/solicitud.model';
+import { BalanceVacacionalDto, SolicitudConsultaDto } from '../../core/models/consulta.model';
 import { FormularioComponent } from '../formulario/formulario.component';
 
 @Component({
@@ -18,13 +16,12 @@ import { FormularioComponent } from '../formulario/formulario.component';
 })
 export class MiSaldoDashboardComponent implements OnDestroy {
   private consultasSvc = inject(ConsultasService);
-  private solicitudesSvc = inject(SolicitudesService);
   private auth = inject(AuthService);
   private router = inject(Router);
   private consultasRealtime = inject(ConsultasRealtimeService);
 
   saldo = signal<BalanceVacacionalDto | null>(null);
-  solicitudes = signal<Solicitud[]>([]);
+  solicitudes = signal<SolicitudConsultaDto[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
   modalNuevaAbierta = signal(false);
@@ -56,8 +53,8 @@ export class MiSaldoDashboardComponent implements OnDestroy {
       error: () => this.error.set('No se pudo obtener la información de tu saldo de vacaciones.')
     });
 
-    // Carga de solicitudes
-    this.solicitudesSvc.listar(userId).subscribe({
+    // Carga de solicitudes (lado de lectura CQRS: ms-consultas, no ms-solicitud)
+    this.consultasSvc.listarSolicitudesUsuario(userId).subscribe({
       next: (res) => {
         this.solicitudes.set(res);
         this.loading.set(false);

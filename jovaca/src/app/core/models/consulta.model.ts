@@ -17,6 +17,17 @@ export interface SolicitudHistorialDto {
     fechaEvento: string;
 }
 
+export interface PoliticaConsultaDto {
+    id: number;
+    nombre: string;
+    tipoVacacion: string;
+    diasBaseAnio: number;
+    antiguedadMinimaMeses: number;
+    acumulable: boolean;
+    maxDiasAcumulables: number | null;
+    activa: boolean;
+}
+
 export interface BalanceVacacionalDto {
     colaboradorId: number;
     politicaId: number;
