@@ -27,8 +27,8 @@
 }
 
 .input-field:focus {
-    border-color: #6d28d9;
-    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+    border-color: var(--cold-700);
+    box-shadow: 0 0 0 3px rgba(92, 126, 143, 0.18);
 }
 
 .field-error {
@@ -45,13 +45,13 @@
 }
 
 .alert-error {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--danger-bg);
+    color: var(--danger-text);
 }
 
 .alert-success {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--ok-bg);
+    color: var(--ok-text);
 }
 
 .form-actions {
@@ -79,10 +79,10 @@
 .btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .btn-primary {
-    background: #6d28d9;
+    background: var(--cold-700);
     color: #fff;
 }
-.btn-primary:hover:not(:disabled) { background: #5b21b6; }
+.btn-primary:hover:not(:disabled) { background: #4e6d7d; }
 
 .btn-secondary {
     background: #f3f4f6;

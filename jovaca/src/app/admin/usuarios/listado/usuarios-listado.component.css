@@ -1,7 +1,7 @@
 .container {
     background: #fff;
     border-radius: 14px;
-    box-shadow: 0 2px 12px rgba(109, 40, 217, 0.08);
+    box-shadow: 0 2px 12px rgba(50, 82, 99, 0.08);
     padding: 1.75rem;
 }
 
@@ -31,18 +31,18 @@ h2 {
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
-    background: #6d28d9;
+    background: var(--cold-700);
     color: #fff;
 }
-.btn-primary:hover { background: #5b21b6; }
+.btn-primary:hover { background: #4e6d7d; }
 
 .btn-sm {
     padding: 0.3rem 0.85rem;
     font-size: 0.82rem;
-    background: #ede9fe;
-    color: #5b21b6;
+    background: var(--cold-200);
+    color: #4e6d7d;
 }
-.btn-sm:hover { background: #ddd6fe; }
+.btn-sm:hover { background: var(--cold-300); }
 
 .table-wrapper {
     overflow-x: auto;
@@ -73,9 +73,9 @@ h2 {
     font-size: 0.9rem;
 }
 
-.table tbody tr:hover { background: #faf5ff; }
+.table tbody tr:hover { background: var(--cold-100); }
 
-.id-col { font-weight: 600; color: #6d28d9; }
+.id-col { font-weight: 600; color: var(--cold-700); }
 
 .badge {
     display: inline-block;
@@ -87,8 +87,8 @@ h2 {
     text-transform: uppercase;
 }
 
-.badge-activo { background: #dcfce7; color: #166534; }
-.badge-inactivo { background: #f3f4f6; color: #6b7280; }
+.badge-activo { background: var(--ok-bg); color: var(--ok-text); }
+.badge-inactivo { background: var(--cold-200); color: var(--text-muted); }
 
 .state-msg {
     text-align: center;
@@ -102,14 +102,14 @@ h2 {
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    color: #6d28d9;
+    color: var(--cold-700);
 }
 
 .spinner {
     width: 18px;
     height: 18px;
-    border: 2.5px solid #ddd6fe;
-    border-top-color: #6d28d9;
+    border: 2.5px solid var(--cold-300);
+    border-top-color: var(--cold-700);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     display: inline-block;
@@ -117,5 +117,5 @@ h2 {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.error-msg { color: #991b1b; background: #fee2e2; border-radius: 8px; }
+.error-msg { color: var(--danger-text); background: var(--danger-bg); border-radius: 8px; }
 .empty-msg { color: #6b7280; }

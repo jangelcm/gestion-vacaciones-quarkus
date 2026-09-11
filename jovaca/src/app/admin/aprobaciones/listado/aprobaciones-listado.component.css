@@ -1,7 +1,7 @@
 .container {
     background: #fff;
     border-radius: 14px;
-    box-shadow: 0 2px 12px rgba(109, 40, 217, 0.08);
+    box-shadow: 0 2px 12px rgba(50, 82, 99, 0.08);
     padding: 1.75rem;
 }
 
@@ -44,9 +44,9 @@ h2 {
     font-size: 0.9rem;
 }
 
-.table tbody tr:hover { background: #faf5ff; }
+.table tbody tr:hover { background: var(--cold-100); }
 
-.id-col { font-weight: 600; color: #6d28d9; }
+.id-col { font-weight: 600; color: var(--cold-700); }
 
 .actions-col {
     display: flex;
@@ -67,16 +67,16 @@ h2 {
 .btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .btn-approve {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--ok-bg);
+    color: var(--ok-text);
 }
-.btn-approve:hover:not(:disabled) { background: #bbf7d0; }
+.btn-approve:hover:not(:disabled) { background: #c3e2d3; }
 
 .btn-reject {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--danger-bg);
+    color: var(--danger-text);
 }
-.btn-reject:hover:not(:disabled) { background: #fecaca; }
+.btn-reject:hover:not(:disabled) { background: #efc9c9; }
 
 .btn-secondary {
     background: #f3f4f6;
@@ -97,14 +97,14 @@ h2 {
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    color: #6d28d9;
+    color: var(--cold-700);
 }
 
 .spinner {
     width: 18px;
     height: 18px;
-    border: 2.5px solid #ddd6fe;
-    border-top-color: #6d28d9;
+    border: 2.5px solid var(--cold-300);
+    border-top-color: var(--cold-700);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     display: inline-block;
@@ -112,7 +112,7 @@ h2 {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.error-msg { color: #991b1b; background: #fee2e2; border-radius: 8px; }
+.error-msg { color: var(--danger-text); background: var(--danger-bg); border-radius: 8px; }
 .empty-msg { color: #6b7280; }
 
 /* ── Modal content ── */
@@ -148,8 +148,8 @@ h2 {
 }
 
 .input-field:focus {
-    border-color: #6d28d9;
-    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+    border-color: var(--cold-700);
+    box-shadow: 0 0 0 3px rgba(92, 126, 143, 0.18);
 }
 
 .alert {
@@ -160,8 +160,8 @@ h2 {
 }
 
 .alert-error {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--danger-bg);
+    color: var(--danger-text);
 }
 
 .form-actions {
