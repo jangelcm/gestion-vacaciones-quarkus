@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -8,7 +8,19 @@ export interface ReporteResumen {
     aprobadas: number;
     rechazadas: number;
     canceladas: number;
-    mensaje: string;
+    total: number;
+}
+
+export interface SaldoReporteDto {
+    colaboradorId: number;
+    politicaId: number | null;
+    politicaNombre: string | null;
+    diasDisponibles: number;
+    diasGozados: number;
+    diasHabilitados: number;
+    saldoActual: number;
+    diasAcumulados: number;
+    diasPendientes: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +29,16 @@ export class ReportesService {
 
     constructor(private http: HttpClient) { }
 
-    obtenerResumen(): Observable<ReporteResumen> {
-        return this.http.get<ReporteResumen>(`${this.BASE}/resumen`);
+    obtenerResumen(desde?: string, hasta?: string): Observable<ReporteResumen> {
+        let params = new HttpParams();
+        if (desde) params = params.set('desde', desde);
+        if (hasta) params = params.set('hasta', hasta);
+        return this.http.get<ReporteResumen>(`${this.BASE}/resumen`, { params });
+    }
+
+    obtenerSaldos(politicaId?: number): Observable<SaldoReporteDto[]> {
+        let params = new HttpParams();
+        if (politicaId) params = params.set('politicaId', politicaId);
+        return this.http.get<SaldoReporteDto[]>(`${this.BASE}/saldos`, { params });
     }
 }

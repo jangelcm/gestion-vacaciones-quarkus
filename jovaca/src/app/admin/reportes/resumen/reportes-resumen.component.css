@@ -17,6 +17,69 @@ h2 {
     color: #1e1e2e;
 }
 
+.filtro {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.filtro label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.filtro input,
+.filtro select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.seccion {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.seccion h2 {
+    font-size: 1.1rem;
+}
+
+.tabla-wrapper {
+    overflow-x: auto;
+}
+
+.tabla-saldos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.tabla-saldos th,
+.tabla-saldos td {
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+    white-space: nowrap;
+}
+
+.tabla-saldos th {
+    color: #6b7280;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.tabla-saldos strong {
+    color: #5b21b6;
+}
+
 .cards {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

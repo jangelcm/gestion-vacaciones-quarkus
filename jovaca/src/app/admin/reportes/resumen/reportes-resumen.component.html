@@ -4,6 +4,19 @@
         <button class="btn btn-secondary" (click)="cargar()">Actualizar</button>
     </div>
 
+    <div class="filtro">
+        <label>
+            Desde
+            <input type="date" [(ngModel)]="desde" />
+        </label>
+        <label>
+            Hasta
+            <input type="date" [(ngModel)]="hasta" />
+        </label>
+        <button class="btn btn-secondary" (click)="cargar()">Filtrar</button>
+        <button class="btn btn-secondary" (click)="limpiarFiltro()">Limpiar</button>
+    </div>
+
     @if (loading()) {
     <div class="state-msg loading-msg">
         <span class="spinner"></span> Cargando resumen...
@@ -34,6 +47,70 @@
         </article>
     </div>
 
-    <p class="hint">{{ r.mensaje }}</p>
+    <p class="hint">Total de solicitudes en el periodo: {{ r.total }}</p>
+    }
+
+    <div class="header seccion">
+        <h2>Saldo de vacaciones por colaborador</h2>
+    </div>
+
+    <div class="filtro">
+        <label>
+            Política
+            <select [(ngModel)]="politicaIdFiltro" (ngModelChange)="cargarSaldos()">
+                <option [ngValue]="null">Todas</option>
+                @for (p of politicas(); track p.id) {
+                <option [ngValue]="p.id">{{ p.nombre }}</option>
+                }
+            </select>
+        </label>
+    </div>
+
+    @if (loadingSaldos()) {
+    <div class="state-msg loading-msg">
+        <span class="spinner"></span> Cargando saldos...
+    </div>
+    }
+
+    @if (errorSaldos()) {
+    <div class="state-msg error-msg">{{ errorSaldos() }}</div>
+    }
+
+    @if (!loadingSaldos() && !errorSaldos()) {
+    <div class="tabla-wrapper">
+        <table class="tabla-saldos">
+            <thead>
+                <tr>
+                    <th>Colaborador</th>
+                    <th>Política</th>
+                    <th>Disponibles</th>
+                    <th>Habilitados</th>
+                    <th>Gozados</th>
+                    <th>Pendientes</th>
+                    <th>Acumulados</th>
+                    <th>Saldo actual</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (s of saldos(); track s.colaboradorId) {
+                <tr>
+                    <td>{{ nombreColaborador(s.colaboradorId) }}</td>
+                    <td>{{ s.politicaNombre ?? '—' }}</td>
+                    <td>{{ s.diasDisponibles }}</td>
+                    <td>{{ s.diasHabilitados }}</td>
+                    <td>{{ s.diasGozados }}</td>
+                    <td>{{ s.diasPendientes }}</td>
+                    <td>{{ s.diasAcumulados }}</td>
+                    <td><strong>{{ s.saldoActual }}</strong></td>
+                </tr>
+                }
+                @empty {
+                <tr>
+                    <td colspan="8" class="state-msg">No hay saldos para mostrar.</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
     }
 </div>
