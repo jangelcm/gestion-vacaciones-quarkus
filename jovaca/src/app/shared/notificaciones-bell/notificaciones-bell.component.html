@@ -30,7 +30,13 @@
                     <span class="badge" [class]="badgeClaseEstado(n.estado)">{{ n.estado }}</span>
                 </div>
                 <p class="bell-item-cuerpo">{{ n.cuerpo }}</p>
-                <span class="bell-item-fecha">{{ n.fechaCreacion }}</span>
+                <div class="bell-item-footer">
+                    <span class="bell-item-fecha">{{ n.fechaCreacion }}</span>
+                    <div class="bell-item-acciones">
+                        <button type="button" class="bell-item-btn bell-item-btn-ver" (click)="ver(n)">Ver</button>
+                        <button type="button" class="bell-item-btn bell-item-btn-cerrar" (click)="cerrar(n)">Cerrar</button>
+                    </div>
+                </div>
             </div>
             }
         </div>

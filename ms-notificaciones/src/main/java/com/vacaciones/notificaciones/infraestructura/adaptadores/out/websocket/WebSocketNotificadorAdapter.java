@@ -30,6 +30,8 @@ public class WebSocketNotificadorAdapter implements NotificadorTiempoRealPort {
     public void notificar(Long colaboradorId, String tipoEvento, Object payload) {
         Set<String> conexionesIds = registro.obtenerConexiones(colaboradorId);
         if (conexionesIds.isEmpty()) {
+            LOG.debugf("Sin conexion websocket activa para el colaborador %d; la campanita se actualizara "
+                    + "recien cuando abra/reconecte el socket (queda igual en el historial)", colaboradorId);
             return;
         }
 

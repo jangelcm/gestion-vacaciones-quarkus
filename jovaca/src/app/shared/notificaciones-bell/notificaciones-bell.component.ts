@@ -1,6 +1,8 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificacionesService } from '../../core/services/notificaciones.service';
+import { Notificacion } from '../../core/models/notificacion.model';
 
 @Component({
     selector: 'app-notificaciones-bell',
@@ -12,6 +14,7 @@ import { NotificacionesService } from '../../core/services/notificaciones.servic
 export class NotificacionesBellComponent implements OnInit, OnDestroy {
     private auth = inject(AuthService);
     private elementRef = inject(ElementRef);
+    private router = inject(Router);
 
     notifSvc = inject(NotificacionesService);
     abierto = signal(false);
@@ -40,6 +43,16 @@ export class NotificacionesBellComponent implements OnInit, OnDestroy {
         if (this.abierto() && !this.elementRef.nativeElement.contains(event.target)) {
             this.abierto.set(false);
         }
+    }
+
+    ver(n: Notificacion): void {
+        this.abierto.set(false);
+        this.notifSvc.descartar(n.id);
+        this.router.navigate(this.notifSvc.rutaDestino(n));
+    }
+
+    cerrar(n: Notificacion): void {
+        this.notifSvc.descartar(n.id);
     }
 
     badgeClaseEstado(estado: string): string {

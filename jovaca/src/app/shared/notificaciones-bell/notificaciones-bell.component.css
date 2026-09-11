@@ -125,6 +125,43 @@
     color: #9ca3af;
 }
 
+.bell-item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.bell-item-acciones {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.bell-item-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+
+.bell-item-btn:hover {
+    filter: brightness(0.95);
+}
+
+.bell-item-btn-ver {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.bell-item-btn-cerrar {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
 .badge {
     display: inline-block;
     padding: 0.15rem 0.5rem;

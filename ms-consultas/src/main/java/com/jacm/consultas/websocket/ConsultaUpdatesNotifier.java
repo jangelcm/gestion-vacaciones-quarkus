@@ -33,6 +33,8 @@ public class ConsultaUpdatesNotifier {
         }
         Set<String> conexionesIds = registro.obtenerConexiones(colaboradorId);
         if (conexionesIds.isEmpty()) {
+            LOG.debugf("Sin conexion websocket activa para el colaborador %d; se ignora el push "
+                    + "en tiempo real (la pantalla se actualizara al recargar)", colaboradorId);
             return;
         }
 
