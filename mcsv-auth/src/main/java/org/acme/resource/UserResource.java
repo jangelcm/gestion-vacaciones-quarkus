@@ -4,11 +4,11 @@ package org.acme.resource;
 import org.acme.commons.PaginationModel;
 import org.acme.dto.UpdateUserRequest;
 import org.acme.dto.UserResponseDto;
+import org.acme.exception.ResourceNotFoundException;
 import org.acme.services.UserService;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -43,7 +43,7 @@ public class UserResource {
     public Response obtenerPorId(@PathParam("id") Long id) {
         var dto = service.obtenerPorId(id);
         if (dto == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new ResourceNotFoundException("Usuario no encontrado con id: " + id);
         }
         return Response.ok(dto).build();
     }
@@ -71,13 +71,7 @@ public class UserResource {
     @PUT
     @Path("/{id}")
     public Response actualizar(@PathParam("id") Long id, UpdateUserRequest req) {
-        try {
-            return Response.ok(service.actualizar(id, req)).build();
-        } catch (NoSuchElementException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        } catch (IllegalStateException e) {
-            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
-        }
+        return Response.ok(service.actualizar(id, req)).build();
     }
 
 }

@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { ReporteResumen, ReportesService } from '../../../core/services/reportes.service';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-reportes-resumen',
@@ -26,8 +27,8 @@ export class ReportesResumenComponent {
                 this.resumen.set(data);
                 this.loading.set(false);
             },
-            error: () => {
-                this.error.set('No se pudo cargar el resumen de reportes');
+            error: (err) => {
+                this.error.set(extraerMensajeError(err, 'No se pudo cargar el resumen de reportes'));
                 this.loading.set(false);
             }
         });

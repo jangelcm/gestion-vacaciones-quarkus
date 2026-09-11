@@ -5,6 +5,7 @@ import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Politica } from '../../../core/models/politica.model';
 import { Usuario } from '../../../core/models/usuario.model';
 import { firstValueFrom } from 'rxjs';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-asignar-saldo-form',
@@ -39,7 +40,7 @@ export class AsignarSaldoFormComponent implements OnInit {
     ngOnInit(): void {
         this.usuariosSvc.listarUsuarios().subscribe({
             next: (res) => this.usuarios.set(res.content),
-            error: () => this.error.set('No se pudieron cargar los usuarios')
+            error: (err) => this.error.set(extraerMensajeError(err, 'No se pudieron cargar los usuarios'))
         });
     }
 
@@ -88,9 +89,9 @@ export class AsignarSaldoFormComponent implements OnInit {
                     }
                 });
             },
-            error: () => {
+            error: (err) => {
                 this.loading.set(false);
-                this.error.set('No se pudo obtener el listado por rol. Intente nuevamente.');
+                this.error.set(extraerMensajeError(err, 'No se pudo obtener el listado por rol. Intente nuevamente.'));
             }
         });
     }

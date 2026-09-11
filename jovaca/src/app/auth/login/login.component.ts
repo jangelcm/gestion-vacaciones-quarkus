@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { extraerMensajeError } from '../../core/utils/error.util';
 
 @Component({
     selector: 'app-login',
@@ -38,9 +39,7 @@ export class LoginComponent {
             },
             error: (err) => {
                 this.loading.set(false);
-                this.error.set(err.status === 401
-                    ? 'Usuario o contraseña incorrectos'
-                    : 'No se pudo iniciar sesión. Intente nuevamente.');
+                this.error.set(extraerMensajeError(err, 'No se pudo iniciar sesión. Intente nuevamente.'));
             }
         });
     }

@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.NoSuchElementException;
 
 @Provider
 public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Throwable> {
@@ -36,6 +37,15 @@ public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Throwa
     private Response.Status resolveStatus(Throwable exception) {
         if (exception instanceof RuntimeCustomException runtimeCustomException) {
             return runtimeCustomException.getStatus();
+        }
+        if (exception instanceof NoSuchElementException) {
+            return Response.Status.NOT_FOUND;
+        }
+        if (exception instanceof IllegalStateException) {
+            return Response.Status.CONFLICT;
+        }
+        if (exception instanceof IllegalArgumentException) {
+            return Response.Status.BAD_REQUEST;
         }
         return Response.Status.INTERNAL_SERVER_ERROR;
     }

@@ -5,6 +5,7 @@ import { ConsultasService } from '../../core/services/consultas.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConsultasRealtimeService } from '../../core/services/consultas-realtime.service';
 import { BalanceVacacionalDto, SolicitudConsultaDto } from '../../core/models/consulta.model';
+import { extraerMensajeError } from '../../core/utils/error.util';
 import { FormularioComponent } from '../formulario/formulario.component';
 
 @Component({
@@ -50,7 +51,7 @@ export class MiSaldoDashboardComponent implements OnDestroy {
     // Carga de saldo (lado de lectura CQRS: ms-consultas, no ms-politicas)
     this.consultasSvc.obtenerBalanceColaborador(userId).subscribe({
       next: (res) => this.saldo.set(res),
-      error: () => this.error.set('No se pudo obtener la información de tu saldo de vacaciones.')
+      error: (err) => this.error.set(extraerMensajeError(err, 'No se pudo obtener la información de tu saldo de vacaciones.'))
     });
 
     // Carga de solicitudes (lado de lectura CQRS: ms-consultas, no ms-solicitud)

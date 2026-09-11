@@ -19,6 +19,8 @@ import java.util.Map;
 import org.acme.dto.RegisterRequest;
 import org.acme.dto.LoginRequest;
 import org.acme.dto.RefreshRequest;
+import org.acme.exception.ConflictException;
+import org.acme.exception.ResourceUnAuthorizedException;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -38,14 +40,10 @@ public class AuthResource {
         String username = req.username;
         String password = req.password;
         if (userRepository.findByUsername(username) != null) {
-            return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
+            throw new ConflictException("Usuario ya existe");
         }
-        try {
-            User user = authService.register(username, password, req.email, req.rol, req.fechaIngreso);
-            return Response.ok().entity(user).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-        }
+        User user = authService.register(username, password, req.email, req.rol, req.fechaIngreso);
+        return Response.ok().entity(user).build();
     }
 
     @POST
@@ -55,7 +53,7 @@ public class AuthResource {
         String password = req.password;
         User user = authService.validateCredentials(username, password);
         if (user == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Credenciales inválidas").build();
+            throw new ResourceUnAuthorizedException("Credenciales inválidas");
         }
         String accessToken = authService.generateAccessToken(user);
         String refreshToken = authService.generateRefreshToken(user);
@@ -72,7 +70,7 @@ public class AuthResource {
         String refreshToken = req.refresh_token;
         User user = userRepository.findByUsername(username);
         if (user == null || !authService.validateRefreshToken(user, refreshToken)) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Refresh token inválido").build();
+            throw new ResourceUnAuthorizedException("Refresh token inválido");
         }
         String newAccessToken = authService.generateAccessToken(user);
         String newRefreshToken = authService.generateRefreshToken(user);

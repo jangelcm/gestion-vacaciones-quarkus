@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Usuario } from '../../../core/models/usuario.model';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-editar-usuario',
@@ -55,13 +56,7 @@ export class EditarUsuarioComponent implements OnInit {
             next: () => { this.loading.set(false); this.guardado.emit(); },
             error: (err) => {
                 this.loading.set(false);
-                if (err.status === 409) {
-                    this.error.set('Ya existe otro usuario con ese nombre de usuario');
-                } else if (err.status === 404) {
-                    this.error.set('Usuario no encontrado');
-                } else {
-                    this.error.set('No se pudo actualizar el usuario. Intente nuevamente.');
-                }
+                this.error.set(extraerMensajeError(err, 'No se pudo actualizar el usuario. Intente nuevamente.'));
             }
         });
     }

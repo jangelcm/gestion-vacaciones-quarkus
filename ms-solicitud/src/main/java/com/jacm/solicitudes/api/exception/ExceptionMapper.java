@@ -1,6 +1,7 @@
-package com.vacaciones.notificaciones.infraestructura.exception;
+package com.jacm.solicitudes.api.exception;
 
-import com.vacaciones.notificaciones.dominio.model.EstadoNotificacionInvalidoException;
+import com.jacm.solicitudes.domain.exception.DependenciaNoDisponibleException;
+import com.jacm.solicitudes.domain.exception.SolicitudNoValidaException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -9,6 +10,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 
+/**
+ * Atrapa toda excepcion no controlada para que el front siempre reciba un cuerpo JSON
+ * consistente ({hora, mensaje, url, codeStatus}) en vez del formato crudo por defecto de
+ * Quarkus.
+ */
 @Provider
 public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Throwable> {
 
@@ -32,11 +38,11 @@ public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Throwa
     }
 
     private Response.Status resolveStatus(Throwable exception) {
-        if (exception instanceof NotificacionNoEncontradaException) {
-            return Response.Status.NOT_FOUND;
+        if (exception instanceof SolicitudNoValidaException) {
+            return Response.Status.BAD_REQUEST;
         }
-        if (exception instanceof EstadoNotificacionInvalidoException) {
-            return Response.Status.CONFLICT;
+        if (exception instanceof DependenciaNoDisponibleException) {
+            return Response.Status.SERVICE_UNAVAILABLE;
         }
         if (exception instanceof NoSuchElementException) {
             return Response.Status.NOT_FOUND;

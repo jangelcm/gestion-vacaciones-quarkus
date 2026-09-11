@@ -9,6 +9,7 @@ import { Usuario } from '../../../core/models/usuario.model';
 import { ModalComponent } from '../../../shared/modal/modal.component';
 import { PoliticaFormComponent } from '../politica-form/politica-form.component';
 import { AsignarSaldoFormComponent } from '../asignar-saldo/asignar-saldo-form.component';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-politicas-listado',
@@ -50,7 +51,7 @@ export class PoliticasListadoComponent implements OnInit {
         // Lado de lectura CQRS: ms-consultas, no ms-politicas directo.
         this.consultasSvc.listarPoliticas().subscribe({
             next: (data) => { this.politicas.set(data); this.loading.set(false); },
-            error: () => { this.error.set('No se pudieron cargar las políticas'); this.loading.set(false); }
+            error: (err) => { this.error.set(extraerMensajeError(err, 'No se pudieron cargar las políticas')); this.loading.set(false); }
         });
     }
 
@@ -84,7 +85,7 @@ export class PoliticasListadoComponent implements OnInit {
         }
         this.svc.desactivar(p.id).subscribe({
             next: () => this.cargar(),
-            error: () => this.error.set('No se pudo desactivar la política')
+            error: (err) => this.error.set(extraerMensajeError(err, 'No se pudo desactivar la política'))
         });
     }
 
@@ -96,8 +97,8 @@ export class PoliticasListadoComponent implements OnInit {
         // Lado de lectura CQRS: ms-consultas, no ms-politicas directo.
         this.consultasSvc.obtenerBalanceColaborador(this.colaboradorConsultado).subscribe({
             next: (s) => { this.saldo.set(s); this.saldoLoading.set(false); },
-            error: () => {
-                this.saldoError.set('Este colaborador no tiene una política asignada');
+            error: (err) => {
+                this.saldoError.set(extraerMensajeError(err, 'Este colaborador no tiene una política asignada'));
                 this.saldoLoading.set(false);
             }
         });

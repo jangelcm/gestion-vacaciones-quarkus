@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { ModalComponent } from '../../../shared/modal/modal.component';
 import { SolicitudConsultaDto } from '../../../core/models/consulta.model';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 type Accion = 'aprobar' | 'rechazar';
 
@@ -59,8 +60,8 @@ export class AprobacionesListadoComponent implements OnInit {
                 this.pendientes.set(pendientes);
                 this.loading.set(false);
             },
-            error: () => {
-                this.error.set('No se pudieron cargar las solicitudes pendientes de aprobación');
+            error: (err) => {
+                this.error.set(extraerMensajeError(err, 'No se pudieron cargar las solicitudes pendientes de aprobación'));
                 this.loading.set(false);
             }
         });
@@ -123,9 +124,9 @@ export class AprobacionesListadoComponent implements OnInit {
                 this.cerrarModal();
                 this.cargar();
             },
-            error: () => {
+            error: (err) => {
                 this.procesando.set(false);
-                this.accionError.set('No se pudo procesar la acción. Intente nuevamente.');
+                this.accionError.set(extraerMensajeError(err, 'No se pudo procesar la acción. Intente nuevamente.'));
             }
         });
     }

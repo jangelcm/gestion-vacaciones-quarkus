@@ -1,6 +1,5 @@
-package com.vacaciones.notificaciones.infraestructura.exception;
+package org.acme.exception;
 
-import com.vacaciones.notificaciones.dominio.model.EstadoNotificacionInvalidoException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -9,6 +8,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 
+/**
+ * Atrapa toda excepcion no controlada para que el front siempre reciba un cuerpo JSON
+ * consistente ({hora, mensaje, url, codeStatus}) en vez del formato crudo por defecto de
+ * Quarkus. Ademas de RuntimeCustomException (con su propio status), reconoce las excepciones
+ * idiomaticas de Java que ya se usan en el codigo existente para no tener que reescribir cada
+ * punto donde se lanzan.
+ */
 @Provider
 public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Throwable> {
 
@@ -32,11 +38,8 @@ public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Throwa
     }
 
     private Response.Status resolveStatus(Throwable exception) {
-        if (exception instanceof NotificacionNoEncontradaException) {
-            return Response.Status.NOT_FOUND;
-        }
-        if (exception instanceof EstadoNotificacionInvalidoException) {
-            return Response.Status.CONFLICT;
+        if (exception instanceof RuntimeCustomException runtimeCustomException) {
+            return runtimeCustomException.getStatus();
         }
         if (exception instanceof NoSuchElementException) {
             return Response.Status.NOT_FOUND;

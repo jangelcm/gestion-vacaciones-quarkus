@@ -3,6 +3,7 @@ import { switchMap, map } from 'rxjs';
 import { ConsultasService } from '../../core/services/consultas.service';
 import { UsuariosService } from '../../core/services/usuarios.service';
 import { SolicitudConsultaDto } from '../../core/models/consulta.model';
+import { extraerMensajeError } from '../../core/utils/error.util';
 
 interface BarraSolicitud {
     solicitud: SolicitudConsultaDto;
@@ -76,8 +77,8 @@ export class CalendarioEquipoComponent {
                 this.filas.set(this.construirFilas(solicitudes, nombresPorId, m));
                 this.loading.set(false);
             },
-            error: () => {
-                this.error.set('No se pudo cargar el calendario del equipo');
+            error: (err) => {
+                this.error.set(extraerMensajeError(err, 'No se pudo cargar el calendario del equipo'));
                 this.loading.set(false);
             }
         });

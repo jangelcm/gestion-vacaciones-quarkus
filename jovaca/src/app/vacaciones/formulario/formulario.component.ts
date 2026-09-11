@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { SolicitudesService } from '../../services/solicitudes.service';
 import { AuthService } from '../../core/services/auth.service';
+import { extraerMensajeError } from '../../core/utils/error.util';
 
 function fechaFinValidator(control: AbstractControl): ValidationErrors | null {
     const inicio = control.parent?.get('fechaInicio')?.value;
@@ -60,7 +61,7 @@ export class FormularioComponent {
                 this.exito.set(true);
                 setTimeout(() => this.creada.emit(), 1200);
             },
-            error: () => { this.error.set('Error al enviar la solicitud. Intente nuevamente.'); this.loading.set(false); }
+            error: (err) => { this.error.set(extraerMensajeError(err, 'Error al enviar la solicitud. Intente nuevamente.')); this.loading.set(false); }
         });
     }
 }

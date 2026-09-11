@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ConsultasService } from '../../core/services/consultas.service';
 import { SolicitudConsultaDto } from '../../core/models/consulta.model';
+import { extraerMensajeError } from '../../core/utils/error.util';
 
 interface DiaCalendario {
     fecha: Date;
@@ -80,8 +81,8 @@ export class CalendarioMensualComponent {
                 this.solicitudes.set(data);
                 this.loading.set(false);
             },
-            error: () => {
-                this.error.set('No se pudo cargar tu calendario de vacaciones');
+            error: (err) => {
+                this.error.set(extraerMensajeError(err, 'No se pudo cargar tu calendario de vacaciones'));
                 this.loading.set(false);
             }
         });

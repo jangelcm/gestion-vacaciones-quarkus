@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PoliticasService } from '../../../core/services/politicas.service';
 import { Politica } from '../../../core/models/politica.model';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-politica-form',
@@ -69,9 +70,9 @@ export class PoliticaFormComponent implements OnInit {
 
         obs.subscribe({
             next: () => { this.loading.set(false); this.guardada.emit(); },
-            error: () => {
+            error: (err) => {
                 this.loading.set(false);
-                this.error.set('No se pudo guardar la política. Verifique los datos e intente nuevamente.');
+                this.error.set(extraerMensajeError(err, 'No se pudo guardar la política. Verifique los datos e intente nuevamente.'));
             }
         });
     }

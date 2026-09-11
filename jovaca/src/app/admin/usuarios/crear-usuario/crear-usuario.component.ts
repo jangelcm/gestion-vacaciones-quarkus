@@ -2,6 +2,7 @@ import { Component, EventEmitter, inject, OnInit, Output, signal } from '@angula
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Rol } from '../../../core/models/rol.model';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-crear-usuario',
@@ -35,7 +36,7 @@ export class CrearUsuarioComponent implements OnInit {
     ngOnInit(): void {
         this.svc.listarRoles().subscribe({
             next: (roles) => this.roles.set(roles),
-            error: () => this.error.set('No se pudieron cargar los roles disponibles')
+            error: (err) => this.error.set(extraerMensajeError(err, 'No se pudieron cargar los roles disponibles'))
         });
     }
 
@@ -61,13 +62,7 @@ export class CrearUsuarioComponent implements OnInit {
             },
             error: (err) => {
                 this.loading.set(false);
-                if (err.status === 409) {
-                    this.error.set('Ese usuario ya existe');
-                } else if (err.status === 400) {
-                    this.error.set(typeof err.error === 'string' ? err.error : 'Datos inválidos');
-                } else {
-                    this.error.set('No se pudo crear el usuario. Intente nuevamente.');
-                }
+                this.error.set(extraerMensajeError(err, 'No se pudo crear el usuario. Intente nuevamente.'));
             }
         });
     }

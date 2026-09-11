@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ConsultasService } from '../../core/services/consultas.service';
 import { ConsultasRealtimeService } from '../../core/services/consultas-realtime.service';
 import { SolicitudConsultaDto, SolicitudHistorialDto } from '../../core/models/consulta.model';
+import { extraerMensajeError } from '../../core/utils/error.util';
 
 @Component({
     selector: 'app-historial-consultas',
@@ -71,8 +72,8 @@ export class HistorialComponent implements OnDestroy {
                 this.solicitudes.set(data);
                 this.loadingSolicitudes.set(false);
             },
-            error: () => {
-                this.errorSolicitudes.set('No se pudo cargar el historial de solicitudes');
+            error: (err) => {
+                this.errorSolicitudes.set(extraerMensajeError(err, 'No se pudo cargar el historial de solicitudes'));
                 this.loadingSolicitudes.set(false);
             }
         });
@@ -88,8 +89,8 @@ export class HistorialComponent implements OnDestroy {
                 this.historial.set(items);
                 this.loadingHistorial.set(false);
             },
-            error: () => {
-                this.errorHistorial.set('No se pudo cargar el detalle del historial');
+            error: (err) => {
+                this.errorHistorial.set(extraerMensajeError(err, 'No se pudo cargar el detalle del historial'));
                 this.loadingHistorial.set(false);
             }
         });

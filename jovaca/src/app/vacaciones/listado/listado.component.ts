@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { ConsultasService } from '../../core/services/consultas.service';
 import { SolicitudConsultaDto } from '../../core/models/consulta.model';
 import { AuthService } from '../../core/services/auth.service';
+import { extraerMensajeError } from '../../core/utils/error.util';
 
 @Component({
     selector: 'app-listado',
@@ -33,7 +34,7 @@ export class ListadoComponent {
         this.error.set(null);
         this.svc.listarSolicitudesUsuario(id).subscribe({
             next: (data) => { this.solicitudes.set(data); this.loading.set(false); },
-            error: () => { this.error.set('Error al cargar solicitudes'); this.loading.set(false); }
+            error: (err) => { this.error.set(extraerMensajeError(err, 'Error al cargar solicitudes')); this.loading.set(false); }
         });
     }
 

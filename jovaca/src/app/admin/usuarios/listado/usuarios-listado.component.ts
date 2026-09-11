@@ -4,6 +4,7 @@ import { CrearUsuarioComponent } from '../crear-usuario/crear-usuario.component'
 import { EditarUsuarioComponent } from '../editar-usuario/editar-usuario.component';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Usuario } from '../../../core/models/usuario.model';
+import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
     selector: 'app-usuarios-listado',
@@ -30,7 +31,7 @@ export class UsuariosListadoComponent implements OnInit {
         this.error.set(null);
         this.svc.listarUsuarios().subscribe({
             next: (res) => { this.usuarios.set(res.content); this.loading.set(false); },
-            error: () => { this.error.set('No se pudo cargar la lista de usuarios'); this.loading.set(false); }
+            error: (err) => { this.error.set(extraerMensajeError(err, 'No se pudo cargar la lista de usuarios')); this.loading.set(false); }
         });
     }
 
