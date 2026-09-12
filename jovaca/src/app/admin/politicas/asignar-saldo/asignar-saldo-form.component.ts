@@ -1,10 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PoliticasService } from '../../../core/services/politicas.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { Politica } from '../../../core/models/politica.model';
-import { Usuario } from '../../../core/models/usuario.model';
-import { firstValueFrom } from 'rxjs';
 import { extraerMensajeError } from '../../../core/utils/error.util';
 
 @Component({
@@ -14,7 +12,7 @@ import { extraerMensajeError } from '../../../core/utils/error.util';
     templateUrl: './asignar-saldo-form.component.html',
     styleUrl: './asignar-saldo-form.component.css'
 })
-export class AsignarSaldoFormComponent implements OnInit {
+export class AsignarSaldoFormComponent {
     private fb = inject(FormBuilder);
     private politicasSvc = inject(PoliticasService);
     private usuariosSvc = inject(UsuariosService);
@@ -24,7 +22,6 @@ export class AsignarSaldoFormComponent implements OnInit {
     @Output() asignado = new EventEmitter<void>();
     @Output() cancelar = new EventEmitter<void>();
 
-    usuarios = signal<Usuario[]>([]);
     loading = signal(false);
     error = signal<string | null>(null);
     exito = signal<string | null>(null);
@@ -36,13 +33,6 @@ export class AsignarSaldoFormComponent implements OnInit {
     });
 
     get f() { return this.form.controls; }
-
-    ngOnInit(): void {
-        this.usuariosSvc.listarUsuarios().subscribe({
-            next: (res) => this.usuarios.set(res.content),
-            error: (err) => this.error.set(extraerMensajeError(err, 'No se pudieron cargar los usuarios'))
-        });
-    }
 
     asignar(): void {
         if (this.form.invalid) { this.form.markAllAsTouched(); return; }
@@ -60,32 +50,29 @@ export class AsignarSaldoFormComponent implements OnInit {
                     return;
                 }
 
-                let completados = 0;
-                let errores = 0;
-                const tareas = usuariosRol.map((usuario) =>
-                    this.politicasSvc.asignar(politicaId!, usuario.id, {
-                        fechaInicioPolitica: fechaInicioPolitica!,
+                // Una sola llamada batch al backend (antes: una petición POST por colaborador).
+                this.politicasSvc.asignarLote(politicaId!, {
+                    fechaInicioPolitica: fechaInicioPolitica!,
+                    colaboradores: usuariosRol.map((usuario) => ({
+                        colaboradorId: usuario.id,
                         fechaIngresoColaborador: usuario.fechaIngreso
-                    })
-                );
-
-                // Ejecuta la asignacion por lote y contabiliza conflictos sin abortar todo el proceso.
-                Promise.all(
-                    tareas.map((obs) =>
-                        firstValueFrom(obs)
-                            .then(() => { completados += 1; })
-                            .catch(() => { errores += 1; })
-                    )
-                ).finally(() => {
-                    this.loading.set(false);
-                    if (completados > 0) {
-                        this.exito.set(`Asignación aplicada a ${completados} colaborador(es)`);
-                    }
-                    if (errores > 0) {
-                        this.error.set(`${errores} colaborador(es) no pudieron asignarse (ya tenían política o no cumplen condiciones)`);
-                    }
-                    if (completados > 0 && errores === 0) {
-                        this.asignado.emit();
+                    }))
+                }).subscribe({
+                    next: ({ completados, errores }) => {
+                        this.loading.set(false);
+                        if (completados > 0) {
+                            this.exito.set(`Asignación aplicada a ${completados} colaborador(es)`);
+                        }
+                        if (errores > 0) {
+                            this.error.set(`${errores} colaborador(es) no pudieron asignarse (ya tenían política o no cumplen condiciones)`);
+                        }
+                        if (completados > 0 && errores === 0) {
+                            this.asignado.emit();
+                        }
+                    },
+                    error: (err) => {
+                        this.loading.set(false);
+                        this.error.set(extraerMensajeError(err, 'No se pudo asignar la política por lote. Intente nuevamente.'));
                     }
                 });
             },

@@ -13,16 +13,6 @@
         <module name="ms-solicitud" />
         <module name="ms-consultas" />
       </profile>
-      <profile name="Annotation profile for Gestión de vacaciones - José Chavez | Alexander Moreno" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="mcsv-auth" />
-        <module name="ms-notificaciones" />
-      </profile>
       <profile name="Annotation profile for ms-politicas" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -31,6 +21,16 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="ms-politicas" />
+      </profile>
+      <profile name="Annotation profile for Gestión de vacaciones - José Chavez | Alexander Moreno" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
+        </processorPath>
+        <module name="ms-notificaciones" />
+        <module name="mcsv-auth" />
       </profile>
     </annotationProcessing>
   </component>

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { map, switchMap } from 'rxjs';
@@ -17,7 +17,7 @@ import { extraerMensajeError } from '../../core/utils/error.util';
     templateUrl: './historial.component.html',
     styleUrl: './historial.component.css'
 })
-export class HistorialComponent implements OnDestroy {
+export class HistorialComponent {
     private auth = inject(AuthService);
     private consultasService = inject(ConsultasService);
     private consultasRealtime = inject(ConsultasRealtimeService);
@@ -66,11 +66,8 @@ export class HistorialComponent implements OnDestroy {
     private nombresPorId = signal<Map<number, string>>(new Map());
 
     constructor() {
-        const colaboradorId = this.auth.currentUser()?.id;
-        if (colaboradorId) {
-            this.consultasRealtime.conectar(colaboradorId);
-        }
-
+        // La conexion websocket la mantiene AdminLayoutComponent (una sola por sesion);
+        // acá solo escuchamos sus ticks via el effect() de abajo.
         if (this.esAdmin()) {
             this.usuariosSvc.listarUsuarios().subscribe({
                 next: (page) => {
@@ -98,10 +95,6 @@ export class HistorialComponent implements OnDestroy {
                 this.verHistorial(seleccionada);
             }
         });
-    }
-
-    ngOnDestroy(): void {
-        this.consultasRealtime.desconectar();
     }
 
     seleccionarColaborador(u: Usuario): void {

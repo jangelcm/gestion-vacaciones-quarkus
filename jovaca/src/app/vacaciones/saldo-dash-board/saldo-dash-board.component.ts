@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, effect, inject, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ConsultasService } from '../../core/services/consultas.service';
@@ -15,7 +15,7 @@ import { FormularioComponent } from '../formulario/formulario.component';
   templateUrl: './saldo-dash-board.component.html',
   styleUrls: ['./saldo-dash-board.component.css']
 })
-export class MiSaldoDashboardComponent implements OnDestroy {
+export class MiSaldoDashboardComponent {
   private consultasSvc = inject(ConsultasService);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -31,14 +31,14 @@ export class MiSaldoDashboardComponent implements OnDestroy {
 
   constructor() {
     this.cargarDashboard();
-    const colaboradorId = this.auth.currentUser()?.id;
-    if (colaboradorId) {
-      this.consultasRealtime.conectar(colaboradorId);
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.consultasRealtime.desconectar();
+    // La conexion websocket la mantiene AdminLayoutComponent (una sola por sesion); acá
+    // solo escuchamos sus ticks para refrescar el saldo cuando cambia en tiempo real.
+    effect(() => {
+      if (this.consultasRealtime.version() < 1) {
+        return;
+      }
+      this.cargarDashboard();
+    });
   }
 
   cargarDashboard(): void {

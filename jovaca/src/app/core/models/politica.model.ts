@@ -43,3 +43,14 @@ export interface AsignarPoliticaPayload {
     fechaInicioPolitica: string;
     fechaIngresoColaborador: string | null;
 }
+
+export interface AsignarPoliticaLotePayload {
+    fechaInicioPolitica: string;
+    colaboradores: { colaboradorId: number; fechaIngresoColaborador: string | null }[];
+}
+
+export interface AsignarPoliticaLoteResponse {
+    completados: number;
+    errores: number;
+    mensajesError: string[];
+}

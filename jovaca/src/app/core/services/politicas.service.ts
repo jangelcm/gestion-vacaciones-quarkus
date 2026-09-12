@@ -2,7 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AsignarPoliticaPayload, Politica, PoliticaPayload, SaldoDias } from '../models/politica.model';
+import {
+    AsignarPoliticaLotePayload,
+    AsignarPoliticaLoteResponse,
+    AsignarPoliticaPayload,
+    Politica,
+    PoliticaPayload,
+    SaldoDias
+} from '../models/politica.model';
 
 @Injectable({ providedIn: 'root' })
 export class PoliticasService {
@@ -32,5 +39,9 @@ export class PoliticasService {
 
     asignar(politicaId: number, colaboradorId: number, payload: AsignarPoliticaPayload): Observable<void> {
         return this.http.post<void>(`${this.BASE}/${politicaId}/colaboradores/${colaboradorId}`, payload);
+    }
+
+    asignarLote(politicaId: number, payload: AsignarPoliticaLotePayload): Observable<AsignarPoliticaLoteResponse> {
+        return this.http.post<AsignarPoliticaLoteResponse>(`${this.BASE}/${politicaId}/colaboradores/lote`, payload);
     }
 }
