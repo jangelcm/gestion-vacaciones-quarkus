@@ -41,7 +41,8 @@ public class AprobacionEventPublisherAdapter implements AprobacionEventPublisher
                 diasAprobados,
                 LocalDateTime.now(),
                 fechaInicio,
-                fechaFin);
+                fechaFin,
+                aprobadorId);
         LOG.infof("Publicando evento 'solicitud.aprobada' para solicitud ID: %d, colaborador: %s, dias: %s",
                 solicitudId, colaboradorId, diasAprobados);
         aprobadaEmitter.send(evento);

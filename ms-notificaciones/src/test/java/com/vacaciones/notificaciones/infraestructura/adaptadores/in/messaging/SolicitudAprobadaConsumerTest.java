@@ -1,10 +1,13 @@
 package com.vacaciones.notificaciones.infraestructura.adaptadores.in.messaging;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vacaciones.notificaciones.dominio.model.Adjunto;
 import com.vacaciones.notificaciones.dominio.model.Destinatario;
 import com.vacaciones.notificaciones.dominio.model.EstadoNotificacion;
 import com.vacaciones.notificaciones.dominio.model.Notificacion;
@@ -17,6 +20,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import io.smallrye.reactive.messaging.memory.InMemorySource;
 import jakarta.inject.Inject;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
@@ -45,17 +49,22 @@ class SolicitudAprobadaConsumerTest {
     void shouldMapEventAndCallUseCaseWhenSolicitudAprobadaArrives() throws Exception {
         SolicitudAprobadaEvent evento = new SolicitudAprobadaEvent(
                 "evt-1", 9001L, 1001L,
-                LocalDate.of(2026, 9, 10), LocalDate.of(2026, 9, 15));
+                LocalDate.of(2026, 9, 10), LocalDate.of(2026, 9, 15),
+                BigDecimal.valueOf(6), "2002");
         Mockito.when(ResolverUsuarioPortMock.DELEGATE.resolverPorColaboradorId(1001L))
                 .thenReturn(Optional.of(new UsuarioInfo(1001L, "colaborador@empresa.com", "Ana Perez")));
+        Mockito.when(ResolverUsuarioPortMock.DELEGATE.resolverPorColaboradorId(2002L))
+                .thenReturn(Optional.of(new UsuarioInfo(2002L, "jefe@empresa.com", "Luis Gomez")));
 
         InMemorySource<String> source = connector.source("solicitud-aprobada-in");
         source.send(objectMapper.writeValueAsString(evento));
 
-        ArgumentCaptor<Notificacion> captor = ArgumentCaptor.forClass(Notificacion.class);
-        verify(EnviarNotificacionUseCaseMock.DELEGATE, Mockito.timeout(5000)).enviar(captor.capture());
+        ArgumentCaptor<Notificacion> captorNotificacion = ArgumentCaptor.forClass(Notificacion.class);
+        ArgumentCaptor<Adjunto> captorAdjunto = ArgumentCaptor.forClass(Adjunto.class);
+        verify(EnviarNotificacionUseCaseMock.DELEGATE, Mockito.timeout(5000))
+                .enviarConAdjunto(captorNotificacion.capture(), captorAdjunto.capture());
 
-        Notificacion notificacion = captor.getValue();
+        Notificacion notificacion = captorNotificacion.getValue();
         assertEquals("evt-1", notificacion.getEventoId());
         assertEquals(TipoNotificacion.RECORDATORIO, notificacion.getTipo());
         assertEquals(
@@ -67,5 +76,11 @@ class SolicitudAprobadaConsumerTest {
         assertEquals(
                 "Hola Ana Perez, tu solicitud de vacaciones del 2026-09-10 al 2026-09-15 fue aprobada.",
                 notificacion.getCuerpo());
+
+        Adjunto comprobante = captorAdjunto.getValue();
+        assertNotNull(comprobante);
+        assertEquals("comprobante-vacaciones.pdf", comprobante.nombreArchivo());
+        assertEquals("application/pdf", comprobante.contentType());
+        assertTrue(comprobante.contenido().length > 0);
     }
 }

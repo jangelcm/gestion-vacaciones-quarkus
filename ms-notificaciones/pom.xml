@@ -70,6 +70,12 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <!-- Genera el PDF del comprobante de vacaciones adjunto al email de aprobacion. -->
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.30</version>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>

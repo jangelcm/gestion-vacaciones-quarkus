@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
  * - ms-politicas (SolicitudAprobadaEvent): usa eventoId/solicitudId/colaboradorId/diasAprobados
  *   para descontar el saldo. Ignora fechaInicio/fechaFin (no los tiene en su record).
  * - ms-notificaciones (SolicitudAprobadaEvent): usa eventoId/solicitudId/colaboradorId/
- *   fechaInicio/fechaFin para armar el mensaje. Ignora diasAprobados/fechaAprobacion.
+ *   fechaInicio/fechaFin/diasAprobados/aprobadorId para armar el mensaje y el comprobante
+ *   de vacaciones en PDF adjunto. Ignora fechaAprobacion.
  * Por eso el evento lleva TODOS los campos que cualquiera de los dos necesita.
  */
 public record SolicitudAprobadaEventoDTO(
@@ -20,5 +21,6 @@ public record SolicitudAprobadaEventoDTO(
         BigDecimal diasAprobados,
         LocalDateTime fechaAprobacion,
         LocalDate fechaInicio,
-        LocalDate fechaFin
+        LocalDate fechaFin,
+        String aprobadorId
 ) {}

@@ -3,6 +3,7 @@ package com.vacaciones.notificaciones.infraestructura.adaptadores.out.mail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.vacaciones.notificaciones.dominio.model.Adjunto;
 import com.vacaciones.notificaciones.dominio.model.Destinatario;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
@@ -31,7 +32,7 @@ class QuarkusMailerAdapterTest {
 
     @Test
     void shouldCaptureExactlyOneEmailWithCorrectDestinatarioAsuntoYCuerpo() {
-        adapter.enviar(DESTINATARIO, "Solicitud aprobada", "<p>Tu solicitud fue aprobada</p>");
+        adapter.enviar(DESTINATARIO, "Solicitud aprobada", "<p>Tu solicitud fue aprobada</p>", null);
 
         List<Mail> enviados = mailbox.getMailsSentTo("colaborador@empresa.com");
 
@@ -40,5 +41,17 @@ class QuarkusMailerAdapterTest {
         assertTrue(correo.getTo().contains("colaborador@empresa.com"));
         assertEquals("Solicitud aprobada", correo.getSubject());
         assertEquals("<p>Tu solicitud fue aprobada</p>", correo.getHtml());
+    }
+
+    @Test
+    void shouldAttachFileWhenAdjuntoIsProvided() {
+        Adjunto adjunto = new Adjunto("comprobante-vacaciones.pdf", new byte[]{1, 2, 3}, "application/pdf");
+
+        adapter.enviar(DESTINATARIO, "Solicitud aprobada", "<p>Tu solicitud fue aprobada</p>", adjunto);
+
+        List<Mail> enviados = mailbox.getMailsSentTo("colaborador@empresa.com");
+        assertEquals(1, enviados.size());
+        assertEquals(1, enviados.get(0).getAttachments().size());
+        assertEquals("comprobante-vacaciones.pdf", enviados.get(0).getAttachments().get(0).getName());
     }
 }

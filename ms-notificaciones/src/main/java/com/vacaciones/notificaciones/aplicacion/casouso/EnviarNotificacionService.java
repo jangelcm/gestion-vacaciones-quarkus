@@ -1,5 +1,6 @@
 package com.vacaciones.notificaciones.aplicacion.casouso;
 
+import com.vacaciones.notificaciones.dominio.model.Adjunto;
 import com.vacaciones.notificaciones.dominio.model.Notificacion;
 import com.vacaciones.notificaciones.dominio.port.in.EnviarNotificacionUseCase;
 import com.vacaciones.notificaciones.dominio.port.out.EnviadorEmailPort;
@@ -32,12 +33,21 @@ public class EnviarNotificacionService implements EnviarNotificacionUseCase {
 
     @Override
     public void enviar(Notificacion notificacion) {
+        procesarYEnviar(notificacion, null);
+    }
+
+    @Override
+    public void enviarConAdjunto(Notificacion notificacion, Adjunto adjunto) {
+        procesarYEnviar(notificacion, adjunto);
+    }
+
+    private void procesarYEnviar(Notificacion notificacion, Adjunto adjunto) {
         if (notificacion.getEventoId() != null && repository.existePorEventoId(notificacion.getEventoId())) {
             return;
         }
 
         try {
-            enviarSegunTipo(notificacion);
+            enviarSegunTipo(notificacion, adjunto);
             notificacion.marcarComoEnviada();
         } catch (RuntimeException e) {
             notificacion.marcarComoFallida();
@@ -47,34 +57,34 @@ public class EnviarNotificacionService implements EnviarNotificacionUseCase {
         eventoPublisherPort.publicarResultado(guardada);
     }
 
-    private void enviarSegunTipo(Notificacion notificacion) {
+    private void enviarSegunTipo(Notificacion notificacion, Adjunto adjunto) {
         switch (notificacion.getTipo()) {
-            case EMAIL -> enviarEmail(notificacion);
+            case EMAIL -> enviarEmail(notificacion, adjunto);
             case WEBSOCKET -> notificarWebsocket(notificacion);
             case RECORDATORIO -> {
                 // El WebSocket va primero: es el canal critico en tiempo real (campanita) y no
                 // debe esperar al email, que es best-effort y puede fallar o tardar (SMTP lento).
                 notificarWebsocket(notificacion);
-                intentarEnviarEmail(notificacion);
+                intentarEnviarEmail(notificacion, adjunto);
             }
         }
     }
 
-    private void intentarEnviarEmail(Notificacion notificacion) {
+    private void intentarEnviarEmail(Notificacion notificacion, Adjunto adjunto) {
         String email = notificacion.getDestinatario().email();
         if (email == null || email.isBlank()) {
             return;
         }
         try {
-            enviarEmail(notificacion);
+            enviarEmail(notificacion, adjunto);
         } catch (RuntimeException e) {
             LOG.warnf("No se pudo enviar el email de la notificacion %s, continua solo por WebSocket",
                     notificacion.getEventoId());
         }
     }
 
-    private void enviarEmail(Notificacion notificacion) {
-        enviadorEmailPort.enviar(notificacion.getDestinatario(), notificacion.getAsunto(), notificacion.getCuerpo());
+    private void enviarEmail(Notificacion notificacion, Adjunto adjunto) {
+        enviadorEmailPort.enviar(notificacion.getDestinatario(), notificacion.getAsunto(), notificacion.getCuerpo(), adjunto);
     }
 
     private void notificarWebsocket(Notificacion notificacion) {

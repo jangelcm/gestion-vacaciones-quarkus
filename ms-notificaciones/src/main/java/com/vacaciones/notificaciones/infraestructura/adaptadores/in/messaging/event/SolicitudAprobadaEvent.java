@@ -1,5 +1,6 @@
 package com.vacaciones.notificaciones.infraestructura.adaptadores.in.messaging.event;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record SolicitudAprobadaEvent(
@@ -7,5 +8,7 @@ public record SolicitudAprobadaEvent(
         Long solicitudId,
         Long colaboradorId,
         LocalDate fechaInicio,
-        LocalDate fechaFin) {
+        LocalDate fechaFin,
+        BigDecimal diasAprobados,
+        String aprobadorId) {
 }

@@ -1,5 +1,6 @@
 package com.vacaciones.notificaciones.testsupport;
 
+import com.vacaciones.notificaciones.dominio.model.Adjunto;
 import com.vacaciones.notificaciones.dominio.model.Notificacion;
 import com.vacaciones.notificaciones.dominio.port.in.EnviarNotificacionUseCase;
 import io.quarkus.test.Mock;
@@ -21,5 +22,10 @@ public class EnviarNotificacionUseCaseMock implements EnviarNotificacionUseCase 
     @Override
     public void enviar(Notificacion notificacion) {
         DELEGATE.enviar(notificacion);
+    }
+
+    @Override
+    public void enviarConAdjunto(Notificacion notificacion, Adjunto adjunto) {
+        DELEGATE.enviarConAdjunto(notificacion, adjunto);
     }
 }

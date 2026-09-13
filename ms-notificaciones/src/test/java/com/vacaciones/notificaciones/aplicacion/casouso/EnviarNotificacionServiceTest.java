@@ -54,7 +54,7 @@ class EnviarNotificacionServiceTest {
 
         service.enviar(notificacion);
 
-        verify(enviadorEmailPort).enviar(DESTINATARIO, "asunto", "cuerpo");
+        verify(enviadorEmailPort).enviar(DESTINATARIO, "asunto", "cuerpo", null);
         verify(notificadorTiempoRealPort, never()).notificar(any(), any(), any());
         assertEquals(EstadoNotificacion.ENVIADO, notificacion.getEstado());
         verify(repository).guardar(notificacion);
@@ -72,7 +72,7 @@ class EnviarNotificacionServiceTest {
         service.enviar(notificacion);
 
         verify(notificadorTiempoRealPort).notificar(1001L, "solicitud.aprobada", notificacion);
-        verify(enviadorEmailPort, never()).enviar(any(), any(), any());
+        verify(enviadorEmailPort, never()).enviar(any(), any(), any(), any());
         assertEquals(EstadoNotificacion.ENVIADO, notificacion.getEstado());
         verify(repository).guardar(notificacion);
         verify(eventoPublisherPort).publicarResultado(guardada);
@@ -88,7 +88,7 @@ class EnviarNotificacionServiceTest {
 
         service.enviar(notificacion);
 
-        verify(enviadorEmailPort).enviar(DESTINATARIO, "asunto", "cuerpo");
+        verify(enviadorEmailPort).enviar(DESTINATARIO, "asunto", "cuerpo", null);
         verify(notificadorTiempoRealPort).notificar(1001L, "solicitud.aprobada", notificacion);
         assertEquals(EstadoNotificacion.ENVIADO, notificacion.getEstado());
         verify(repository).guardar(notificacion);
@@ -103,7 +103,7 @@ class EnviarNotificacionServiceTest {
 
         service.enviar(notificacion);
 
-        verify(enviadorEmailPort, never()).enviar(any(), any(), any());
+        verify(enviadorEmailPort, never()).enviar(any(), any(), any(), any());
         verify(notificadorTiempoRealPort, never()).notificar(any(), any(), any());
         verify(repository, never()).guardar(any());
         verify(eventoPublisherPort, never()).publicarResultado(any());
@@ -120,7 +120,7 @@ class EnviarNotificacionServiceTest {
         service.enviar(notificacion);
 
         verify(repository, never()).existePorEventoId(any());
-        verify(enviadorEmailPort).enviar(DESTINATARIO, "asunto", "cuerpo");
+        verify(enviadorEmailPort).enviar(DESTINATARIO, "asunto", "cuerpo", null);
         assertEquals(EstadoNotificacion.ENVIADO, notificacion.getEstado());
         verify(repository).guardar(notificacion);
         verify(eventoPublisherPort).publicarResultado(guardada);
@@ -134,7 +134,7 @@ class EnviarNotificacionServiceTest {
         when(repository.existePorEventoId("evt-4")).thenReturn(false);
         when(repository.guardar(notificacion)).thenReturn(guardada);
         doThrow(new RuntimeException("fallo SMTP simulado"))
-                .when(enviadorEmailPort).enviar(any(), any(), any());
+                .when(enviadorEmailPort).enviar(any(), any(), any(), any());
 
         assertDoesNotThrow(() -> service.enviar(notificacion));
 
