@@ -72,7 +72,7 @@ public class SaldoDiasResource {
 
         for (AsignarPoliticaLoteRequestDto.ColaboradorAsignacion colaborador : request.colaboradores()) {
             try {
-                saldoDiasService.asignarPolitica(
+                saldoDiasService.asignarOActualizarPolitica(
                         colaborador.colaboradorId(),
                         politicaId,
                         request.fechaInicioPolitica(),

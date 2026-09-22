@@ -118,6 +118,71 @@ public class SaldoDiasService {
     }
 
     @Transactional
+    public void asignarOActualizarPolitica(
+            Long colaboradorId,
+            Long politicaId,
+            LocalDate fechaInicioPolitica, // Viene del input "Fecha inicio de política" (ej. 22/09/2026)
+            LocalDate fechaIngresoColaborador) {
+
+        PoliticaEntity nuevaPolitica = politicaRepository.findById(politicaId);
+        if (nuevaPolitica == null) {
+            throw new ResourceNotFoundException("Politica no encontrada");
+        }
+
+        if (!Boolean.TRUE.equals(nuevaPolitica.getActiva())) {
+            throw new BadRequestException("La politica no esta activa");
+        }
+
+        LocalDate fechaInicio = fechaInicioPolitica != null ? fechaInicioPolitica : LocalDate.now();
+        SaldoDiasEntity saldo = saldoDiasRepository.findByColaboradorId(colaboradorId);
+
+        if (saldo == null) {
+            if (fechaIngresoColaborador == null) {
+                throw new BadRequestException("La fecha de ingreso del colaborador es obligatoria para la asignación inicial");
+            }
+
+            long diasTranscurridos = ChronoUnit.DAYS.between(fechaIngresoColaborador, fechaInicio);
+            int diasTrabajados = Math.max(0, (int) diasTranscurridos);
+
+            saldo = SaldoDiasEntity.builder()
+                    .colaboradorId(colaboradorId)
+                    .politica(nuevaPolitica)
+                    .diasDisponibles(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP))
+                    .diasUsados(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP))
+                    .diasAcumulados(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP))
+                    .diasPendientes(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP))
+                    .diasTrabajados(diasTrabajados)
+                    .fechaIngresoColaborador(fechaIngresoColaborador)
+                    .fechaAsignacionPolitica(fechaInicio)
+                    .version(0)
+                    .build();
+
+            saldoDiasRepository.persist(saldo);
+
+        } else {
+            // --- CASO 2: ACTUALIZACIÓN / REASIGNACIÓN ---
+            // Se actualizan la política y la fecha de vigencia sin resetear días usadose/pendientes
+            saldo.setPolitica(nuevaPolitica);
+            saldo.setFechaAsignacionPolitica(fechaInicio);
+
+            // Si viene fechaIngreso, se puede actualizar por consistencia
+            if (fechaIngresoColaborador != null) {
+                saldo.setFechaIngresoColaborador(fechaIngresoColaborador);
+            }
+
+            saldoDiasRepository.persist(saldo);
+        }
+
+        saldoDiasRepository.getEntityManager().flush();
+
+        recalcularSaldoDisponible(saldo);
+
+        String motivo = (saldo.getVersion() == 0) ? MOTIVO_ASIGNACION_POLITICA : "CAMBIO_POLITICA";
+        publicarDiasActualizados(saldo, motivo);
+        publicarPoliticaActualizadaPorAsignacion(saldo);
+    }
+
+    @Transactional
     public void asignarPolitica(Long colaboradorId, Long politicaId, Integer antiguedadMeses) {
         if (antiguedadMeses == null) {
             throw new BadRequestException("Debe proporcionar la antigüedad en meses o la fecha de ingreso");
@@ -320,6 +385,11 @@ public class SaldoDiasService {
                 .divide(DIAS_CALENDARIO_ANIO, 2, RoundingMode.HALF_UP);
     }
 
+    /**
+     * Calcula los días a los que el trabajador tiene derecho efectivo de goce.
+     * Si la política exige 0 o menos de 12 meses (goce antes del año), los días truncos/devengados
+     * están HABILITADOS desde el primer momento.
+     */
     BigDecimal calcularDiasHabilitados(SaldoDiasEntity saldo) {
         if (saldo == null || saldo.getPolitica() == null) {
             return safeBigDecimal(saldo != null ? saldo.getDiasAcumulados() : null);
@@ -328,36 +398,39 @@ public class SaldoDiasService {
         BigDecimal acumuladosBD = safeBigDecimal(saldo.getDiasAcumulados());
         int periodosCompletados = safeDiasTrabajados(saldo) / DIAS_PERIODO_ANUAL;
 
+        BigDecimal diasPorAniosAnteriores = acumuladosBD;
         if (periodosCompletados > 0) {
             BigDecimal diasBase = BigDecimal.valueOf(saldo.getPolitica().getDiasBaseAnio());
-            BigDecimal diasPorPeriodos = diasBase.multiply(BigDecimal.valueOf(periodosCompletados));
-            return acumuladosBD.max(diasPorPeriodos);
+            diasPorAniosAnteriores = acumuladosBD.max(diasBase.multiply(BigDecimal.valueOf(periodosCompletados)));
         }
 
-        // Si la política exige 12 meses de antigüedad y aún no los cumple, los días habilitados por año completo son 0
-        return acumuladosBD;
-    }
-
-    BigDecimal calcularSaldoActual(SaldoDiasEntity saldo, BigDecimal diasHabilitados) {
         int antiguedadMeses = calcularAntiguedadMeses(saldo.getFechaIngresoColaborador());
-        int antiguedadRequerida = saldo.getPolitica() != null && saldo.getPolitica().getAntiguedadMinimaMeses() != null
+        int antiguedadRequerida = saldo.getPolitica().getAntiguedadMinimaMeses() != null
                 ? saldo.getPolitica().getAntiguedadMinimaMeses() : 0;
 
-        // Si no cumple la antigüedad configurada en la política, su saldo es 0
+        // Si no cumple la antigüedad mínima requerida por la política, sus días habilitados son 0
         if (antiguedadMeses < antiguedadRequerida) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
 
-        BigDecimal baseSaldo = diasHabilitados;
-
-        // Si la política permite pedir vacaciones con antigüedad de 0 o < 12 meses (Adelanto/Proporcional),
-        // habilitamos los días truncos acumulados progresivamente para ser disfrutados.
+        // Si la política requiere < 12 meses (ej. 0 meses), sus días truncos ganados pasan a estar HABILITADOS
         if (antiguedadRequerida < 12) {
             BigDecimal diasTruncos = calcularDiasTruncos(saldo);
-            baseSaldo = baseSaldo.add(diasTruncos);
+            return diasPorAniosAnteriores.add(diasTruncos).setScale(2, RoundingMode.HALF_UP);
         }
 
-        BigDecimal saldoCalculado = baseSaldo
+        return diasPorAniosAnteriores.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Calcula el saldo líquido disponible descontando consumos y reservas sobre los días habilitados.
+     */
+    BigDecimal calcularSaldoActual(SaldoDiasEntity saldo, BigDecimal diasHabilitados) {
+        if (saldo == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal saldoCalculado = diasHabilitados
                 .subtract(safeBigDecimal(saldo.getDiasUsados()))
                 .subtract(safeBigDecimal(saldo.getDiasPendientes()));
 
