@@ -71,10 +71,14 @@ jobs:
           pattern: image-*
           merge-multiple: true
 
+      # SSH_PRIVATE_KEY_B64 es la llave codificada en base64 (una sola linea) en vez del PEM
+      # multilinea crudo: copiar/pegar un secreto multilinea en el campo de GitHub puede
+      # corromper los saltos de linea (CRLF vs LF) y libcrypto rechaza la llave resultante
+      # ("error in libcrypto"); base64 de una sola linea no tiene ese problema.
       - name: Preparar llave SSH
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
