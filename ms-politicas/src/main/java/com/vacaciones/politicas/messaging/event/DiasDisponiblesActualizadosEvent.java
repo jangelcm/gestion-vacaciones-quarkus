@@ -1,9 +1,11 @@
 package com.vacaciones.politicas.messaging.event;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@RegisterForReflection
 public record DiasDisponiblesActualizadosEvent(
         Long colaboradorId,
         Long politicaId,

@@ -1,7 +1,12 @@
 package com.vacaciones.notificaciones.dominio.model;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDateTime;
 
+// Se serializa con Jackson "a mano" (WebSocketNotificadorAdapter.serializar) fuera de un
+// endpoint REST/canal de mensajeria formal, asi que en imagen nativa GraalVM no genera
+// su metadata de reflexion salvo que se pida explicito.
+@RegisterForReflection
 public class Notificacion {
 
     private String id;

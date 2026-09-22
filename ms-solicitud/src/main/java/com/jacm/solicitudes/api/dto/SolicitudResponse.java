@@ -1,7 +1,9 @@
 package com.jacm.solicitudes.api.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
 
+@RegisterForReflection
 public record SolicitudResponse(
     Long id,
     String colaboradorId,

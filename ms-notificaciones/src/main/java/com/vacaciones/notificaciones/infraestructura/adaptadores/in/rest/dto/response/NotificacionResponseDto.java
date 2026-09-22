@@ -3,7 +3,9 @@ package com.vacaciones.notificaciones.infraestructura.adaptadores.in.rest.dto.re
 import com.vacaciones.notificaciones.dominio.model.Destinatario;
 import com.vacaciones.notificaciones.dominio.model.EstadoNotificacion;
 import com.vacaciones.notificaciones.dominio.model.TipoNotificacion;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public record NotificacionResponseDto(
         String id,
         String eventoId,

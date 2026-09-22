@@ -1,5 +1,10 @@
 package com.jacm.reportes.api.exception;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+// Se serializa solo desde ExceptionMapper (fuera del camino normal de un endpoint REST
+// exitoso), asi que Quarkus no lo detecta solo para incluir su reflexion en imagen nativa.
+@RegisterForReflection
 public record ErrorResponse(
         String hora,
         String mensaje,

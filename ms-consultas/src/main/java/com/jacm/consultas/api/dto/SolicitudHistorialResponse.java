@@ -1,8 +1,10 @@
 package com.jacm.consultas.api.dto;
 
 import com.jacm.consultas.model.SolicitudHistorialDocument;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDateTime;
 
+@RegisterForReflection
 public record SolicitudHistorialResponse(
         Long solicitudId,
         String estado,

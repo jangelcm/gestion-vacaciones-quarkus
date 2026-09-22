@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jacm.solicitudes.domain.model.EstadoSolicitud;
 import com.jacm.solicitudes.domain.ports.in.SolicitudUseCase;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -12,6 +13,7 @@ import org.jboss.logging.Logger;
 /**
  * DTO del evento publicado por ms-aprobaciones al aprobar o rechazar una solicitud.
  */
+@RegisterForReflection
 record AprobacionEventoDTO(Long solicitudId, String aprobadorId, String estado, String comentario) {}
 
 /**

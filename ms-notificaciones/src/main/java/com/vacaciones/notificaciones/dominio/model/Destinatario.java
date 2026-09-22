@@ -1,5 +1,10 @@
 package com.vacaciones.notificaciones.dominio.model;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+// Anidado dentro de Notificacion al serializar con Jackson para el push por WebSocket;
+// necesita la misma anotacion que Notificacion para imagen nativa (ver ahi el porque).
+@RegisterForReflection
 public record Destinatario(Long colaboradorId, String email, String nombre) {
 
     public Destinatario {

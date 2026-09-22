@@ -1,5 +1,6 @@
 package com.jacm.aprobaciones.infrastructure.adapters.out.kafka.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
 
 /**
@@ -11,6 +12,7 @@ import java.time.LocalDate;
  * - ms-notificaciones (SolicitudRechazadaEvent): usa solicitudId/colaboradorId/fechaInicio/
  *   fechaFin/comentario para notificar al colaborador. Ignora aprobadorId/estado.
  */
+@RegisterForReflection
 public record AprobacionEventoDTO(
         Long solicitudId,
         String aprobadorId,

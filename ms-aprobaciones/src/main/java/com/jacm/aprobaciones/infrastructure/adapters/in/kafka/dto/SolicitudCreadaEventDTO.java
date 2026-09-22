@@ -1,11 +1,13 @@
 package com.jacm.aprobaciones.infrastructure.adapters.in.kafka.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
 
 /**
  * DTO para deserializar el evento 'solicitud.creada' producido por ms-solicitudes.
  * Debe reflejar la estructura del objeto Solicitud serializado por ms-solicitudes.
  */
+@RegisterForReflection
 public record SolicitudCreadaEventDTO(
         Long id,
         String colaboradorId,

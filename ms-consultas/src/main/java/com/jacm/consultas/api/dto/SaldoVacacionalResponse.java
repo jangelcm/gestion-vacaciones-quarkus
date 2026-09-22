@@ -1,10 +1,12 @@
 package com.jacm.consultas.api.dto;
 
 import com.jacm.consultas.model.SaldoVacacionalReadDocument;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@RegisterForReflection
 public record SaldoVacacionalResponse(
         Long colaboradorId,
     Long politicaId,

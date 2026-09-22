@@ -1,7 +1,9 @@
 package com.jacm.consultas.api.dto;
 
 import com.jacm.consultas.model.PoliticaReadDocument;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public record PoliticaConsultaResponse(
         Long id,
         String nombre,

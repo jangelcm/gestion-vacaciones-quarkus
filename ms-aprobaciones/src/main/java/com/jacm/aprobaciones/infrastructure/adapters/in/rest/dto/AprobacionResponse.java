@@ -2,8 +2,10 @@ package com.jacm.aprobaciones.infrastructure.adapters.in.rest.dto;
 
 import com.jacm.aprobaciones.domain.model.Aprobacion;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDateTime;
 
+@RegisterForReflection
 public record AprobacionResponse(
         Long id,
         Long solicitudId,

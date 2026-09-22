@@ -1,7 +1,9 @@
 package com.jacm.reportes.api.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.math.BigDecimal;
 
+@RegisterForReflection
 public record SaldoReporteResponse(
         Long colaboradorId,
         Long politicaId,

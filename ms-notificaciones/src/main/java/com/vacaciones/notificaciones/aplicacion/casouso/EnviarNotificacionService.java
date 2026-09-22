@@ -71,16 +71,14 @@ public class EnviarNotificacionService implements EnviarNotificacionUseCase {
     }
 
     private void intentarEnviarEmail(Notificacion notificacion, Adjunto adjunto) {
+        // Best-effort: enviadorEmailPort.enviar(...) es fire-and-forget (no bloquea ni lanza
+        // sincronicamente), asi que aca no hay resultado que esperar/capturar — el exito o fallo
+        // real del envio se loguea dentro del adapter cuando el SMTP efectivamente responde.
         String email = notificacion.getDestinatario().email();
         if (email == null || email.isBlank()) {
             return;
         }
-        try {
-            enviarEmail(notificacion, adjunto);
-        } catch (RuntimeException e) {
-            LOG.warnf("No se pudo enviar el email de la notificacion %s, continua solo por WebSocket",
-                    notificacion.getEventoId());
-        }
+        enviarEmail(notificacion, adjunto);
     }
 
     private void enviarEmail(Notificacion notificacion, Adjunto adjunto) {

@@ -1,0 +1,51 @@
+# Override de docker-compose.yml para correr los microservicios como binarios nativos
+# (GraalVM/Mandrel) en vez de JVM. Requiere haber compilado antes cada uno con:
+#   mvn clean package -Pnative -Dquarkus.native.container-build=true -DskipTests
+# (deja el binario en <servicio>/target/*-runner, que el Dockerfile.native de cada
+# servicio copia dentro de la imagen — por eso el "context" de cada build es la carpeta
+# del servicio y no la raiz del repo).
+#
+# Uso: docker compose -f docker-compose.yml -f docker-compose.native.yml up -d --build
+#
+# Todo lo demas (environment, ports, depends_on, networks) se hereda tal cual del
+# docker-compose.yml base; aca solo se pisa el "build".
+services:
+  ms-solicitud:
+    build:
+      context: ./ms-solicitud
+      dockerfile: src/main/docker/Dockerfile.native
+
+  ms-aprobaciones:
+    build:
+      context: ./ms-aprobaciones
+      dockerfile: src/main/docker/Dockerfile.native
+
+  ms-politicas:
+    build:
+      context: ./ms-politicas
+      dockerfile: src/main/docker/Dockerfile.native
+
+  ms-notificaciones:
+    build:
+      context: ./ms-notificaciones
+      dockerfile: src/main/docker/Dockerfile.native
+
+  ms-consultas:
+    build:
+      context: ./ms-consultas
+      dockerfile: src/main/docker/Dockerfile.native
+
+  ms-reportes:
+    build:
+      context: ./ms-reportes
+      dockerfile: src/main/docker/Dockerfile.native
+
+  mcsv-auth:
+    build:
+      context: ./mcsv-auth
+      dockerfile: src/main/docker/Dockerfile.native
+
+  mcsv-gateway:
+    build:
+      context: ./mcsv-gateway
+      dockerfile: src/main/docker/Dockerfile.native

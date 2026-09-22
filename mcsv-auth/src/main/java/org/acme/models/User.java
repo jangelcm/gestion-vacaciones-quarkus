@@ -6,8 +6,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
 
+// Se devuelve envuelta en un Response generico desde AuthResource#register (no como tipo
+// de retorno directo), asi que Quarkus no la detecta sola para incluir su reflexion Jackson
+// en imagen nativa (la reflexion de Hibernate para @Entity es un registro aparte).
+@RegisterForReflection
 @Entity
 @Table(name = "users")
 public class User {

@@ -13,6 +13,7 @@ import io.vertx.httpproxy.ProxyInterceptor;
 import io.vertx.httpproxy.ProxyRequest;
 import io.vertx.httpproxy.ProxyResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.annotation.PreDestroy;
@@ -72,9 +73,15 @@ public class GatewayRoute {
      * );
      */
 
+    // @RegisterForReflection: RouteDefinition/Target se deserializan con Jackson desde
+    // routes.json via ObjectMapper.readValue() manual, no como parametro/retorno de un
+    // endpoint REST — Quarkus no los detecta solo para incluir su metadata de reflexion
+    // en la imagen nativa, asi que hay que pedirlo explicito o Jackson falla en runtime.
+    @RegisterForReflection
     public record RouteDefinition(String path, List<Target> targets, boolean requiresJwt, boolean stripPrefix) {
 
         /** Un backend concreto al que se le puede reenviar tráfico para una ruta. */
+        @RegisterForReflection
         public record Target(String host, int port) {
         }
 

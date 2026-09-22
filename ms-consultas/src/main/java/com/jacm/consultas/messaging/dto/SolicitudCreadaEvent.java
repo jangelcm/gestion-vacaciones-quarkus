@@ -1,7 +1,9 @@
 package com.jacm.consultas.messaging.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
 
+@RegisterForReflection
 public record SolicitudCreadaEvent(
         Long id,
         String colaboradorId,

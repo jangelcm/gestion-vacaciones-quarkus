@@ -1,5 +1,6 @@
 package com.vacaciones.notificaciones.infraestructura.adaptadores.in.messaging.event;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
 
 /**
@@ -8,6 +9,7 @@ import java.time.LocalDate;
  * datos del aprobador: quien debe ser notificado (todos los usuarios con rol Administrador)
  * se resuelve en el consumer via ResolverUsuarioPort, no desde el evento.
  */
+@RegisterForReflection
 public record SolicitudCreadaEvent(
         Long id,
         String colaboradorId,
