@@ -48,26 +48,27 @@ public class ValidacionService {
     }
 
     public ValidarSolicitudResponseDto validarSolicitud(ValidarSolicitudRequestDto request, Integer antiguedadMeses) {
-        long diasHabiles = calcularDiasHabiles(request.fechaInicio(), request.fechaFin());
-
+        // 1. Validar anticipación
         long diasAnticipacion = ChronoUnit.DAYS.between(LocalDate.now(), request.fechaInicio());
         if (diasAnticipacion < DIAS_MINIMOS_ANTICIPACION) {
-            return new ValidarSolicitudResponseDto(false, diasHabiles, ANTICIPACION_INSUFICIENTE);
+            return new ValidarSolicitudResponseDto(false, 0, ANTICIPACION_INSUFICIENTE);
         }
 
+        // 2. Calcular días calendario continuos solicitados (Base de cálculo legal)
         long diasCalendario = ChronoUnit.DAYS.between(request.fechaInicio(), request.fechaFin()) + 1;
         if (diasCalendario < DIAS_MINIMOS_POR_SOLICITUD) {
-            return new ValidarSolicitudResponseDto(false, diasHabiles, DIAS_MINIMOS_INSUFICIENTES);
+            return new ValidarSolicitudResponseDto(false, diasCalendario, DIAS_MINIMOS_INSUFICIENTES);
         }
 
         SaldoDiasEntity saldoDias = saldoDiasRepository.findByColaboradorId(request.colaboradorId());
         if (saldoDias == null) {
-            return new ValidarSolicitudResponseDto(false, diasHabiles, SALDO_NO_ENCONTRADO);
+            return new ValidarSolicitudResponseDto(false, diasCalendario, SALDO_NO_ENCONTRADO);
         }
 
         Integer antiguedadCalculada = calcularAntiguedadMeses(saldoDias.getFechaIngresoColaborador(), antiguedadMeses);
         long diasAdicionales = calcularDiasAdicionales(saldoDias, antiguedadCalculada);
-        long diasSolicitados = diasHabiles;
+
+        long diasSolicitados = diasCalendario;
 
         BigDecimal saldoEfectivo = saldoDias.getDiasDisponibles().add(BigDecimal.valueOf(diasAdicionales));
         if (saldoEfectivo.compareTo(BigDecimal.valueOf(diasSolicitados)) < 0) {

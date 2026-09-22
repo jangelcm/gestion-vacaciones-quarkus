@@ -40,7 +40,8 @@ public class SaldoDiasService {
     static final String MOTIVO_RENOVACION_PERIODO = "RENOVACION_PERIODO_ACUMULACION";
     static final String MOTIVO_BATCH_DIARIO = "BATCH_DIARIO";
 
-    static final BigDecimal DIAS_LABORALES_PERIODO = new BigDecimal("360");
+    static final BigDecimal DIAS_CALENDARIO_ANIO = new BigDecimal("365");
+    static final int DIAS_PERIODO_ANUAL = 365;
 
     private static final Logger LOG = Logger.getLogger(SaldoDiasService.class);
 
@@ -92,11 +93,9 @@ public class SaldoDiasService {
 
         LocalDate fechaInicio = fechaInicioPolitica != null ? fechaInicioPolitica : LocalDate.now();
 
-        // 1. Días trabajados calculados según ingreso real
         long diasTranscurridos = ChronoUnit.DAYS.between(fechaIngresoColaborador, fechaInicio);
         int diasTrabajados = Math.max(0, (int) diasTranscurridos);
 
-        // 2. Creación inicial de la entidad con valores a cero
         SaldoDiasEntity nuevoSaldo = SaldoDiasEntity.builder()
                 .colaboradorId(colaboradorId)
                 .politica(politica)
@@ -113,7 +112,6 @@ public class SaldoDiasService {
         saldoDiasRepository.persist(nuevoSaldo);
         saldoDiasRepository.getEntityManager().flush();
 
-        // 3. Recalcular disponibilidad de saldo en función de la antigüedad
         recalcularSaldoDisponible(nuevoSaldo);
         publicarDiasActualizados(nuevoSaldo, MOTIVO_ASIGNACION_POLITICA);
         publicarPoliticaActualizadaPorAsignacion(nuevoSaldo);
@@ -156,7 +154,7 @@ public class SaldoDiasService {
                 int trabajadosAntes = safeDiasTrabajados(saldo);
                 SaldoDiasEntity procesado = saldoDiasWriteOperations.ejecutarProcesoDiario(saldo);
                 recalcularSaldoDisponible(procesado);
-                boolean aniversario = (trabajadosAntes + 1) % 360 == 0;
+                boolean aniversario = (trabajadosAntes + 1) % DIAS_PERIODO_ANUAL == 0;
                 publicarDiasActualizados(procesado, aniversario ? MOTIVO_RENOVACION_PERIODO : MOTIVO_BATCH_DIARIO);
             } catch (RuntimeException e) {
                 LOG.errorf(e, "Fallo al renovar el saldo del colaborador %d, se continua con el resto",
@@ -315,11 +313,11 @@ public class SaldoDiasService {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
         BigDecimal diasBase = BigDecimal.valueOf(saldo.getPolitica().getDiasBaseAnio());
-        int diasTrabajadosEnPeriodo = safeDiasTrabajados(saldo) % 360;
+        int diasTrabajadosEnPeriodo = safeDiasTrabajados(saldo) % DIAS_PERIODO_ANUAL;
 
         return BigDecimal.valueOf(diasTrabajadosEnPeriodo)
                 .multiply(diasBase)
-                .divide(DIAS_LABORALES_PERIODO, 2, RoundingMode.HALF_UP);
+                .divide(DIAS_CALENDARIO_ANIO, 2, RoundingMode.HALF_UP);
     }
 
     BigDecimal calcularDiasHabilitados(SaldoDiasEntity saldo) {
@@ -327,11 +325,8 @@ public class SaldoDiasService {
             return safeBigDecimal(saldo != null ? saldo.getDiasAcumulados() : null);
         }
 
-        // 1. Días acumulados previamente en BBDD
         BigDecimal acumuladosBD = safeBigDecimal(saldo.getDiasAcumulados());
-
-        // 2. Si ya acumula periodos completos de 360 días
-        int periodosCompletados = safeDiasTrabajados(saldo) / 360;
+        int periodosCompletados = safeDiasTrabajados(saldo) / DIAS_PERIODO_ANUAL;
 
         if (periodosCompletados > 0) {
             BigDecimal diasBase = BigDecimal.valueOf(saldo.getPolitica().getDiasBaseAnio());
@@ -339,21 +334,30 @@ public class SaldoDiasService {
             return acumuladosBD.max(diasPorPeriodos);
         }
 
-        // Si tiene menos de 360 días trabajados (como en este caso: 122 días),
-        // sus días habilitados por derecho de antigüedad son 0.00
+        // Si la política exige 12 meses de antigüedad y aún no los cumple, los días habilitados por año completo son 0
         return acumuladosBD;
     }
 
     BigDecimal calcularSaldoActual(SaldoDiasEntity saldo, BigDecimal diasHabilitados) {
         int antiguedadMeses = calcularAntiguedadMeses(saldo.getFechaIngresoColaborador());
-        int antiguedadRequerida = saldo.getPolitica() != null ? saldo.getPolitica().getAntiguedadMinimaMeses() : 0;
+        int antiguedadRequerida = saldo.getPolitica() != null && saldo.getPolitica().getAntiguedadMinimaMeses() != null
+                ? saldo.getPolitica().getAntiguedadMinimaMeses() : 0;
 
-        // Si no ha cumplido el periodo de gracia/antigüedad requerida, el saldo disponible es 0.
+        // Si no cumple la antigüedad configurada en la política, su saldo es 0
         if (antiguedadMeses < antiguedadRequerida) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
 
-        BigDecimal saldoCalculado = diasHabilitados
+        BigDecimal baseSaldo = diasHabilitados;
+
+        // Si la política permite pedir vacaciones con antigüedad de 0 o < 12 meses (Adelanto/Proporcional),
+        // habilitamos los días truncos acumulados progresivamente para ser disfrutados.
+        if (antiguedadRequerida < 12) {
+            BigDecimal diasTruncos = calcularDiasTruncos(saldo);
+            baseSaldo = baseSaldo.add(diasTruncos);
+        }
+
+        BigDecimal saldoCalculado = baseSaldo
                 .subtract(safeBigDecimal(saldo.getDiasUsados()))
                 .subtract(safeBigDecimal(saldo.getDiasPendientes()));
 

@@ -21,7 +21,7 @@ public class SaldoDiasWriteOperations {
     static final String ORIGEN_SOLICITUD_CREADA = "solicitud.creada";
     static final String ORIGEN_SOLICITUD_APROBADA = "solicitud.aprobada";
     static final String ORIGEN_SOLICITUD_CANCELADA = "solicitud.cancelada";
-    static final int DIAS_PERIODO_ANUAL = 360;
+    static final int DIAS_PERIODO_ANUAL = 365;
 
     private final SaldoDiasRepository saldoDiasRepository;
     private final MovimientoSaldoRepository movimientoSaldoRepository;
@@ -54,7 +54,6 @@ public class SaldoDiasWriteOperations {
 
         normalizarCampos(saldoDias);
 
-        // 1. Al aprobar, los días pasan de PENDIENTES a USADOS
         BigDecimal pendientesRestantes = saldoDias.getDiasPendientes().subtract(dias);
         saldoDias.setDiasPendientes(pendientesRestantes.max(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)));
         saldoDias.setDiasUsados(saldoDias.getDiasUsados().add(dias));
@@ -129,7 +128,6 @@ public class SaldoDiasWriteOperations {
 
         normalizarCampos(saldoDias);
 
-        // 1. Al rechazar/cancelar, liberas los días pendientes
         BigDecimal diasPendientesRestantes = saldoDias.getDiasPendientes().subtract(dias);
         saldoDias.setDiasPendientes(diasPendientesRestantes.max(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)));
 
@@ -153,7 +151,7 @@ public class SaldoDiasWriteOperations {
 
         int trabajados = saldo.getDiasTrabajados() + 1;
 
-        // Si cumple el ciclo/aniversario (360 días laborados)
+        // Si cumple exactamente el ciclo anual (365 días)
         if (trabajados >= DIAS_PERIODO_ANUAL) {
             PoliticaEntity politica = saldo.getPolitica();
             BigDecimal diasGanadosAnio = (politica != null && politica.getDiasBaseAnio() != null)
@@ -162,13 +160,13 @@ public class SaldoDiasWriteOperations {
 
             BigDecimal nuevoAcumulado = saldo.getDiasAcumulados().add(diasGanadosAnio);
 
-            if (politica != null && politica.getMaxDiasAcumulables() != null) {
+            if (politica != null && Boolean.TRUE.equals(politica.getAcumulable()) && politica.getMaxDiasAcumulables() != null) {
                 BigDecimal tope = BigDecimal.valueOf(politica.getMaxDiasAcumulables()).setScale(2, RoundingMode.HALF_UP);
                 nuevoAcumulado = nuevoAcumulado.min(tope);
             }
 
             saldo.setDiasAcumulados(nuevoAcumulado);
-            saldo.setDiasTrabajados(0); // Reinicia ciclo de días trabajados en el año actual
+            saldo.setDiasTrabajados(0); // Reiniciar ciclo de días trabajados
         } else {
             saldo.setDiasTrabajados(trabajados);
         }
