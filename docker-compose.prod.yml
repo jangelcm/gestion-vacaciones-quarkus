@@ -12,7 +12,7 @@ services:
   # nivel de firewall de red — 4200 quedaba inalcanzable desde afuera aunque ufw lo permitiera
   # explicitamente. Se expone en el 80 estandar en vez de tocar el firewall del proveedor.
   jovaca:
-    ports:
+    ports: !override
       - "80:4200"
 
   postgres:
