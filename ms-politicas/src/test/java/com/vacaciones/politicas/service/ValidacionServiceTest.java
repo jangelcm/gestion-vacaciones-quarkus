@@ -35,15 +35,6 @@ class ValidacionServiceTest {
     ValidacionService validacionService;
 
     @Test
-    void shouldCalculateBusinessDaysExcludingWeekends() {
-        long diasHabiles = validacionService.calcularDiasHabiles(
-                LocalDate.of(2026, 8, 14),
-                LocalDate.of(2026, 8, 18));
-
-        assertEquals(3, diasHabiles);
-    }
-
-    @Test
     void shouldRejectWhenAvailableBalanceIsLowerThanRequestedDays() {
         PoliticaEntity politica = buildPolitica();
         SaldoDiasEntity saldo = buildSaldoDias(1001L, politica, "2.0");

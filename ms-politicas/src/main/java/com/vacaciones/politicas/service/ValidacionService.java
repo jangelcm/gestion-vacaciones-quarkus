@@ -33,20 +33,6 @@ public class ValidacionService {
         this.reglaEspecialRepository = reglaEspecialRepository;
     }
 
-    public long calcularDiasHabiles(LocalDate fechaInicio, LocalDate fechaFin) {
-        long diasHabiles = 0;
-        LocalDate fecha = fechaInicio;
-
-        while (!fecha.isAfter(fechaFin)) {
-            if (fecha.getDayOfWeek() != DayOfWeek.SATURDAY && fecha.getDayOfWeek() != DayOfWeek.SUNDAY) {
-                diasHabiles++;
-            }
-            fecha = fecha.plusDays(1);
-        }
-
-        return diasHabiles;
-    }
-
     public ValidarSolicitudResponseDto validarSolicitud(ValidarSolicitudRequestDto request, Integer antiguedadMeses) {
         // 1. Validar anticipación
         long diasAnticipacion = ChronoUnit.DAYS.between(LocalDate.now(), request.fechaInicio());

@@ -29,7 +29,8 @@ public class SolicitudAprobadaConsumer {
     public void onSolicitudCreada(String mensaje) throws JsonProcessingException {
         LOG.infof("Evento 'solicitud.creada' recibido: %s", mensaje);
         SolicitudCreadaEvent evento = objectMapper.readValue(mensaje, SolicitudCreadaEvent.class);
-        long diasSolicitados = validacionService.calcularDiasHabiles(evento.fechaInicio(), evento.fechaFin());
+        long diasSolicitados = java.time.temporal.ChronoUnit.DAYS.between(evento.fechaInicio(), evento.fechaFin()) + 1;
+
         saldoDiasService.reservarDiasPorSolicitudCreada(
                 Long.valueOf(evento.colaboradorId()),
                 evento.id(),
