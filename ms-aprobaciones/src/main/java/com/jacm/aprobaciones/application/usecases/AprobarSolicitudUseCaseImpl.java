@@ -10,9 +10,10 @@ import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @ApplicationScoped
 public class AprobarSolicitudUseCaseImpl implements AprobarSolicitudUseCase {
@@ -45,7 +46,15 @@ public class AprobarSolicitudUseCaseImpl implements AprobarSolicitudUseCase {
         aprobacion.aprobar(aprobadorId, comentario);
         var aprobacionGuardada = repositoryPort.guardar(aprobacion);
 
-        BigDecimal diasAprobados = calcularDiasHabiles(aprobacion.getFechaInicio(), aprobacion.getFechaFin());
+        // 1. Calculamos los días calendario continuos (inclusivos)
+        long diasCalendario =  DAYS.between(
+                aprobacion.getFechaInicio(),
+                aprobacion.getFechaFin()
+        ) + 1;
+
+        // 2. Convertimos el valor a BigDecimal
+        BigDecimal diasAprobados = BigDecimal.valueOf(diasCalendario);
+
         eventPublisherPort.publicarSolicitudAprobada(
                 solicitudId, aprobacion.getColaboradorId(), diasAprobados,
                 aprobacion.getFechaInicio(), aprobacion.getFechaFin(), aprobadorId, comentario);
@@ -53,18 +62,4 @@ public class AprobarSolicitudUseCaseImpl implements AprobarSolicitudUseCase {
         return aprobacionGuardada;
     }
 
-    private BigDecimal calcularDiasHabiles(LocalDate fechaInicio, LocalDate fechaFin) {
-        if (fechaInicio == null || fechaFin == null) {
-            return BigDecimal.ZERO;
-        }
-        long diasHabiles = 0;
-        LocalDate fecha = fechaInicio;
-        while (!fecha.isAfter(fechaFin)) {
-            if (fecha.getDayOfWeek() != DayOfWeek.SATURDAY && fecha.getDayOfWeek() != DayOfWeek.SUNDAY) {
-                diasHabiles++;
-            }
-            fecha = fecha.plusDays(1);
-        }
-        return BigDecimal.valueOf(diasHabiles);
-    }
 }
