@@ -1,0 +1,42 @@
+# Override de produccion: quita los puertos publicos de todo lo que no sea el frontend
+# (jovaca, 4200) y el gateway (mcsv-gateway, 8080). Postgres, MongoDB, Kafka, Kafka UI y cada
+# microservicio individual siguen siendo alcanzables entre contenedores por la red interna de
+# Docker (vacaciones-net), pero dejan de estar expuestos al host/Internet.
+#
+# "!reset []" vacia explicitamente la lista de puertos heredada de docker-compose.yml (Compose
+# Spec >= 2.24); sin esto, Compose CONCATENA listas en vez de reemplazarlas.
+#
+# Uso: docker compose -f docker-compose.yml -f docker-compose.native.yml -f docker-compose.prod.yml up -d
+services:
+  postgres:
+    ports: !reset []
+
+  mongodb:
+    ports: !reset []
+
+  kafka:
+    ports: !reset []
+
+  kafka-ui:
+    ports: !reset []
+
+  ms-solicitud:
+    ports: !reset []
+
+  ms-aprobaciones:
+    ports: !reset []
+
+  ms-politicas:
+    ports: !reset []
+
+  ms-notificaciones:
+    ports: !reset []
+
+  ms-consultas:
+    ports: !reset []
+
+  ms-reportes:
+    ports: !reset []
+
+  mcsv-auth:
+    ports: !reset []

@@ -1,0 +1,104 @@
+name: Build y Deploy (nativo)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  IMAGE_PREFIX: gestion-vacaciones-quarkus
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - mcsv-auth
+          - mcsv-gateway
+          - ms-solicitud
+          - ms-aprobaciones
+          - ms-politicas
+          - ms-notificaciones
+          - ms-consultas
+          - ms-reportes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      # -Dquarkus.native.container-build=true compila dentro del builder image de Mandrel
+      # (no depende de tener GraalVM instalado en el runner); requiere Docker, ya disponible
+      # en los runners de GitHub-hosted.
+      - name: Compilar binario nativo
+        working-directory: ${{ matrix.service }}
+        run: |
+          mvn -B clean package -Pnative \
+            -Dquarkus.native.container-build=true \
+            -Dquarkus.native.native-image-xmx=6g \
+            -DskipTests
+
+      - name: Construir imagen Docker
+        run: |
+          docker build \
+            -f ${{ matrix.service }}/src/main/docker/Dockerfile.native \
+            -t ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest \
+            ${{ matrix.service }}
+
+      - name: Empaquetar imagen como artefacto
+        run: docker save ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest | gzip > ${{ matrix.service }}.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.service }}
+          path: ${{ matrix.service }}.tar.gz
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: images
+          pattern: image-*
+          merge-multiple: true
+
+      - name: Preparar llave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      # El .env real (credenciales de BD, SMTP) ya vive en el servidor
+      # (/opt/gestion-vacaciones-quarkus/.env) y NO se toca desde acá — solo se copian
+      # los archivos de compose y las imagenes ya compiladas.
+      - name: Copiar imagenes y compose files al servidor
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "mkdir -p /opt/gestion-vacaciones-quarkus"
+          scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" images/*.tar.gz \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/gestion-vacaciones-quarkus/"
+          scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" \
+            docker-compose.yml docker-compose.native.yml docker-compose.prod.yml \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/gestion-vacaciones-quarkus/"
+
+      - name: Cargar imagenes y desplegar
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" '
+            set -e
+            cd /opt/gestion-vacaciones-quarkus
+            for f in *.tar.gz; do gunzip -c "$f" | docker load; done
+            rm -f *.tar.gz
+            export COMPOSE_PROJECT_NAME=gestion-vacaciones-quarkus
+            docker compose -f docker-compose.yml -f docker-compose.native.yml -f docker-compose.prod.yml --env-file .env up -d
+            docker image prune -f
+          '

@@ -1,1 +1,0 @@
-Error: class not found: com/lowagie/text/pdf/FopGlyphProcessor.class
