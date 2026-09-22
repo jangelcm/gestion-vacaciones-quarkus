@@ -31,8 +31,7 @@ public class DefaultUsersSeeder {
     private static final List<DefaultUser> DEFAULT_USERS = List.of(
             new DefaultUser("admin", "admin123", "admin@vacaciones.local", "Administrador"),
             new DefaultUser("rh", "rh12345", "rh@vacaciones.local", "Recursos Humanos"),
-            new DefaultUser("jefe", "jefe123", "jefe@vacaciones.local", "Jefe Inmediato"),
-            new DefaultUser("colab", "colab123", "colab@vacaciones.local", "Colaborador"));
+            new DefaultUser("jefe", "jefe123", "jefe@vacaciones.local", "Jefe Inmediato"));
 
     private final UserRepository userRepository;
     private final RolsRepository rolsRepository;
