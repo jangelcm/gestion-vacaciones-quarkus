@@ -1,5 +1,5 @@
 # Override de produccion: quita los puertos publicos de todo lo que no sea el frontend
-# (jovaca, 4200) y el gateway (mcsv-gateway, 8080). Postgres, MongoDB, Kafka, Kafka UI y cada
+# (jovaca) y el gateway (mcsv-gateway, 8080). Postgres, MongoDB, Kafka, Kafka UI y cada
 # microservicio individual siguen siendo alcanzables entre contenedores por la red interna de
 # Docker (vacaciones-net), pero dejan de estar expuestos al host/Internet.
 #
@@ -8,6 +8,13 @@
 #
 # Uso: docker compose -f docker-compose.yml -f docker-compose.native.yml -f docker-compose.prod.yml up -d
 services:
+  # El proveedor del VPS solo deja pasar puertos "conocidos" (80, 443, el SSH configurado) a
+  # nivel de firewall de red — 4200 quedaba inalcanzable desde afuera aunque ufw lo permitiera
+  # explicitamente. Se expone en el 80 estandar en vez de tocar el firewall del proveedor.
+  jovaca:
+    ports:
+      - "80:4200"
+
   postgres:
     ports: !reset []
 
