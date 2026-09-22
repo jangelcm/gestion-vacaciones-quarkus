@@ -82,17 +82,29 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      # El .env real (credenciales de BD, SMTP) ya vive en el servidor
-      # (/opt/gestion-vacaciones-quarkus/.env) y NO se toca desde acá — solo se copian
-      # los archivos de compose y las imagenes ya compiladas.
-      - name: Copiar imagenes y compose files al servidor
+      # El repo se clona/actualiza completo en el servidor (no solo los docker-compose*.yml)
+      # porque hay volumenes que montan archivos/carpetas del propio repo (./jovaca:/app para
+      # el frontend, ./docker/postgres/init-multiple-dbs.sh) — copiar solo los compose files
+      # sueltos deja esas rutas inexistentes, y Docker las reemplaza silenciosamente por un
+      # directorio vacio ("Is a directory" al arrancar). "git reset --hard" no toca el .env
+      # real del servidor porque esta gitignored (nunca es parte del repo).
+      - name: Sincronizar repositorio en el servidor
         run: |
-          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "mkdir -p /opt/gestion-vacaciones-quarkus"
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" '
+            set -e
+            if [ -d /opt/gestion-vacaciones-quarkus/.git ]; then
+              cd /opt/gestion-vacaciones-quarkus
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              rm -rf /opt/gestion-vacaciones-quarkus
+              git clone --depth 1 https://github.com/jangelcm/gestion-vacaciones-quarkus.git /opt/gestion-vacaciones-quarkus
+            fi
+          '
+
+      - name: Copiar imagenes al servidor
+        run: |
           scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" images/*.tar.gz \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/gestion-vacaciones-quarkus/"
-          scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" \
-            docker-compose.yml docker-compose.native.yml docker-compose.prod.yml \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/gestion-vacaciones-quarkus/"
 
       - name: Cargar imagenes y desplegar
