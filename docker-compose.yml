@@ -254,6 +254,8 @@ services:
       - ms-notificaciones
       - ms-consultas
       - ms-reportes
+    environment:
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200}
     ports:
       - "8080:8080"
     networks:
