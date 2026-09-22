@@ -97,8 +97,13 @@ jobs:
               git fetch origin main
               git reset --hard origin/main
             else
+              # El .env real (fuera de git, gitignored) puede vivir en un directorio que
+              # todavia no es un clon (ej. la primera vez que corre este pipeline); se
+              # preserva explicitamente antes del rm -rf y se restaura despues del clone.
+              [ -f /opt/gestion-vacaciones-quarkus/.env ] && cp /opt/gestion-vacaciones-quarkus/.env /tmp/env-backup || true
               rm -rf /opt/gestion-vacaciones-quarkus
               git clone --depth 1 https://github.com/jangelcm/gestion-vacaciones-quarkus.git /opt/gestion-vacaciones-quarkus
+              [ -f /tmp/env-backup ] && mv /tmp/env-backup /opt/gestion-vacaciones-quarkus/.env || true
             fi
           '
 
