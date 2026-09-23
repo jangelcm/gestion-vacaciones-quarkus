@@ -1,235 +1,233 @@
 [
-  [
-    {
-      "path": "/openapi/auth",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/openapi/solicitudes",
-      "targets": [
-        {
-          "host": "ms-solicitud",
-          "port": 8080
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/openapi/aprobaciones",
-      "targets": [
-        {
-          "host": "ms-aprobaciones",
-          "port": 8080
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/openapi/politicas",
-      "targets": [
-        {
-          "host": "ms-politicas",
-          "port": 8081
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/openapi/consultas",
-      "targets": [
-        {
-          "host": "ms-consultas",
-          "port": 8085
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/openapi/reportes",
-      "targets": [
-        {
-          "host": "ms-reportes",
-          "port": 8086
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/openapi/notificaciones",
-      "targets": [
-        {
-          "host": "ms-notificaciones",
-          "port": 8084
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/mcsv-auth/auth/login",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": true
-    },
-    {
-      "path": "/mcsv-auth/users",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": true
-    },
-    {
-      "path": "/mcsv-auth/auth",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": true
-    },
-    {
-      "path": "/orders",
-      "targets": [
-        {
-          "host": "localhost",
-          "port": 9002
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/api/v1/solicitudes",
-      "targets": [
-        {
-          "host": "ms-solicitud",
-          "port": 8080
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/api/v1/aprobaciones",
-      "targets": [
-        {
-          "host": "ms-aprobaciones",
-          "port": 8080
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/api/v1/politicas",
-      "targets": [
-        {
-          "host": "ms-politicas",
-          "port": 8081
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/api/v1/consultas",
-      "targets": [
-        {
-          "host": "ms-consultas",
-          "port": 8085
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/api/v1/reportes",
-      "targets": [
-        {
-          "host": "ms-reportes",
-          "port": 8086
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/notificaciones",
-      "targets": [
-        {
-          "host": "ms-notificaciones",
-          "port": 8084
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": false
-    },
-    {
-      "path": "/consultas-updates",
-      "targets": [
-        {
-          "host": "ms-consultas",
-          "port": 8085
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": false
-    },
-    {
-      "path": "/auth",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": false,
-      "stripPrefix": false
-    },
-    {
-      "path": "/rols",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    },
-    {
-      "path": "/users",
-      "targets": [
-        {
-          "host": "mcsv-auth",
-          "port": 9001
-        }
-      ],
-      "requiresJwt": true,
-      "stripPrefix": false
-    }
-  ]
+  {
+    "path": "/doc-auth",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/doc-solicitudes",
+    "targets": [
+      {
+        "host": "ms-solicitud",
+        "port": 8080
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/doc-aprobaciones",
+    "targets": [
+      {
+        "host": "ms-aprobaciones",
+        "port": 8080
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/doc-politicas",
+    "targets": [
+      {
+        "host": "ms-politicas",
+        "port": 8081
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/doc-consultas",
+    "targets": [
+      {
+        "host": "ms-consultas",
+        "port": 8085
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/doc-reportes",
+    "targets": [
+      {
+        "host": "ms-reportes",
+        "port": 8086
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/doc-notificaciones",
+    "targets": [
+      {
+        "host": "ms-notificaciones",
+        "port": 8084
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/mcsv-auth/auth/login",
+    "targets": [
+      {
+        "host": "127.0.0.1",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": true
+  },
+  {
+    "path": "/mcsv-auth/users",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": true
+  },
+  {
+    "path": "/mcsv-auth/auth",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": true
+  },
+  {
+    "path": "/orders",
+    "targets": [
+      {
+        "host": "localhost",
+        "port": 9002
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/solicitudes",
+    "targets": [
+      {
+        "host": "ms-solicitud",
+        "port": 8080
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/aprobaciones",
+    "targets": [
+      {
+        "host": "ms-aprobaciones",
+        "port": 8080
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/politicas",
+    "targets": [
+      {
+        "host": "ms-politicas",
+        "port": 8081
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/consultas",
+    "targets": [
+      {
+        "host": "ms-consultas",
+        "port": 8085
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/api/v1/reportes",
+    "targets": [
+      {
+        "host": "ms-reportes",
+        "port": 8086
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/notificaciones",
+    "targets": [
+      {
+        "host": "ms-notificaciones",
+        "port": 8084
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
+    "path": "/consultas-updates",
+    "targets": [
+      {
+        "host": "ms-consultas",
+        "port": 8085
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
+    "path": "/auth",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": false,
+    "stripPrefix": false
+  },
+  {
+    "path": "/rols",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  },
+  {
+    "path": "/users",
+    "targets": [
+      {
+        "host": "mcsv-auth",
+        "port": 9001
+      }
+    ],
+    "requiresJwt": true,
+    "stripPrefix": false
+  }
 ]
