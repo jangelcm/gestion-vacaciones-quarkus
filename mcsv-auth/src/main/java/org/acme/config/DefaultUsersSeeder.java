@@ -1,5 +1,6 @@
 package org.acme.config;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.acme.models.Rols;
@@ -8,6 +9,7 @@ import org.acme.models.User;
 import org.acme.repository.RolUserRepository;
 import org.acme.repository.RolsRepository;
 import org.acme.repository.UserRepository;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -15,12 +17,14 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
 
 @ApplicationScoped
 public class DefaultUsersSeeder {
 
     private static final Logger LOG = Logger.getLogger(DefaultUsersSeeder.class);
+
+    @ConfigProperty(name = "app.seeder.enabled", defaultValue = "false")
+    boolean seederEnabled;
 
     private static final List<String> REQUIRED_ROLES = List.of(
             "Colaborador",
@@ -46,6 +50,11 @@ public class DefaultUsersSeeder {
 
     @Transactional
     void onStart(@Observes StartupEvent event) {
+        if (!seederEnabled) {
+            LOG.info("Seeder de usuarios omitido (app.seeder.enabled=false).");
+            return;
+        }
+
         ensureRolesExist();
 
         for (DefaultUser defaultUser : DEFAULT_USERS) {
