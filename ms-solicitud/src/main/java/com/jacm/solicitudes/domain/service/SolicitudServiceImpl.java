@@ -17,6 +17,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
@@ -43,9 +45,19 @@ public class SolicitudServiceImpl implements SolicitudService {
 
     @Override
     public Solicitud crearSolicitud(Solicitud solicitud) {
-        /*TODO:Validación pendiente de solucionar por error de saldos */
+        // PASO 1: Validación HTTP SIN abrir transacción de base de datos
         validarSolicitudConPoliticas(solicitud);
+
+        // PASO 2: Persistencia y evento dentro de la transacción de PostgreSQL
+        return guardarYPublicar(solicitud);
+    }
+
+    // 2. COLOCAMOS @Transactional SOLO EN ESTE MÉTODO DE PERSISTENCIA
+    @Transactional
+    protected Solicitud guardarYPublicar(Solicitud solicitud) {
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud.setFechaSolicitud(LocalDate.now());
+
         var solicitudGuardada = solicitudRepositoryPort.guardar(solicitud);
         solicitudEventPublisherPort.publicarSolicitudCreada(solicitudGuardada);
         return solicitudGuardada;
@@ -68,6 +80,7 @@ public class SolicitudServiceImpl implements SolicitudService {
     }
 
     @Override
+    @Transactional
     public void actualizarEstado(Long id, EstadoSolicitud nuevoEstado) {
         solicitudRepositoryPort.actualizarEstado(id, nuevoEstado);
     }
